@@ -1,0 +1,117 @@
+
+using SymPy
+
+abstract type AnalyticEquilibrium <: MagneticEquilibrium end
+
+
+"""
+Compute and create functions for evaluating analytic equilibria.
+"""
+function load_equilibrium(equ; output=false)
+    # define symbols for coordinates x = (x₁, x₂, x₃),
+    # positive=true is set so that sqrt(x^2) does not become |x^2|
+    x₁, x₂, x₃ = symbols("x₁, x₂, x₃", real=true, positive=true)
+    x = [x₁, x₂, x₃]
+
+    # obtain metric
+    g = analyticMetric(x, equ)
+    symprint("g", g, output)
+
+    # compute metric coefficients for derivatives
+    h = [simplify(sqrt(g[i,i])) for i in 1:3]
+    symprint("h", h, output)
+
+    # compute Jacobian
+    J = simplify(sqrt(det(g)))
+    symprint("J", J, output)
+
+    # obtain vector potential
+    A  = [analyticA₁(x, equ), analyticA₂(x, equ), analyticA₃(x, equ)]
+    symprint("A", A, output)
+
+    # compute Jacobian of vector potential A
+    DA = [simplify(diff(A[i], x[j])) for i in 1:3, j in 1:3]
+    symprint("DA", DA, output)
+
+    # compute magnetic field B = curl A
+    B  = [( simplify(diff(h[3] * A[3], x[2]) - diff(h[2] * A[2], x[3])) * h[1] / J ),
+          ( simplify(diff(h[1] * A[1], x[3]) - diff(h[3] * A[3], x[1])) * h[2] / J ),
+          ( simplify(diff(h[2] * A[2], x[1]) - diff(h[1] * A[1], x[2])) * h[3] / J )]
+    symprint("B", B, output)
+
+    # compute absolute value |B| of B
+    Babs = simplify( sqrt(B[1]^2 + B[2]^2 + B[3]^2) )
+    symprint("|B|", Babs, output)
+
+    # compute magnetic unit vector
+    b  = [simplify( B[1] / Babs ),
+          simplify( B[2] / Babs ),
+          simplify( B[3] / Babs )]
+    symprint("b", b, output)
+
+    # compute Jacobian of magnetic field
+    DB = [diff(B[i], x[j]) for i in 1:3, j in 1:3]
+    symprint("DB", DB, output)
+
+    # compute Jacobian of magnetic unit vector
+    Db = [diff(b[i], x[j]) for i in 1:3, j in 1:3]
+    symprint("Db", Db, output)
+
+    # compute Jacobian of absolute value of magnetic field
+    DBabs = [diff(Babs, x[j]) for j in 1:3]
+    symprint("D|B|", DBabs, output)
+
+
+    # collect all functions to generate code for
+    functions = Dict{String,Any}()
+    indices   = ["₁", "₂", "₃"]
+
+    functions["J"] = J
+    functions["B"] = Babs
+
+    for i in 1:3
+        functions["h" * indices[i]] = h[i]
+        functions["A" * indices[i]] = A[i]
+        functions["B" * indices[i]] = B[i]
+        functions["b" * indices[i]] = b[i]
+        functions["dBdx" * indices[i]] = DBabs[i]
+    end
+
+    for i in 1:3
+        for j in 1:3
+            functions["g"  * indices[i] * indices[j]] = g[i,j]
+            functions["dA" * indices[i] * "dx" * indices[j]] = DA[i,j]
+            functions["dB" * indices[i] * "dx" * indices[j]] = DB[i,j]
+            functions["db" * indices[i] * "dx" * indices[j]] = Db[i,j]
+        end
+    end
+
+
+    # generate Julia code and export functions
+    for (key, value) in functions
+        f_symb = Symbol(key)
+        f_expr = value
+
+        println("Generating function ", key)
+
+        f_body = parse(sympy_meth(:julia_code, f_expr))
+        output ? println("   ", f_body) : nothing
+
+        @eval begin
+            function $f_symb(x₁, x₂, x₃)
+                $f_body
+            end
+            function $f_symb(x::Vector)
+                $f_symb(x[1],x[2],x[3])
+            end
+            export $f_symb
+        end
+    end
+end
+
+
+function symprint(name, symexpr, output=true)
+    if output
+        println(name, " = ", symexpr, "\n")
+    end
+end
