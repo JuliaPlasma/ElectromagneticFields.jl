@@ -5,9 +5,9 @@ abstract type AnalyticEquilibrium <: MagneticEquilibrium end
 
 
 """
-Compute and create functions for evaluating analytic equilibria.
+Generate functions for evaluating analytic equilibria.
 """
-function load_equilibrium(equ; output=false)
+function generate_equilibrium_functions(equ; output=false)
     # define symbols for coordinates x = (x₁, x₂, x₃),
     # positive=true is set so that sqrt(x^2) does not become |x^2|
     x₁, x₂, x₃ = symbols("x₁, x₂, x₃", real=true, positive=true)
@@ -86,6 +86,20 @@ function load_equilibrium(equ; output=false)
         end
     end
 
+    functions
+end
+
+
+
+"""
+Evaluate functions for evaluating analytic equilibria.
+"""
+function load_equilibrium(equ; output=false)
+    println()
+    println(equ)
+    println()
+
+    functions = generate_equilibrium_functions(equ; output=output)
 
     # generate Julia code and export functions
     for (key, value) in functions
@@ -97,15 +111,17 @@ function load_equilibrium(equ; output=false)
         f_body = parse(sympy_meth(:julia_code, f_expr))
         output ? println("   ", f_body) : nothing
 
-        @eval begin
+        f_code = quote
+            export $f_symb
             function $f_symb(x₁, x₂, x₃)
                 $f_body
             end
-            function $f_symb(x::Vector)
+            function $f_symb(t::Number, x::Vector)
                 $f_symb(x[1],x[2],x[3])
             end
-            export $f_symb
         end
+
+        eval(Main, f_code)
     end
 end
 

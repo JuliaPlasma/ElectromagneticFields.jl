@@ -1,5 +1,5 @@
 
-using SymPy
+using SymPy: N, Sym, diff, expand, solve, subs
 
 """
 Axisymmetric Solov'ev equilibra with X-point in (R,Z,phi) coordinates.

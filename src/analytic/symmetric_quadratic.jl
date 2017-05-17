@@ -1,12 +1,18 @@
 
+using SymPy: Sym
+
 """
-Symmetric quadratuc equilibrium in (x,y,z) coordinates.
+Symmetric quadratic equilibrium in (x,y,z) coordinates.
 
 Parameters: none
 """
 struct SymmetricQuadratic{T <: Number} <: AnalyticEquilibrium
     const name::String = "SymmetricQuadraticEquilibrium"
+    B₀::T
+    SymmetricQuadratic{T}(B₀::T) where T <: Number = new(B₀)
 end
+
+SymmetricQuadratic(B₀::T) where T <: Number = SymmetricQuadratic{T}(B₀)
 
 
 function Base.show(io::IO, equ::SymmetricQuadratic)
@@ -15,11 +21,11 @@ end
 
 
 function analyticA₁(x::Vector, equ::SymmetricQuadratic)
-    - 0.25 * x[2] * (2. + x[1]^2 + x[2]^2)
+    - equ.B₀ * x[2] * (2 + x[1]^2 + x[2]^2) / 4
 end
 
 function analyticA₂(x::Vector, equ::SymmetricQuadratic)
-    - 0.25 * x[1] * (2. + x[1]^2 + x[2]^2)
+    + equ.B₀ * x[1] * (2 + x[1]^2 + x[2]^2) / 4
 end
 
 function analyticA₃(x::Vector, equ::SymmetricQuadratic)
@@ -27,7 +33,9 @@ function analyticA₃(x::Vector, equ::SymmetricQuadratic)
 end
 
 function analyticMetric(x::Vector, equ::SymmetricQuadratic)
-    [1  0  0;
-     0  1  0;
-     0  0  1]
+    Sym[1  0  0;
+        0  1  0;
+        0  0  1]
+end
+
 end
