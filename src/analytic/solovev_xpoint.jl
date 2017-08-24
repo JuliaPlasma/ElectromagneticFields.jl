@@ -114,3 +114,8 @@ function analyticMetric(x::Vector, equ::SolovevXpoint)
      0  1  0;
      0  0  R^2]
 end
+
+
+macro solovev_xpoint_equilibrium(R₀, B₀, ϵ, κ, δ, a, xₛₑₚ, yₛₑₚ)
+    generate_equilibrium_code(SolovevXpoint(R₀, B₀, ϵ, κ, δ, a, xₛₑₚ, yₛₑₚ); output=false)
+end

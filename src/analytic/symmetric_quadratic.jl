@@ -4,7 +4,15 @@ using SymPy: Sym
 """
 Symmetric quadratic equilibrium in (x,y,z) coordinates.
 
-Parameters: none
+```math
+B(x,y,z) = B_0 \\, \\begin{pmatrix}
+0 \\\\
+0 \\\\
+1 + x^2 + y^2 \\\\
+\\end{pmatrix}
+```
+
+Parameters: `B₀`
 """
 struct SymmetricQuadratic{T <: Number} <: AnalyticEquilibrium
     const name::String = "SymmetricQuadraticEquilibrium"
@@ -38,4 +46,7 @@ function analyticMetric(x::Vector, equ::SymmetricQuadratic)
         0  0  1]
 end
 
+
+macro symmetric_quadratic_equilibrium()
+    generate_equilibrium_code(SymmetricQuadratic(1.); output=false)
 end

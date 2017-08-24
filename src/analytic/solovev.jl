@@ -95,3 +95,8 @@ function analyticMetric(x::Vector, equ::Solovev)
      0  1  0;
      0  0  R^2]
 end
+
+
+macro solovev_equilibrium(R₀, B₀, ϵ, κ, δ, a)
+    generate_equilibrium_code(Solovev(R₀, B₀, ϵ, κ, δ, a); output=false)
+end
