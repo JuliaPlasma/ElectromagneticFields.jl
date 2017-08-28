@@ -77,9 +77,13 @@ function generate_equilibrium_functions(equ; output=0)
     DDb3 = [diff(diff(b[3], x[i]), x[j]) for i in 1:3, j in 1:3]
     symprint("DDb3", DDb3, output, 2)
 
-    # compute Jacobian of absolute value of magnetic field
+    # compute first derivatives of absolute value of magnetic field
     DBabs = [diff(Babs, x[j]) for j in 1:3]
     symprint("D|B|", DBabs, output, 2)
+
+    # compute second derivatives of absolute value of magnetic field
+    DDBabs = [diff(diff(Babs, x[i]), x[j]) for i in 1:3, j in 1:3]
+    symprint("DD|B|", DDBabs, output, 2)
 
 
     # collect all functions to generate code for
@@ -110,6 +114,7 @@ function generate_equilibrium_functions(equ; output=0)
             functions["d²b₁" * "dx" * indices[i] * "dx" * indices[j]] = DDb1[i,j]
             functions["d²b₂" * "dx" * indices[i] * "dx" * indices[j]] = DDb2[i,j]
             functions["d²b₃" * "dx" * indices[i] * "dx" * indices[j]] = DDb3[i,j]
+            functions["d²B"  * "dx" * indices[i] * "dx" * indices[j]] = DDBabs[i,j]
         end
     end
 
