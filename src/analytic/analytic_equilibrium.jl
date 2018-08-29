@@ -2,16 +2,35 @@
 using SymPy
 
 abstract type AnalyticEquilibrium <: MagneticEquilibrium end
+abstract type AnalyticPerturbation <: MagneticEquilibrium end
+
+analyticA₁(x::AbstractArray{T,1}, equ::ET) where {T,ET} = error("analyticA₁() not implemented for ", ET)
+analyticA₂(x::AbstractArray{T,1}, equ::ET) where {T,ET} = error("analyticA₂() not implemented for ", ET)
+analyticA₃(x::AbstractArray{T,1}, equ::ET) where {T,ET} = error("analyticA₃() not implemented for ", ET)
+analyticMetric(x::AbstractArray{T,1}, equ::ET) where {T,ET} = error("analyticMetric() not implemented for ", ET)
+analyticHcoeffs(x::AbstractArray{T,1}, equ::ET) where {T,ET} = error("analyticHcoeffs() not implemented for ", ET)
+
+
+struct ZeroPerturbation <: AnalyticPerturbation
+    name::String
+    ZeroPerturbation() = new("ZeroPerturbation")
+end
+
+analyticA₁(x::AbstractArray{T,1}, pert::ZeroPerturbation) where {T} = zero(T)
+analyticA₂(x::AbstractArray{T,1}, pert::ZeroPerturbation) where {T} = zero(T)
+analyticA₃(x::AbstractArray{T,1}, pert::ZeroPerturbation) where {T} = zero(T)
 
 
 """
 Generate functions for evaluating analytic equilibria.
 """
-function generate_equilibrium_functions(equ; output=0)
+function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::AnalyticPerturbation; output=0)
     # define symbols for coordinates x = (x₁, x₂, x₃),
     # positive=true is set so that sqrt(x^2) does not become |x^2|
-    x₁, x₂, x₃ = symbols("x₁, x₂, x₃", real=true, positive=true)
-    x = [x₁, x₂, x₃]
+    # x₁, x₂, x₃ = symbols("x₁, x₂, x₃", real=true, positive=true)
+    # x = [x₁, x₂, x₃]
+    x1, x2, x3 = symbols("x1, x2, x3", real=true, positive=true)
+    x = [x1, x2, x3]
 
     # obtain metric
     g = analyticMetric(x, equ)
@@ -26,7 +45,9 @@ function generate_equilibrium_functions(equ; output=0)
     symprint("J", J, output, 2)
 
     # obtain vector potential
-    A  = [analyticA₁(x, equ), analyticA₂(x, equ), analyticA₃(x, equ)]
+    A  = [analyticA₁(x, equ) + analyticA₁(x, pert),
+          analyticA₂(x, equ) + analyticA₂(x, pert),
+          analyticA₃(x, equ) + analyticA₃(x, pert)]
     symprint("A", A, output, 2)
 
     # compute Jacobian of vector potential A
@@ -125,7 +146,7 @@ end
 """
 Generate code for evaluating analytic equilibria.
 """
-function generate_equilibrium_code(equ; output=0)
+function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
 
     if output ≥ 1
         println()
@@ -146,18 +167,19 @@ function generate_equilibrium_code(equ; output=0)
 
         # patch for removing Warnings with Julia v0.6 and SymPy v1.0
         f_str  = sympy_meth(:julia_code, f_expr)
-        f_str  = replace(f_str, ".+", "+")
-        f_str  = replace(f_str, ".-", "-")
-        f_str  = replace(f_str, ".*", "*")
-        f_str  = replace(f_str, "./", "/")
-        f_str  = replace(f_str, ".^", "^")
-        f_body = parse(f_str)
-        # f_body = parse(sympy_meth(:julia_code, f_expr))
+        f_str  = replace(f_str, ".+" => " .+ ")
+        f_str  = replace(f_str, ".-" => " .- ")
+        f_str  = replace(f_str, ".*" => " .* ")
+        f_str  = replace(f_str, "./" => " ./ ")
+        f_str  = replace(f_str, ".^" => " .^ ")
+        f_body = Meta.parse(f_str)
+        # f_body = Meta.parse(sympy_meth(:julia_code, f_expr))
         output ? println("   ", f_body) : nothing
 
         f_code = quote
             export $(esc(f_symb))
-            function $(esc(f_symb))(x₁, x₂, x₃)
+            # function $(esc(f_symb))(x₁, x₂, x₃)
+            function $(esc(f_symb))(x1, x2, x3)
                 $f_body
             end
             function $(esc(f_symb))(t::Number, x::Vector)
@@ -167,7 +189,6 @@ function generate_equilibrium_code(equ; output=0)
 
         # append f_code to equ_code
         push!(equ_code.args, f_code)
-        # push!(equ_code.args, f_code.args)
     end
 
     return equ_code
@@ -177,7 +198,7 @@ end
 """
 Evaluate functions for evaluating analytic equilibria.
 """
-function load_equilibrium(equ; target_module=Main, output=0)
+function load_equilibrium(equ, pert=ZeroPerturbation(); target_module=Main, output=0)
 
     if output ≥ 1
         println()
@@ -185,7 +206,7 @@ function load_equilibrium(equ; target_module=Main, output=0)
         println()
     end
 
-    functions = generate_equilibrium_functions(equ; output=output)
+    functions = generate_equilibrium_functions(equ, pert; output=output)
 
     # generate Julia code and export functions
     for (key, value) in functions
@@ -194,20 +215,29 @@ function load_equilibrium(equ; target_module=Main, output=0)
 
         output ≥ 1 ? println("Generating function ", key) : nothing
 
-        f_body = parse(sympy_meth(:julia_code, f_expr))
+        f_str  = sympy_meth(:julia_code, f_expr)
+        f_str  = replace(f_str, ".+" => " .+ ")
+        f_str  = replace(f_str, ".-" => " .- ")
+        f_str  = replace(f_str, ".*" => " .* ")
+        f_str  = replace(f_str, "./" => " ./ ")
+        f_str  = replace(f_str, ".^" => " .^ ")
+        f_body = Meta.parse(f_str)
+        # f_body = Meta.parse(sympy_meth(:julia_code, f_expr))
+
         output ≥ 2 ? println("   ", f_body) : nothing
 
         f_code = quote
             export $f_symb
-            function $f_symb(x₁, x₂, x₃)
+            # function $f_symb(x₁, x₂, x₃)
+            function $f_symb(x1, x2, x3)
                 $f_body
             end
-            function $f_symb(t::Number, x::Vector)
+            function $f_symb(t::Number, x::AbstractArray{T,1}) where {T <: Number}
                 $f_symb(x[1],x[2],x[3])
             end
         end
 
-        eval(target_module, f_code)
+        Core.eval(target_module, f_code)
     end
 end
 

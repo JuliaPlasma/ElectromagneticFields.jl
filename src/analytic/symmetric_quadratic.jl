@@ -15,9 +15,9 @@ B(x,y,z) = B_0 \\, \\begin{pmatrix}
 Parameters: `B₀`
 """
 struct SymmetricQuadratic{T <: Number} <: AnalyticEquilibrium
-    const name::String = "SymmetricQuadraticEquilibrium"
+    name::String
     B₀::T
-    SymmetricQuadratic{T}(B₀::T) where T <: Number = new(B₀)
+    SymmetricQuadratic{T}(B₀::T) where T <: Number = new("SymmetricQuadraticEquilibrium", B₀)
 end
 
 SymmetricQuadratic(B₀::T) where T <: Number = SymmetricQuadratic{T}(B₀)
@@ -28,24 +28,29 @@ function Base.show(io::IO, equ::SymmetricQuadratic)
 end
 
 
-function analyticA₁(x::Vector, equ::SymmetricQuadratic)
+function analyticA₁(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
     - equ.B₀ * x[2] * (2 + x[1]^2 + x[2]^2) / 4
 end
 
-function analyticA₂(x::Vector, equ::SymmetricQuadratic)
+function analyticA₂(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
     + equ.B₀ * x[1] * (2 + x[1]^2 + x[2]^2) / 4
 end
 
-function analyticA₃(x::Vector, equ::SymmetricQuadratic)
+function analyticA₃(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
     zero(eltype(x))
 end
 
-function analyticMetric(x::Vector, equ::SymmetricQuadratic)
+function analyticMetric(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
     Sym[1  0  0;
         0  1  0;
         0  0  1]
 end
 
+function analyticHcoeffs(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
+    Sym[1  0  0;
+        0  1  0;
+        0  0  1]
+end
 
 macro symmetric_quadratic_equilibrium()
     generate_equilibrium_code(SymmetricQuadratic(1.); output=false)

@@ -8,12 +8,12 @@ Parameters:
     C:
 """
 struct ABC{T <: Number} <: AnalyticEquilibrium
-    const name::String = "ABCEquilibrium"
+    name::String
     A::T
     B::T
     C::T
 
-    ABC{T}(A::T, B::T, C::T) where T <: Number = new(A, B, C)
+    ABC{T}(A::T, B::T, C::T) where T <: Number = new("ABCEquilibrium", A, B, C)
 end
 
 ABC(A::T, B::T, C::T) where T <: Number = ABC{T}(A, B, C)
@@ -27,20 +27,26 @@ function Base.show(io::IO, equ::ABC)
 end
 
 
-function analyticA₁(x::Vector, equ::ABC)
+function analyticA₁(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
     equ.A * sin(x[3]) + equ.C * cos(x[2])
 end
 
-function analyticA₂(x::Vector, equ::ABC)
+function analyticA₂(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
     equ.B * sin(x[1]) + equ.A * cos(x[3])
 end
 
-function analyticA₃(x::Vector, equ::ABC)
+function analyticA₃(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
     equ.C * sin(x[2]) + equ.B * cos(x[1])
 end
 
-function analyticMetric(x::Vector, equ::ABC)
-    [1  0  0;
-     0  1  0;
-     0  0  1]
+function analyticMetric(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
+    Sym[1  0  0;
+        0  1  0;
+        0  0  1]
+end
+
+function analyticHcoeffs(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
+    Sym[1  0  0;
+        0  1  0;
+        0  0  1]
 end

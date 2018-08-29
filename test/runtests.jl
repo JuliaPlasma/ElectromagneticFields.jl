@@ -1,5 +1,5 @@
 
 using MagneticEquilibria
-using Base.Test
+using Test
 
 include("analytic.jl")

@@ -2,7 +2,7 @@
 using SymPy: N, Sym, diff, expand, solve, subs
 
 """
-Axisymmetric Solov'ev equilibra in (R,Z,phi) coordinates.
+Axisymmetric Solov'ev equilibra in (R/R₀,Z/R₀,phi) coordinates.
 Based on Cerfon & Freidberg, Physics of Plasmas 17, 032502, 2010.
 
 Parameters:
@@ -13,8 +13,8 @@ Parameters:
     δ:  triangularity
     a:  free constant, determined to match a given beta value
 """
-struct Solovev{T <: Number} <: AnalyticEquilibrium
-    const name::String = "SolovevEquilibrium"
+struct Solovev{T <: Number} <: AbstractSolovevEquilibrium
+    name::String
     R₀::T
     B₀::T
     ϵ::T
@@ -24,7 +24,7 @@ struct Solovev{T <: Number} <: AnalyticEquilibrium
     c::Vector{T}
 
     function Solovev{T}(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, a::T, c::Vector{T}) where T <: Number
-        new(R₀, B₀, ϵ, κ, δ, a, c)
+        new("SolovevEquilibrium", R₀, B₀, ϵ, κ, δ, a, c)
     end
 end
 
@@ -60,6 +60,10 @@ function Solovev(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, a::T) where T <: Number
 end
 
 
+SolovevITER = Solovev(6.2, 5.3, 0.32, 1.7, 0.33, -0.155)
+SolovevNSTX = Solovev(0.85, 0.3, 0.78, 2.0, 0.35, 1.0)
+
+
 function Base.show(io::IO, equ::Solovev)
     print(io, "Solovev Equilibrium with\n")
     print(io, "  R₀ = ", equ.R₀, "\n")
@@ -71,15 +75,7 @@ function Base.show(io::IO, equ::Solovev)
 end
 
 
-function analyticA₁(x::Vector, equ::Solovev)
-    + equ.B₀ * equ.R₀ * x[2] / x[1] / 2
-end
-
-function analyticA₂(x::Vector, equ::Solovev)
-    - equ.B₀ * equ.R₀ * log(x[1]) / 2
-end
-
-function analyticA₃(x::Vector, equ::Solovev)
+function analyticA₃(x::AbstractArray{T,1}, equ::Solovev) where {T <: Number}
     (ψ₀(x, equ.a) + equ.c[1] * ψ₁(x)
                   + equ.c[2] * ψ₂(x)
                   + equ.c[3] * ψ₃(x)
@@ -87,13 +83,6 @@ function analyticA₃(x::Vector, equ::Solovev)
                   + equ.c[5] * ψ₅(x)
                   + equ.c[6] * ψ₆(x)
                   + equ.c[7] * ψ₇(x) )
-end
-
-function analyticMetric(x::Vector, equ::Solovev)
-    R = x[1] * equ.R₀
-    [1  0  0;
-     0  1  0;
-     0  0  R^2]
 end
 
 

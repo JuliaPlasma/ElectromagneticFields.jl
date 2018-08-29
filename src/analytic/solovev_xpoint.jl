@@ -2,7 +2,7 @@
 using SymPy: N, Sym, diff, expand, solve, subs
 
 """
-Axisymmetric Solov'ev equilibra with X-point in (R,Z,phi) coordinates.
+Axisymmetric Solov'ev equilibra with X-point in (R/R₀,Z/R₀,phi) coordinates.
 Based on Cerfon & Freidberg, Physics of Plasmas 17, 032502, 2010.
 
 Parameters:
@@ -15,8 +15,8 @@ Parameters:
     xₛₑₚ: x position of the X point
     yₛₑₚ: y position of the X point
 """
-struct SolovevXpoint{T <: Number} <: AnalyticEquilibrium
-    const name::String = "SolovevXpointEquilibrium"
+struct SolovevXpoint{T <: Number} <: AbstractSolovevEquilibrium
+    name::String
     R₀::T
     B₀::T
     ϵ::T
@@ -28,7 +28,7 @@ struct SolovevXpoint{T <: Number} <: AnalyticEquilibrium
     c::Vector{T}
 
     function SolovevXpoint{T}(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, a::T, xₛₑₚ::T, yₛₑₚ::T, c::Vector{T}) where T <: Number
-        new(R₀, B₀, ϵ, κ, δ, a, xₛₑₚ, yₛₑₚ, c)
+        new("SolovevXpointEquilibrium", R₀, B₀, ϵ, κ, δ, a, xₛₑₚ, yₛₑₚ, c)
     end
 end
 
@@ -74,6 +74,10 @@ function SolovevXpoint(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, a::T, xₛₑₚ::
 end
 
 
+SolovevXpointITER = SolovevXpoint(6.2, 5.3, 0.32, 1.7, 0.33, -0.155, 0.88, -0.60)
+SolovevXpointNSTX = SolovevXpoint(0.85, 0.3, 0.78, 2.0, 0.35, -0.05, 0.70, -1.71)
+
+
 function Base.show(io::IO, equ::SolovevXpoint)
     print(io, "Solovev Xpoint Equilibrium with\n")
     print(io, "  R₀ = ", equ.R₀, "\n")
@@ -81,19 +85,13 @@ function Base.show(io::IO, equ::SolovevXpoint)
     print(io, "  ϵ  = ", equ.ϵ, "\n")
     print(io, "  κ  = ", equ.κ, "\n")
     print(io, "  δ  = ", equ.δ, "\n")
-    print(io, "  a  = ", equ.a)
+    print(io, "  a  = ", equ.a, "\n")
+    print(io, "  xₛₑₚ  = ", equ.xₛₑₚ, "\n")
+    print(io, "  yₛₑₚ  = ", equ.yₛₑₚ)
 end
 
 
-function analyticA₁(x::Vector, equ::SolovevXpoint)
-    + equ.B₀ * equ.R₀ * x[2] / x[1] / 2
-end
-
-function analyticA₂(x::Vector, equ::SolovevXpoint)
-    - equ.B₀ * equ.R₀ * log(x[1]) / 2
-end
-
-function analyticA₃(x::Vector, equ::SolovevXpoint)
+function analyticA₃(x::AbstractArray{T,1}, equ::SolovevXpoint) where {T <: Number}
     (ψ₀(x, equ.a) + equ.c[1]  * ψ₁(x)
                   + equ.c[2]  * ψ₂(x)
                   + equ.c[3]  * ψ₃(x)
@@ -106,13 +104,6 @@ function analyticA₃(x::Vector, equ::SolovevXpoint)
                   + equ.c[10] * ψ₁₀(x)
                   + equ.c[11] * ψ₁₁(x)
                   + equ.c[12] * ψ₁₂(x) )
-end
-
-function analyticMetric(x::Vector, equ::SolovevXpoint)
-    R = x[1] * equ.R₀
-    [1  0  0;
-     0  1  0;
-     0  0  R^2]
 end
 
 
