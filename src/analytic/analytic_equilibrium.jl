@@ -1,6 +1,9 @@
 
 using SymPy
 
+simplify(x::Real) = x
+simplify(x::SymPy.Sym) = x
+
 abstract type AnalyticEquilibrium <: MagneticEquilibrium end
 abstract type AnalyticPerturbation <: MagneticEquilibrium end
 
