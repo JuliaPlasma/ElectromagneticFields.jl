@@ -1,7 +1,7 @@
 module MagneticEquilibria
 
     using LinearAlgebra
-    
+
     export MagneticEquilibrium
 
     include("equilibrium.jl")
@@ -11,11 +11,13 @@ module MagneticEquilibria
 
     include("analytic/analytic_equilibrium.jl")
 
-    export ABC, AxisymmetricTokamakCylindrical, AxisymmetricTokamakToroidal,
-           Solovev, SolovevXpoint, SymmetricQuadratic, ThetaPinch
+    export ABC, AxisymmetricTokamakCartesian, AxisymmetricTokamakCylindrical,
+           AxisymmetricTokamakToroidal,
+           Solovev, SolovevXpoint, SolovevQuadratic, SymmetricQuadratic, ThetaPinch
     export SolovevITER, SolovevNSTX, SolovevXpointITER, SolovevXpointNSTX
     export analyticA₁, analyticA₂, analyticA₃, analyticMetric, analyticHcoeffs
-    export @axisymmetric_tokamak_equilibrium_cylindrical,
+    export @axisymmetric_tokamak_equilibrium_cartesian,
+           @axisymmetric_tokamak_equilibrium_cylindrical,
            @axisymmetric_tokamak_equilibrium_toroidal,
            @solovev_equilibrium,
            @solovev_xpoint_equilibrium,
@@ -23,11 +25,13 @@ module MagneticEquilibria
            @theta_pinch_equilibrium
 
     include("analytic/abc.jl")
+    include("analytic/axisymmetric_tokamak_cartesian.jl")
     include("analytic/axisymmetric_tokamak_cylindrical.jl")
     include("analytic/axisymmetric_tokamak_toroidal.jl")
     include("analytic/solovev_common.jl")
     include("analytic/solovev_psi.jl")
     include("analytic/solovev.jl")
+    include("analytic/solovev_quadratic.jl")
     include("analytic/solovev_xpoint.jl")
     include("analytic/symmetric_quadratic.jl")
     include("analytic/theta_pinch.jl")
