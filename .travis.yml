@@ -16,3 +16,5 @@ notifications:
   email: false
 codecov: true
 coveralls: true
+after_script:
+  - bash ./docs/travis.sh
