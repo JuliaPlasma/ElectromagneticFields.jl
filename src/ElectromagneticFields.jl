@@ -1,4 +1,4 @@
-module MagneticEquilibria
+module ElectromagneticFields
 
     using LinearAlgebra
 
