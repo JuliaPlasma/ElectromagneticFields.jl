@@ -28,53 +28,62 @@ function Base.show(io::IO, equ::AxisymmetricTokamakCylindrical)
 end
 
 
-function r²(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
-    (x[1] - equ.R₀)^2 + x[2]^2
+@inline function X(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
+    R(x,equ) * cos(ϕ(x,equ))
 end
 
-function r(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
-    sqrt(r²(x, equ))
+@inline function Y(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
+    R(x,equ) * sin(ϕ(x,equ))
 end
 
-function θ(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
-    atan2(x[2], x[1] - equ.R₀)
-end
-
-function R(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
-    x[1]
-end
-
-function Z(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
+@inline function Z(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
     x[2]
 end
 
-function ϕ(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
+@inline function R(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
+    x[1]
+end
+
+@inline function r(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
+    sqrt(r²(x, equ))
+end
+
+@inline function r²(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
+    (R(x,equ) - equ.R₀)^2 + Z(x,equ)^2
+end
+
+@inline function θ(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
+    atan2(Z(x,equ), R(x,equ) - equ.R₀)
+end
+
+@inline function ϕ(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
     x[3]
 end
 
 
-function analyticA₁(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
-    + 0.5 * equ.B₀ * equ.R₀ * x[2] / x[1]
+@inline function A₁(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
+    + equ.B₀ * equ.R₀ * Z(x,equ) / R(x,equ) / 2
 end
 
-function analyticA₂(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
-    - 0.5 * equ.B₀ * equ.R₀ * log(x[1] / equ.R₀)
+@inline function A₂(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
+    - equ.B₀ * equ.R₀ * log(R(x,equ) / equ.R₀) / 2
 end
 
-function analyticA₃(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
-    - 0.5 * equ.B₀ * r²(x, equ) / (equ.q * x[1])
+@inline function A₃(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
+    - equ.B₀ * r²(x,equ) / equ.q / 2
 end
 
-function analyticMetric(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
-    [1  0  0;
-     0  1  0;
-     0  0  x[1]^2]
+
+@inline function g₁₁(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
+    one(T)
 end
 
-function analyticHcoeffs(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
-    [1  0  0;
-     0  1  0;
-     0  0  x[1]]
+@inline function g₂₂(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
+    one(T)
+end
+
+@inline function g₃₃(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
+    R(x, equ)^2
 end
 
 

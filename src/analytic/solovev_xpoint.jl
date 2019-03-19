@@ -91,7 +91,7 @@ function Base.show(io::IO, equ::SolovevXpoint)
 end
 
 
-function analyticA₃(x::AbstractArray{T,1}, equ::SolovevXpoint) where {T <: Number}
+@inline function A₃(x::AbstractArray{T,1}, equ::SolovevXpoint) where {T <: Number}
     (ψ₀(x, equ.a) + equ.c[1]  * ψ₁(x)
                   + equ.c[2]  * ψ₂(x)
                   + equ.c[3]  * ψ₃(x)

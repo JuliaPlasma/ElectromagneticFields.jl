@@ -27,26 +27,27 @@ function Base.show(io::IO, equ::ABC)
 end
 
 
-function analyticA₁(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
+@inline function A₁(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
     equ.A * sin(x[3]) + equ.C * cos(x[2])
 end
 
-function analyticA₂(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
+@inline function A₂(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
     equ.B * sin(x[1]) + equ.A * cos(x[3])
 end
 
-function analyticA₃(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
+@inline function A₃(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
     equ.C * sin(x[2]) + equ.B * cos(x[1])
 end
 
-function analyticMetric(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
-    Sym[1  0  0;
-        0  1  0;
-        0  0  1]
+
+@inline function g₁₁(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
+    one(T)
 end
 
-function analyticHcoeffs(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
-    Sym[1  0  0;
-        0  1  0;
-        0  0  1]
+@inline function g₂₂(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
+    one(T)
+end
+
+@inline function g₃₃(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
+    one(T)
 end

@@ -2,77 +2,74 @@
 θ-pinch equilibrium in (x,y,z) coordinates.
 
 Parameters:
-    R₀: position of magnetic axis
     B₀: B-field at magnetic axis
 """
 struct ThetaPinch{T <: Number} <: AnalyticEquilibrium
     name::String
-    R₀::T
     B₀::T
 
-    function ThetaPinch{T}(R₀::T, B₀::T) where T <: Number
-        new("ThetaPinchEquilibrium", R₀, B₀)
+    function ThetaPinch{T}(B₀::T) where T <: Number
+        new("ThetaPinchEquilibrium", B₀)
     end
 end
 
-ThetaPinch(R₀::T=0.0, B₀::T=1.0) where T <: Number = ThetaPinch{T}(R₀, B₀)
+ThetaPinch(B₀::T=1.0) where T <: Number = ThetaPinch{T}(B₀)
 
 
 function Base.show(io::IO, equ::ThetaPinch)
     print(io, "θ-Pinch Equilibrium in (x,y,z) Coordinates with\n")
-    print(io, "  R₀ = ", equ.R₀, "\n")
     print(io, "  B₀ = ", equ.B₀)
 end
 
 
-function r²(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    (x[1] - equ.R₀)^2 + x[2]^2
-end
-
-function r(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    sqrt(r²(x, equ))
-end
-
-function θ(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    atan2(x[2], x[1] - equ.R₀)
-end
-
-function R(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
+@inline function X(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
     x[1]
 end
 
-function Z(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
+@inline function Y(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
     x[2]
 end
 
-function ϕ(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
+@inline function Z(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
     x[3]
-    # TODO ! wrong !
+end
+
+@inline function r(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
+    sqrt(r²(x,equ))
+end
+
+@inline function r²(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
+    X(x,equ)^2 + Y(x,equ)^2
+end
+
+@inline function θ(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
+    atan2(Y(x,equ), X(x,equ))
 end
 
 
-function analyticA₁(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    - equ.B₀ * x[2] / 2
+@inline function A₁(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
+    - equ.B₀ * Y(x,equ) / 2
 end
 
-function analyticA₂(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    + equ.B₀ * x[1] / 2
+@inline function A₂(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
+    + equ.B₀ * X(x,equ) / 2
 end
 
-function analyticA₃(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
+@inline function A₃(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
     zero(eltype(x))
 end
 
-function analyticMetric(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    Sym[1  0  0;
-        0  1  0;
-        0  0  1]
+
+@inline function g₁₁(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
+    one(T)
 end
 
-function analyticHcoeffs(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    Sym[1  0  0;
-        0  1  0;
-        0  0  1]
+@inline function g₂₂(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
+    one(T)
+end
+
+@inline function g₃₃(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
+    one(T)
 end
 
 

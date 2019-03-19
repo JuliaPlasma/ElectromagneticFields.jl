@@ -27,40 +27,25 @@ function SolovevQuadratic(R₀::T, B₀::T, a::T, b::T) where T <: Number
 end
 
 
-function analyticA₁(x::AbstractArray{T,1}, equ::SolovevQuadratic) where {T <: Number}
-    zero(T)
-end
-
-function analyticA₂(x::AbstractArray{T,1}, equ::SolovevQuadratic) where {T <: Number}
-    zero(T)
-end
-
-function analyticA₃(x::AbstractArray{T,1}, equ::SolovevQuadratic) where {T <: Number}
-    - equ.a * x[1]^4 / 8 - equ.b * x[2]^2 / 2
-end
-
-
-function analyticMetric(x::AbstractArray{T,1}, equ::SolovevQuadratic) where {T <: Number}
-    R = x[1]
-    [1  0  0;
-     0  1  0;
-     0  0  R^2]
-end
-
-function analyticHcoeffs(x::AbstractArray{T,1}, equ::SolovevQuadratic) where {T <: Number}
-    R = x[1]
-    [1  0  0;
-     0  1  0;
-     0  0  R]
-end
-
-
 function Base.show(io::IO, equ::SolovevQuadratic)
     print(io, "Quadratic Solovev Equilibrium with\n")
     print(io, "  R₀ = ", equ.R₀, "\n")
     print(io, "  B₀ = ", equ.B₀, "\n")
     print(io, "  a  = ", equ.a, "\n")
     print(io, "  b  = ", equ.b)
+end
+
+
+@inline function A₁(x::AbstractArray{T,1}, equ::SolovevQuadratic) where {T <: Number}
+    zero(T)
+end
+
+@inline function A₂(x::AbstractArray{T,1}, equ::SolovevQuadratic) where {T <: Number}
+    zero(T)
+end
+
+@inline function A₃(x::AbstractArray{T,1}, equ::SolovevQuadratic) where {T <: Number}
+    - equ.a * x[1]^4 / 8 - equ.b * x[2]^2 / 2
 end
 
 

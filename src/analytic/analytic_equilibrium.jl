@@ -1,4 +1,5 @@
 
+using Combinatorics
 using SymPy
 
 simplify(x::Real) = x
@@ -7,11 +8,29 @@ simplify(x::SymPy.Sym) = x
 abstract type AnalyticEquilibrium <: MagneticEquilibrium end
 abstract type AnalyticPerturbation <: MagneticEquilibrium end
 
-analyticA₁(x::AbstractArray{T,1}, equ::ET) where {T,ET} = error("analyticA₁() not implemented for ", ET)
-analyticA₂(x::AbstractArray{T,1}, equ::ET) where {T,ET} = error("analyticA₂() not implemented for ", ET)
-analyticA₃(x::AbstractArray{T,1}, equ::ET) where {T,ET} = error("analyticA₃() not implemented for ", ET)
-analyticMetric(x::AbstractArray{T,1}, equ::ET) where {T,ET} = error("analyticMetric() not implemented for ", ET)
-analyticHcoeffs(x::AbstractArray{T,1}, equ::ET) where {T,ET} = error("analyticHcoeffs() not implemented for ", ET)
+A₁(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
+A₂(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
+A₃(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
+
+g₁₁(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
+g₁₂(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
+g₁₃(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
+g₂₁(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
+g₂₂(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
+g₂₃(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
+g₃₁(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
+g₃₂(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
+g₃₃(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
+
+function A(x, equ)
+    [A₁(x,equ), A₂(x,equ), A₃(x,equ)]
+end
+
+function g(x, equ)
+    [g₁₁(x,equ)  g₁₂(x,equ)  g₁₃(x,equ);
+     g₂₁(x,equ)  g₂₂(x,equ)  g₂₃(x,equ);
+     g₃₁(x,equ)  g₃₂(x,equ)  g₃₃(x,equ);]
+end
 
 
 struct ZeroPerturbation <: AnalyticPerturbation
@@ -19,9 +38,33 @@ struct ZeroPerturbation <: AnalyticPerturbation
     ZeroPerturbation() = new("ZeroPerturbation")
 end
 
-analyticA₁(x::AbstractArray{T,1}, pert::ZeroPerturbation) where {T} = zero(T)
-analyticA₂(x::AbstractArray{T,1}, pert::ZeroPerturbation) where {T} = zero(T)
-analyticA₃(x::AbstractArray{T,1}, pert::ZeroPerturbation) where {T} = zero(T)
+A₁(x::AbstractArray{T,1}, pert::ZeroPerturbation) where {T} = zero(T)
+A₂(x::AbstractArray{T,1}, pert::ZeroPerturbation) where {T} = zero(T)
+A₃(x::AbstractArray{T,1}, pert::ZeroPerturbation) where {T} = zero(T)
+
+
+"Returns the i-th component of the vector corresponding to the one-form α"
+function get_vector_component(α, g, i)
+    simplify(g[i,1] * α[1] + g[i,2] * α[2] + g[i,3] * α[3])
+end
+
+"Returns the m-th component of the one-form corresponding to the two-form β"
+function hodge²¹(β, g̅, J, m)
+    α = Sym(0)
+
+    for i in 1:3
+        for j in 1:3
+            for k in 1:3
+                for l in 1:3
+                    α += β[i,j] * g̅[i,k] * g̅[j,l] * levicivita([k,l,m])
+                end
+            end
+        end
+    end
+
+    return simplify(J*α)
+end
+
 
 
 """
@@ -36,69 +79,90 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     x = [x1, x2, x3]
 
     # obtain metric
-    g = analyticMetric(x, equ)
-    symprint("g", g, output, 2)
+    gmat = g(x, equ)
+    symprint("g", gmat, output, 2)
 
-    # compute metric coefficients for derivatives
-    h = [simplify(sqrt(g[i,i])) for i in 1:3]
-    symprint("h", h, output, 2)
+    # invert metric
+    ginv = inv(gmat)
+    for i in 1:3
+        for j in 1:3
+            ginv[i,j] = simplify(ginv[i,j])
+        end
+    end
+    symprint("g⁻¹", ginv, output, 2)
 
     # compute Jacobian
-    J = simplify(sqrt(det(g)))
+    J = simplify(sqrt(det(gmat)))
     symprint("J", J, output, 2)
 
     # obtain vector potential
-    A  = [analyticA₁(x, equ) + analyticA₁(x, pert),
-          analyticA₂(x, equ) + analyticA₂(x, pert),
-          analyticA₃(x, equ) + analyticA₃(x, pert)]
-    symprint("A", A, output, 2)
+    A¹ = A(x, equ) .+ A(x, pert)
+    symprint("A¹", A¹, output, 2)
+
+    # compute vector potential in contravariant coordinates
+    Avec = [get_vector_component(A¹, gmat, i) for i in 1:3]
+    symprint("Avec", Avec, output, 2)
 
     # compute Jacobian of vector potential A
-    DA = [simplify(diff(A[i], x[j])) for i in 1:3, j in 1:3]
+    DA = [simplify(diff(A¹[i], x[j])) for i in 1:3, j in 1:3]
     symprint("DA", DA, output, 2)
 
     # compute second derivative of vector potential A
-    DDA1 = [simplify(diff(diff(A[1], x[i]), x[j])) for i in 1:3, j in 1:3]
+    DDA1 = [simplify(diff(diff(A¹[1], x[i]), x[j])) for i in 1:3, j in 1:3]
     symprint("DDA1", DDA1, output, 2)
 
-    DDA2 = [simplify(diff(diff(A[2], x[i]), x[j])) for i in 1:3, j in 1:3]
+    DDA2 = [simplify(diff(diff(A¹[2], x[i]), x[j])) for i in 1:3, j in 1:3]
     symprint("DDA2", DDA2, output, 2)
 
-    DDA3 = [simplify(diff(diff(A[3], x[i]), x[j])) for i in 1:3, j in 1:3]
+    DDA3 = [simplify(diff(diff(A¹[3], x[i]), x[j])) for i in 1:3, j in 1:3]
     symprint("DDA3", DDA3, output, 2)
 
-    # compute magnetic field B = curl A
-    B  = [( simplify(diff(h[3] * A[3], x[2]) - diff(h[2] * A[2], x[3])) * h[1] / J ),
-          ( simplify(diff(h[1] * A[1], x[3]) - diff(h[3] * A[3], x[1])) * h[2] / J ),
-          ( simplify(diff(h[2] * A[2], x[1]) - diff(h[1] * A[1], x[2])) * h[3] / J )]
-    symprint("B", B, output, 2)
+    # compute components of magnetic field B
+    Bᶜ = [simplify(diff(A¹[3], x[2]) - diff(A¹[2], x[3])),
+          simplify(diff(A¹[1], x[3]) - diff(A¹[3], x[1])),
+          simplify(diff(A¹[2], x[1]) - diff(A¹[1], x[2]))]
+    symprint("Bᶜ", Bᶜ, output, 2)
+
+    # compute magnetic field two-form B²
+    B² = [ 0      -Bᶜ[3]    +Bᶜ[2];
+          +Bᶜ[3]   0        -Bᶜ[1];
+          -Bᶜ[2]   +Bᶜ[1]    0    ;] .* Rational(1,2)
+
+    # compute magnetic field one-form B¹ = ⋆B²
+    B¹ = [hodge²¹(B², ginv, J, i) for i in 1:3]
+
+    # compute magnetic field in contravariant coordinates
+    Bvec = [get_vector_component(B¹, gmat, i) for i in 1:3]
+    symprint("Bvec", Bvec, output, 2)
 
     # compute absolute value |B| of B
-    Babs = simplify( sqrt(B[1]^2 + B[2]^2 + B[3]^2) )
+    Babs = simplify( sqrt(B¹[1] * Bvec[1] + B¹[2] * Bvec[2] + B¹[3] * Bvec[3]) )
     symprint("|B|", Babs, output, 2)
 
-    # compute magnetic unit vector
-    b  = [simplify( B[1] / Babs ),
-          simplify( B[2] / Babs ),
-          simplify( B[3] / Babs )]
-    symprint("b", b, output, 2)
+    # compute magnetic unit one-form
+    b¹ = [simplify( B¹[i] / Babs ) for i in 1:3]
+    symprint("b¹", b¹, output, 2)
+
+    # compute unit magnetic field in contravariant coordinates
+    bvec = [get_vector_component(b¹, gmat, i) for i in 1:3]
+    symprint("bvec", bvec, output, 2)
 
     # compute Jacobian of magnetic field B
-    DB = [diff(B[i], x[j]) for i in 1:3, j in 1:3]
+    DB = [diff(B¹[i], x[j]) for i in 1:3, j in 1:3]
     symprint("DB", DB, output, 2)
 
     # compute Jacobian of magnetic unit vector b
-    Db = [diff(b[i], x[j]) for i in 1:3, j in 1:3]
+    Db = [diff(b¹[i], x[j]) for i in 1:3, j in 1:3]
     symprint("Db", Db, output, 2)
 
     # compute second derivative of magnetic unit vector b
-    DDb1 = [diff(diff(b[1], x[i]), x[j]) for i in 1:3, j in 1:3]
+    DDb1 = [diff(diff(b¹[1], x[i]), x[j]) for i in 1:3, j in 1:3]
     symprint("DDb1", DDb1, output, 2)
 
-    DDb2 = [diff(diff(b[2], x[i]), x[j]) for i in 1:3, j in 1:3]
+    DDb2 = [diff(diff(b¹[2], x[i]), x[j]) for i in 1:3, j in 1:3]
     symprint("DDb2", DDb2, output, 2)
 
-    DDb3 = [diff(diff(b[3], x[i]), x[j]) for i in 1:3, j in 1:3]
+    DDb3 = [diff(diff(b¹[3], x[i]), x[j]) for i in 1:3, j in 1:3]
     symprint("DDb3", DDb3, output, 2)
 
     # compute first derivatives of absolute value of magnetic field
@@ -113,21 +177,30 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     # collect all functions to generate code for
     functions = Dict{String,Any}()
     indices   = ["₁", "₂", "₃"]
+    indicesup = ["¹", "²", "³"]
 
     functions["J"] = J
     functions["B"] = Babs
 
     for i in 1:3
-        functions["h" * indices[i]] = h[i]
-        functions["A" * indices[i]] = A[i]
-        functions["B" * indices[i]] = B[i]
-        functions["b" * indices[i]] = b[i]
+        functions["A" * indices[i]] = A¹[i]
+        functions["B" * indices[i]] = B¹[i]
+        functions["b" * indices[i]] = b¹[i]
+
+        functions["A" * indicesup[i]] = Avec[i]
+        functions["B" * indicesup[i]] = Bvec[i]
+        functions["b" * indicesup[i]] = bvec[i]
+
         functions["dBdx" * indices[i]] = DBabs[i]
     end
 
     for i in 1:3
         for j in 1:3
-            functions["g"  * indices[i] * indices[j]] = g[i,j]
+            functions["g"  * indices[i]   * indices[j]]   = gmat[i,j]
+            functions["g"  * indicesup[i] * indicesup[j]] = ginv[i,j]
+
+            functions["B"  * indices[i]   * indices[j]]   = B²[i,j]
+
             functions["dA" * indices[i] * "dx" * indices[j]] = DA[i,j]
             functions["dB" * indices[i] * "dx" * indices[j]] = DB[i,j]
             functions["db" * indices[i] * "dx" * indices[j]] = Db[i,j]
