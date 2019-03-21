@@ -4,27 +4,27 @@ Axisymmetric tokamak equilibrium in (x,y,z) coordinates.
 Parameters:
     R₀: position of magnetic axis
     B₀: B-field at magnetic axis
-    q:  safety factor
+    q₀: safety factor at magnetic axis
 """
 struct AxisymmetricTokamakCartesian{T <: Number} <: AnalyticEquilibrium
     name::String
     R₀::T
     B₀::T
-    q::T
+    q₀::T
 
-    function AxisymmetricTokamakCartesian{T}(R₀::T, B₀::T, q::T) where T <: Number
-        new("AxisymmetricTokamakCartesianEquilibrium", R₀, B₀, q)
+    function AxisymmetricTokamakCartesian{T}(R₀::T, B₀::T, q₀::T) where T <: Number
+        new("AxisymmetricTokamakCartesianEquilibrium", R₀, B₀, q₀)
     end
 end
 
-AxisymmetricTokamakCartesian(R₀::T=1.0, B₀::T=1.0, q::T=2.0) where T <: Number = AxisymmetricTokamakCartesian{T}(R₀, B₀, q)
+AxisymmetricTokamakCartesian(R₀::T=1.0, B₀::T=1.0, q₀::T=2.0) where T <: Number = AxisymmetricTokamakCartesian{T}(R₀, B₀, q₀)
 
 
 function Base.show(io::IO, equ::AxisymmetricTokamakCartesian)
     print(io, "Axisymmetric Tokamak Equilibrium in (x,y,z) Coordinates with\n")
     print(io, "  R₀ = ", equ.R₀, "\n")
     print(io, "  B₀ = ", equ.B₀, "\n")
-    print(io, "  q  = ", equ.q)
+    print(io, "  q₀ = ", equ.q₀)
 end
 
 
@@ -70,7 +70,7 @@ end
 end
 
 @inline function A₃(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    - equ.B₀ * r²(x,equ) / equ.q / 2
+    - equ.B₀ * r²(x,equ) / equ.q₀ / 2
 end
 
 
@@ -87,6 +87,6 @@ end
 end
 
 
-macro axisymmetric_tokamak_equilibrium_cartesian(R₀, B₀, q)
-    generate_equilibrium_code(AxisymmetricTokamakCartesian(R₀, B₀, q); output=false)
+macro axisymmetric_tokamak_equilibrium_cartesian(R₀, B₀, q₀)
+    generate_equilibrium_code(AxisymmetricTokamakCartesian(R₀, B₀, q₀); output=false)
 end

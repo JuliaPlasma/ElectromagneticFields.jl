@@ -1,29 +1,28 @@
-
 """
 ABC equilibrium in (x,y,z) coordinates.
 
 Parameters:
-    A:
-    B:
-    C:
+    a:
+    b:
+    c:
 """
 struct ABC{T <: Number} <: AnalyticEquilibrium
     name::String
-    A::T
-    B::T
-    C::T
+    a::T
+    b::T
+    c::T
 
-    ABC{T}(A::T, B::T, C::T) where T <: Number = new("ABCEquilibrium", A, B, C)
+    ABC{T}(a::T, b::T, c::T) where T <: Number = new("ABCEquilibrium", a, b, c)
 end
 
-ABC(A::T, B::T, C::T) where T <: Number = ABC{T}(A, B, C)
+ABC(a::T, b::T, c::T) where T <: Number = ABC{T}(a, b, c)
 
 
 function Base.show(io::IO, equ::ABC)
     print(io, "ABC Equilibrium with\n")
-    print(io, "  A = ", equ.A, "\n")
-    print(io, "  B = ", equ.B, "\n")
-    print(io, "  C = ", equ.C)
+    print(io, "  A = ", equ.a, "\n")
+    print(io, "  B = ", equ.b, "\n")
+    print(io, "  C = ", equ.c)
 end
 
 
@@ -41,15 +40,15 @@ end
 
 
 @inline function A₁(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
-    equ.A * sin(x[3]) + equ.C * cos(x[2])
+    equ.a * sin(x[3]) + equ.c * cos(x[2])
 end
 
 @inline function A₂(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
-    equ.B * sin(x[1]) + equ.A * cos(x[3])
+    equ.b * sin(x[1]) + equ.a * cos(x[3])
 end
 
 @inline function A₃(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
-    equ.C * sin(x[2]) + equ.B * cos(x[1])
+    equ.c * sin(x[2]) + equ.b * cos(x[1])
 end
 
 
