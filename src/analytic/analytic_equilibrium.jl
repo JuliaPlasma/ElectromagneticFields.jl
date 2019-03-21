@@ -4,9 +4,18 @@ using SymPy
 
 simplify(x::Real) = x
 simplify(x::SymPy.Sym) = x
+atan2(y::SymPy.Sym, x::SymPy.Sym) = atan(y, x)
 
 abstract type AnalyticEquilibrium <: MagneticEquilibrium end
 abstract type AnalyticPerturbation <: MagneticEquilibrium end
+
+X(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("X() not implemented for ", ET)
+Y(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("Y() not implemented for ", ET)
+Z(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("Z() not implemented for ", ET)
+R(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("R() not implemented for ", ET)
+r(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("r() not implemented for ", ET)
+θ(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("θ() not implemented for ", ET)
+ϕ(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("ϕ() not implemented for ", ET)
 
 A₁(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
 A₂(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
@@ -178,6 +187,15 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     functions = Dict{String,Any}()
     indices   = ["₁", "₂", "₃"]
     indicesup = ["¹", "²", "³"]
+
+    functions["X"] = X(x, equ)
+    functions["Y"] = Y(x, equ)
+    functions["Z"] = Z(x, equ)
+
+    try functions["R"] = R(x, equ) catch end
+    try functions["r"] = r(x, equ) catch end
+    try functions["θ"] = θ(x, equ) catch end
+    try functions["ϕ"] = ϕ(x, equ) catch end
 
     functions["J"] = J
     functions["B"] = Babs

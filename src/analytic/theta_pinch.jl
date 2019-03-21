@@ -34,6 +34,10 @@ end
     x[3]
 end
 
+@inline function R(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
+    r(x,equ)
+end
+
 @inline function r(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
     sqrt(r²(x,equ))
 end
@@ -44,6 +48,10 @@ end
 
 @inline function θ(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
     atan2(Y(x,equ), X(x,equ))
+end
+
+@inline function ϕ(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
+    θ(x,equ)
 end
 
 

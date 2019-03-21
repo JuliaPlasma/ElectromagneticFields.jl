@@ -27,6 +27,19 @@ function Base.show(io::IO, equ::ABC)
 end
 
 
+@inline function X(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
+    x[1]
+end
+
+@inline function Y(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
+    x[2]
+end
+
+@inline function Z(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
+    x[3]
+end
+
+
 @inline function A₁(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
     equ.A * sin(x[3]) + equ.C * cos(x[2])
 end
