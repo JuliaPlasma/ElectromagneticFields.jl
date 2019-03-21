@@ -248,9 +248,25 @@ function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
         println()
     end
 
+    parameters = fieldnames(typeof(equ))
     functions = generate_equilibrium_functions(equ; output=output)
 
     equ_code = :(  )
+
+    # generate Julia code and export parameters
+    for param in parameters
+        if param != :name
+            value = getfield(equ, param)
+
+            p_code = quote
+                export $param
+                $param = $value
+            end
+
+            # append p_code to equ_code
+            push!(equ_code.args, p_code)
+        end
+    end
 
     # generate Julia code and export functions
     for (key, value) in functions
@@ -272,11 +288,11 @@ function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
 
         f_code = quote
             export $(esc(f_symb))
-            # function $(esc(f_symb))(x₁, x₂, x₃)
-            function $(esc(f_symb))(x1, x2, x3)
+            # @inline function $(esc(f_symb))(x₁, x₂, x₃)
+            @inline function $(esc(f_symb))(x1, x2, x3)
                 $f_body
             end
-            function $(esc(f_symb))(t::Number, x::Vector)
+            @inline function $(esc(f_symb))(t::Number, x::Vector)
                 $(esc(f_symb))(x[1],x[2],x[3])
             end
         end
@@ -300,7 +316,23 @@ function load_equilibrium(equ, pert=ZeroPerturbation(); target_module=Main, outp
         println()
     end
 
+    parameters = fieldnames(typeof(equ))
     functions = generate_equilibrium_functions(equ, pert; output=output)
+
+    # generate Julia code and export parameters
+    for param in parameters
+        if param != :name
+            value = getfield(equ, param)
+
+            p_code = quote
+                export $param
+                $param = $value
+            end
+
+            # append p_code to equ_code
+            Core.eval(target_module, p_code)
+        end
+    end
 
     # generate Julia code and export functions
     for (key, value) in functions
