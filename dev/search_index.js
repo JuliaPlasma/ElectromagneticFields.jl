@@ -45,7 +45,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Modules",
     "title": "ElectromagneticFields.ABC",
     "category": "type",
-    "text": "ABC equilibrium in (x,y,z) coordinates.\n\nParameters:     A:     B:     C:\n\n\n\n\n\n"
+    "text": "ABC equilibrium in (x,y,z) coordinates.\n\nParameters:     a:     b:     c:\n\n\n\n\n\n"
 },
 
 {
@@ -53,7 +53,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Modules",
     "title": "ElectromagneticFields.AxisymmetricTokamakCartesian",
     "category": "type",
-    "text": "Axisymmetric tokamak equilibrium in (x,y,z) coordinates.\n\nParameters:     R₀: position of magnetic axis     B₀: B-field at magnetic axis     q:  safety factor\n\n\n\n\n\n"
+    "text": "Axisymmetric tokamak equilibrium in (x,y,z) coordinates.\n\nParameters:     R₀: position of magnetic axis     B₀: B-field at magnetic axis     q₀: safety factor at magnetic axis\n\n\n\n\n\n"
 },
 
 {
@@ -61,7 +61,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Modules",
     "title": "ElectromagneticFields.AxisymmetricTokamakCylindrical",
     "category": "type",
-    "text": "Axisymmetric tokamak equilibrium in (R,Z,ϕ) coordinates.\n\nParameters:     R₀: position of magnetic axis     B₀: B-field at magnetic axis     q:  safety factor\n\n\n\n\n\n"
+    "text": "Axisymmetric tokamak equilibrium in (R,Z,ϕ) coordinates.\n\nParameters:     R₀: position of magnetic axis     B₀: B-field at magnetic axis     q₀: safety factor at magnetic axis\n\n\n\n\n\n"
 },
 
 {
@@ -69,7 +69,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Modules",
     "title": "ElectromagneticFields.AxisymmetricTokamakToroidal",
     "category": "type",
-    "text": "Axisymmetric tokamak equilibrium in (r,θ,ϕ) coordinates.\n\nParameters:     R₀: position of magnetic axis     B₀: B-field at magnetic axis     q:  safety factor\n\n\n\n\n\n"
+    "text": "Axisymmetric tokamak equilibrium in (r,θ,ϕ) coordinates.\n\nParameters:     R₀: position of magnetic axis     B₀: B-field at magnetic axis     q₀: safety factor at magnetic axis\n\n\n\n\n\n"
 },
 
 {
