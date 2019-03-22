@@ -38,7 +38,7 @@ equ9 = ABC(1., 0.5, 0.5)
 
 module AxisymmetricTokamakCartesianEquilibrium end
 module AxisymmetricTokamakCylindricalEquilibrium end
-module AxisymmetricTokamakEquilibrium end
+module AxisymmetricTokamakToroidalEquilibrium end
 module SolovevEquilibrium end
 module SolovevXpointEquilibrium end
 module SolovevQuadraticEquilibrium end
@@ -48,7 +48,7 @@ module ABCEquilibrium end
 
 load_equilibrium(equ1, target_module=AxisymmetricTokamakCartesianEquilibrium)
 load_equilibrium(equ2, target_module=AxisymmetricTokamakCylindricalEquilibrium)
-load_equilibrium(equ3, target_module=AxisymmetricTokamakEquilibrium)
+load_equilibrium(equ3, target_module=AxisymmetricTokamakToroidalEquilibrium)
 load_equilibrium(equ4, target_module=SolovevEquilibrium)
 load_equilibrium(equ5, target_module=SolovevXpointEquilibrium)
 load_equilibrium(equ6, target_module=SolovevQuadraticEquilibrium)
@@ -58,10 +58,27 @@ load_equilibrium(equ9, target_module=ABCEquilibrium)
 
 test_equilibrium(AxisymmetricTokamakCartesianEquilibrium)
 test_equilibrium(AxisymmetricTokamakCylindricalEquilibrium)
-test_equilibrium(AxisymmetricTokamakEquilibrium)
+test_equilibrium(AxisymmetricTokamakToroidalEquilibrium)
 test_equilibrium(SolovevEquilibrium)
 test_equilibrium(SolovevXpointEquilibrium)
 test_equilibrium(SolovevQuadraticEquilibrium)
 test_equilibrium(SymmetricQuadraticEquilibrium)
 test_equilibrium(ThetaPinchEquilibrium)
 test_equilibrium(ABCEquilibrium)
+
+
+
+function test_axisymmetric_tokamak_cylindrical_equilibrium(equ_mod, t=0., x=[1.5, 0.5, π])
+    @test equ_mod.B¹(t,x) ≈ - equ_mod.B₀ / equ_mod.q₀ * equ_mod.Z(t,x) / equ_mod.R(t,x)
+    @test equ_mod.B²(t,x) ≈ equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t,x) - equ_mod.R₀) / equ_mod.R(t,x)
+    @test equ_mod.B³(t,x) ≈ - equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t,x)^2
+end
+
+function test_axisymmetric_tokamak_toroidal_equilibrium(equ_mod, t=0., x=[0.5, π/10, π])
+    @test equ_mod.B¹(t,x) == zero(eltype(x))
+    @test equ_mod.B²(t,x) ≈ equ_mod.B₀ / equ_mod.q₀ / equ_mod.R(t,x)
+    @test equ_mod.B³(t,x) ≈ equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t,x)^2
+end
+
+test_axisymmetric_tokamak_cylindrical_equilibrium(AxisymmetricTokamakCylindricalEquilibrium)
+test_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidalEquilibrium)
