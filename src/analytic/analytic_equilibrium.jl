@@ -136,9 +136,10 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("Bᶜ", Bᶜ, output, 2)
 
     # compute magnetic field two-form B²
-    B² = [ 0      -Bᶜ[3]    +Bᶜ[2];
-          +Bᶜ[3]   0        -Bᶜ[1];
-          -Bᶜ[2]   +Bᶜ[1]    0    ;] .* Rational(1,2)
+    B² = [ 0      +Bᶜ[3]    -Bᶜ[2];
+          -Bᶜ[3]   0        +Bᶜ[1];
+          +Bᶜ[2]   -Bᶜ[1]    0    ] .* Rational(1,2)
+    symprint("B²", B², output, 2)
 
     # compute magnetic field one-form B¹ = ⋆B²
     B¹ = [hodge²¹(B², ginv, J, i) for i in 1:3]
