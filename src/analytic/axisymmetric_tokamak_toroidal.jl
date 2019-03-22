@@ -45,7 +45,7 @@ end
 end
 
 @inline function R²(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
-    expand( R(x,equ)^2 )
+    R(x,equ)^2
 end
 
 @inline function r(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
@@ -70,7 +70,7 @@ end
 end
 
 @inline function A₂(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
-    equ.B₀ * equ.R₀ / cos(θ(x,equ))^2 * ( r(x,equ) * cos(θ(x,equ)) - equ.R₀ * log(1 + r(x,equ) * cos(θ(x,equ)) / equ.R₀) )
+    equ.B₀ * equ.R₀ / cos(θ(x,equ))^2 * ( r(x,equ) * cos(θ(x,equ)) - equ.R₀ * log(R(x,equ) / equ.R₀) )
 end
 
 @inline function A₃(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
