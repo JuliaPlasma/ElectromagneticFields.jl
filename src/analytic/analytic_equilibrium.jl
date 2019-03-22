@@ -71,7 +71,7 @@ function hodge²¹(β, g̅, J, m)
         end
     end
 
-    return simplify(J*α)
+    return simplify(factor(J*α))
 end
 
 
@@ -95,13 +95,16 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     ginv = inv(gmat)
     for i in 1:3
         for j in 1:3
-            ginv[i,j] = simplify(ginv[i,j])
+            ginv[i,j] = simplify(factor(ginv[i,j]))
         end
     end
     symprint("g⁻¹", ginv, output, 2)
 
     # compute Jacobian
-    J = simplify(sqrt(det(gmat)))
+    J² = factor(det(gmat))
+    symprint("J²", J², output, 2)
+
+    J = sqrt(J²)
     symprint("J", J, output, 2)
 
     # obtain vector potential
@@ -114,22 +117,22 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
 
     # compute Jacobian of vector potential A
     DA = [simplify(diff(A¹[i], x[j])) for i in 1:3, j in 1:3]
-    symprint("DA", DA, output, 2)
+    symprint("DA", DA, output, 3)
 
     # compute second derivative of vector potential A
-    DDA1 = [simplify(diff(diff(A¹[1], x[i]), x[j])) for i in 1:3, j in 1:3]
-    symprint("DDA1", DDA1, output, 2)
+    DDA1 = [simplify(factor(diff(diff(A¹[1], x[i]), x[j]))) for i in 1:3, j in 1:3]
+    symprint("DDA1", DDA1, output, 3)
 
-    DDA2 = [simplify(diff(diff(A¹[2], x[i]), x[j])) for i in 1:3, j in 1:3]
-    symprint("DDA2", DDA2, output, 2)
+    DDA2 = [simplify(factor(diff(diff(A¹[2], x[i]), x[j]))) for i in 1:3, j in 1:3]
+    symprint("DDA2", DDA2, output, 3)
 
-    DDA3 = [simplify(diff(diff(A¹[3], x[i]), x[j])) for i in 1:3, j in 1:3]
-    symprint("DDA3", DDA3, output, 2)
+    DDA3 = [simplify(factor(diff(diff(A¹[3], x[i]), x[j]))) for i in 1:3, j in 1:3]
+    symprint("DDA3", DDA3, output, 3)
 
     # compute components of magnetic field B
-    Bᶜ = [simplify(diff(A¹[3], x[2]) - diff(A¹[2], x[3])),
-          simplify(diff(A¹[1], x[3]) - diff(A¹[3], x[1])),
-          simplify(diff(A¹[2], x[1]) - diff(A¹[1], x[2]))]
+    Bᶜ = [simplify(factor(diff(A¹[3], x[2]) - diff(A¹[2], x[3]))),
+          simplify(factor(diff(A¹[1], x[3]) - diff(A¹[3], x[1]))),
+          simplify(factor(diff(A¹[2], x[1]) - diff(A¹[1], x[2])))]
     symprint("Bᶜ", Bᶜ, output, 2)
 
     # compute magnetic field two-form B²
@@ -139,17 +142,18 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
 
     # compute magnetic field one-form B¹ = ⋆B²
     B¹ = [hodge²¹(B², ginv, J, i) for i in 1:3]
+    symprint("B¹", B¹, output, 2)
 
     # compute magnetic field in contravariant coordinates
     Bvec = [get_vector_component(B¹, ginv, i) for i in 1:3]
     symprint("Bvec", Bvec, output, 2)
 
     # compute absolute value |B| of B
-    Babs = simplify( sqrt(B¹[1] * Bvec[1] + B¹[2] * Bvec[2] + B¹[3] * Bvec[3]) )
+    Babs = simplify(sqrt(factor(B¹[1] * Bvec[1] + B¹[2] * Bvec[2] + B¹[3] * Bvec[3])))
     symprint("|B|", Babs, output, 2)
 
     # compute magnetic unit one-form
-    b¹ = [simplify( B¹[i] / Babs ) for i in 1:3]
+    b¹ = [simplify(factor( B¹[i] / Babs )) for i in 1:3]
     symprint("b¹", b¹, output, 2)
 
     # compute unit magnetic field in contravariant coordinates
@@ -158,29 +162,29 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
 
     # compute Jacobian of magnetic field B
     DB = [diff(B¹[i], x[j]) for i in 1:3, j in 1:3]
-    symprint("DB", DB, output, 2)
+    symprint("DB", DB, output, 3)
 
     # compute Jacobian of magnetic unit vector b
     Db = [diff(b¹[i], x[j]) for i in 1:3, j in 1:3]
-    symprint("Db", Db, output, 2)
+    symprint("Db", Db, output, 3)
 
     # compute second derivative of magnetic unit vector b
     DDb1 = [diff(diff(b¹[1], x[i]), x[j]) for i in 1:3, j in 1:3]
-    symprint("DDb1", DDb1, output, 2)
+    symprint("DDb1", DDb1, output, 3)
 
     DDb2 = [diff(diff(b¹[2], x[i]), x[j]) for i in 1:3, j in 1:3]
-    symprint("DDb2", DDb2, output, 2)
+    symprint("DDb2", DDb2, output, 3)
 
     DDb3 = [diff(diff(b¹[3], x[i]), x[j]) for i in 1:3, j in 1:3]
-    symprint("DDb3", DDb3, output, 2)
+    symprint("DDb3", DDb3, output, 3)
 
     # compute first derivatives of absolute value of magnetic field
     DBabs = [diff(Babs, x[j]) for j in 1:3]
-    symprint("D|B|", DBabs, output, 2)
+    symprint("D|B|", DBabs, output, 3)
 
     # compute second derivatives of absolute value of magnetic field
     DDBabs = [diff(diff(Babs, x[i]), x[j]) for i in 1:3, j in 1:3]
-    symprint("DD|B|", DDBabs, output, 2)
+    symprint("DD|B|", DDBabs, output, 3)
 
 
     # collect all functions to generate code for
