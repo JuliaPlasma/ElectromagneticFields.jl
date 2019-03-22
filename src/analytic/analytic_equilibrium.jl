@@ -53,8 +53,8 @@ A₃(x::AbstractArray{T,1}, pert::ZeroPerturbation) where {T} = zero(T)
 
 
 "Returns the i-th component of the vector corresponding to the one-form α"
-function get_vector_component(α, g, i)
-    simplify(g[i,1] * α[1] + g[i,2] * α[2] + g[i,3] * α[3])
+function get_vector_component(α, g̅, i)
+    simplify(factor(g̅[i,1] * α[1] + g̅[i,2] * α[2] + g̅[i,3] * α[3]))
 end
 
 "Returns the m-th component of the one-form corresponding to the two-form β"
@@ -109,7 +109,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("A¹", A¹, output, 2)
 
     # compute vector potential in contravariant coordinates
-    Avec = [get_vector_component(A¹, gmat, i) for i in 1:3]
+    Avec = [get_vector_component(A¹, ginv, i) for i in 1:3]
     symprint("Avec", Avec, output, 2)
 
     # compute Jacobian of vector potential A
@@ -141,7 +141,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     B¹ = [hodge²¹(B², ginv, J, i) for i in 1:3]
 
     # compute magnetic field in contravariant coordinates
-    Bvec = [get_vector_component(B¹, gmat, i) for i in 1:3]
+    Bvec = [get_vector_component(B¹, ginv, i) for i in 1:3]
     symprint("Bvec", Bvec, output, 2)
 
     # compute absolute value |B| of B
@@ -153,7 +153,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("b¹", b¹, output, 2)
 
     # compute unit magnetic field in contravariant coordinates
-    bvec = [get_vector_component(b¹, gmat, i) for i in 1:3]
+    bvec = [get_vector_component(b¹, ginv, i) for i in 1:3]
     symprint("bvec", bvec, output, 2)
 
     # compute Jacobian of magnetic field B
