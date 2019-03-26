@@ -45,7 +45,7 @@ end
 end
 
 @inline function A₃(x::AbstractArray{T,1}, equ::SolovevQuadratic) where {T <: Number}
-    - equ.a * x[1]^4 / 8 - equ.b * x[2]^2 / 2
+    - equ.a * R(x,equ)^4 / 8 - equ.b * Z(x,equ)^2 / 2
 end
 
 
