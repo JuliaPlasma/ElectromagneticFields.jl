@@ -55,6 +55,11 @@ end
 end
 
 
+@inline function J(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
+    one(T)
+end
+
+
 @inline function A₁(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
     - equ.B₀ * Y(x,equ) / 2
 end

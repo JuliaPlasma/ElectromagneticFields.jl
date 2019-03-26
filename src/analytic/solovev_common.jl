@@ -36,6 +36,11 @@ end
 end
 
 
+@inline function J(x::AbstractArray{T,1}, equ::AbstractSolovevEquilibrium) where {T <: Number}
+    R(x,equ)
+end
+
+
 @inline function A₁(x::AbstractArray{T,1}, equ::AbstractSolovevEquilibrium) where {T <: Number}
     + equ.B₀ * equ.R₀ * x[2] / x[1] / 2
 end

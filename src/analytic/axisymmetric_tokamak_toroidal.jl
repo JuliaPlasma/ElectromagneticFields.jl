@@ -65,6 +65,11 @@ end
 end
 
 
+@inline function J(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
+    r(x,equ) * R(x,equ)
+end
+
+
 @inline function A₁(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
     zero(T)
 end

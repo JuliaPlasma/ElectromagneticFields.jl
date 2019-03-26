@@ -17,6 +17,8 @@ r(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("
 θ(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("θ() not implemented for ", ET)
 ϕ(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("ϕ() not implemented for ", ET)
 
+J(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("J() not implemented for ", ET)
+
 A₁(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
 A₂(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
 A₃(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
@@ -98,12 +100,13 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     end
     symprint("g⁻¹", ginv, output, 2)
 
-    # compute Jacobian
-    J² = factor(det(gmat))
-    symprint("J²", J², output, 2)
+    # compute Jacobian determinant
+    # Jdet² = factor(det(gmat))
+    # symprint("J²", Jdet², output, 2)
 
-    J = sqrt(J²)
-    symprint("J", J, output, 2)
+    # J = sqrt(J²)
+    Jdet = J(x, equ)
+    symprint("J", Jdet, output, 2)
 
     # obtain vector potential
     A¹ = A(x, equ) .+ A(x, pert)
@@ -140,7 +143,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("B²", B², output, 2)
 
     # compute magnetic field one-form B¹ = ⋆B²
-    B¹ = [hodge²¹(B², ginv, J, i) for i in 1:3]
+    B¹ = [hodge²¹(B², ginv, Jdet, i) for i in 1:3]
     symprint("B¹", B¹, output, 2)
 
     # compute magnetic field in contravariant coordinates
@@ -200,7 +203,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     try functions["θ"] = θ(x, equ) catch end
     try functions["ϕ"] = ϕ(x, equ) catch end
 
-    functions["J"] = J
+    functions["J"] = Jdet
     functions["B"] = Babs
 
     for i in 1:3

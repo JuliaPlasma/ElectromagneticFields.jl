@@ -61,6 +61,11 @@ end
 end
 
 
+@inline function J(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
+    R(x,equ)
+end
+
+
 @inline function A₁(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
     + equ.B₀ * equ.R₀ * Z(x,equ) / R(x,equ) / 2
 end

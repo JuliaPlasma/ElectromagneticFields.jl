@@ -61,6 +61,11 @@ end
 end
 
 
+@inline function J(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
+    one(T)
+end
+
+
 @inline function A₁(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
     - equ.B₀ * x[2] * (2 + x[1]^2 + x[2]^2) / 4
 end
