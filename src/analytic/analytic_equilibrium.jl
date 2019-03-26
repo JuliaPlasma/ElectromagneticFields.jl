@@ -314,61 +314,8 @@ end
 Evaluate functions for evaluating analytic equilibria.
 """
 function load_equilibrium(equ, pert=ZeroPerturbation(); target_module=Main, output=0)
-
-    if output ≥ 1
-        println()
-        println(equ)
-        println()
-    end
-
-    parameters = fieldnames(typeof(equ))
-    functions = generate_equilibrium_functions(equ, pert; output=output)
-
-    # generate Julia code and export parameters
-    for param in parameters
-        if param != :name
-            value = getfield(equ, param)
-
-            p_code = quote
-                export $param
-                $param = $value
-            end
-
-            # append p_code to equ_code
-            Core.eval(target_module, p_code)
-        end
-    end
-
-    # generate Julia code and export functions
-    for (key, value) in functions
-        f_symb = Symbol(key)
-        f_expr = value
-
-        output ≥ 1 ? println("Generating function ", key) : nothing
-
-        f_str  = sympy_meth(:julia_code, f_expr)
-        f_str  = replace(f_str, ".+" => " .+ ")
-        f_str  = replace(f_str, ".-" => " .- ")
-        f_str  = replace(f_str, ".*" => " .* ")
-        f_str  = replace(f_str, "./" => " ./ ")
-        f_str  = replace(f_str, ".^" => " .^ ")
-        f_body = Meta.parse(f_str)
-        # f_body = Meta.parse(sympy_meth(:julia_code, f_expr))
-
-        output ≥ 2 ? println("   ", f_body) : nothing
-
-        f_code = quote
-            export $f_symb
-            function $f_symb(x₁, x₂, x₃)
-                $f_body
-            end
-            function $f_symb(t::Number, x::AbstractArray{T,1}) where {T <: Number}
-                $f_symb(x[1],x[2],x[3])
-            end
-        end
-
-        Core.eval(target_module, f_code)
-    end
+    equ_code = generate_equilibrium_code(equ, pert; output=output)
+    Core.eval(target_module, equ_code)
 end
 
 
