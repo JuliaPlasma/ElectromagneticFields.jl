@@ -104,7 +104,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     # Jdet² = factor(det(gmat))
     # symprint("J²", Jdet², output, 2)
 
-    # J = sqrt(J²)
+    # Jdet = sqrt(Jdet²)
     Jdet = J(x, equ)
     symprint("J", Jdet, output, 2)
 
@@ -255,7 +255,7 @@ function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
     end
 
     parameters = fieldnames(typeof(equ))
-    functions = generate_equilibrium_functions(equ; output=output)
+    functions = generate_equilibrium_functions(equ, pert; output=output)
 
     equ_code = :(  )
 
@@ -289,16 +289,16 @@ function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
         f_str  = replace(f_str, "./" => " ./ ")
         f_str  = replace(f_str, ".^" => " .^ ")
         f_body = Meta.parse(f_str)
-        # f_body = Meta.parse(sympy_meth(:julia_code, f_expr))
-        output ? println("   ", f_body) : nothing
+
+        output ≥ 2 ? println("   ", f_body) : nothing
 
         f_code = quote
-            export $(esc(f_symb))
-            @inline function $(esc(f_symb))(x₁, x₂, x₃)
+            export $f_symb
+            function $f_symb(x₁, x₂, x₃)
                 $f_body
             end
-            @inline function $(esc(f_symb))(t::Number, x::Vector)
-                $(esc(f_symb))(x[1],x[2],x[3])
+            function $f_symb(t::Number, x::AbstractArray{T,1}) where {T <: Number}
+                $f_symb(x[1],x[2],x[3])
             end
         end
 
