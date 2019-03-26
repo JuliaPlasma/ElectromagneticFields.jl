@@ -82,10 +82,8 @@ Generate functions for evaluating analytic equilibria.
 function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::AnalyticPerturbation; output=0)
     # define symbols for coordinates x = (x₁, x₂, x₃),
     # positive=true is set so that sqrt(x^2) does not become |x^2|
-    # x₁, x₂, x₃ = symbols("x₁, x₂, x₃", real=true, positive=true)
-    # x = [x₁, x₂, x₃]
-    x1, x2, x3 = symbols("x1, x2, x3", real=true, positive=true)
-    x = [x1, x2, x3]
+    x₁, x₂, x₃ = symbols("x₁, x₂, x₃", real=true, positive=true)
+    x = [x₁, x₂, x₃]
 
     # obtain metric
     gmat = g(x, equ)
@@ -293,8 +291,7 @@ function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
 
         f_code = quote
             export $(esc(f_symb))
-            # @inline function $(esc(f_symb))(x₁, x₂, x₃)
-            @inline function $(esc(f_symb))(x1, x2, x3)
+            @inline function $(esc(f_symb))(x₁, x₂, x₃)
                 $f_body
             end
             @inline function $(esc(f_symb))(t::Number, x::Vector)
@@ -359,8 +356,7 @@ function load_equilibrium(equ, pert=ZeroPerturbation(); target_module=Main, outp
 
         f_code = quote
             export $f_symb
-            # function $f_symb(x₁, x₂, x₃)
-            function $f_symb(x1, x2, x3)
+            function $f_symb(x₁, x₂, x₃)
                 $f_body
             end
             function $f_symb(t::Number, x::AbstractArray{T,1}) where {T <: Number}
