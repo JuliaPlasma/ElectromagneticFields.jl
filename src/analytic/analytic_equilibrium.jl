@@ -296,10 +296,10 @@ function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
 
         f_code = quote
             export $f_symb
-            function $f_symb(x₁, x₂, x₃)
+            @inline function $f_symb(x₁, x₂, x₃)
                 $f_body
             end
-            function $f_symb(t::Number, x::AbstractArray{T,1}) where {T <: Number}
+            @inline function $f_symb(t::Number, x::AbstractArray{T,1}) where {T <: Number}
                 $f_symb(x[1],x[2],x[3])
             end
         end

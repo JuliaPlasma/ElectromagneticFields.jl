@@ -75,7 +75,7 @@ function Base.show(io::IO, equ::Solovev)
 end
 
 
-@inline function A₃(x::AbstractArray{T,1}, equ::Solovev) where {T <: Number}
+function A₃(x::AbstractArray{T,1}, equ::Solovev) where {T <: Number}
     (ψ₀(x, equ.a) + equ.c[1] * ψ₁(x)
                   + equ.c[2] * ψ₂(x)
                   + equ.c[3] * ψ₃(x)

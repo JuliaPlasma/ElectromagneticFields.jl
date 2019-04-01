@@ -36,15 +36,15 @@ function Base.show(io::IO, equ::SolovevQuadratic)
 end
 
 
-@inline function A₁(x::AbstractArray{T,1}, equ::SolovevQuadratic) where {T <: Number}
+function A₁(x::AbstractArray{T,1}, equ::SolovevQuadratic) where {T <: Number}
     zero(T)
 end
 
-@inline function A₂(x::AbstractArray{T,1}, equ::SolovevQuadratic) where {T <: Number}
+function A₂(x::AbstractArray{T,1}, equ::SolovevQuadratic) where {T <: Number}
     zero(T)
 end
 
-@inline function A₃(x::AbstractArray{T,1}, equ::SolovevQuadratic) where {T <: Number}
+function A₃(x::AbstractArray{T,1}, equ::SolovevQuadratic) where {T <: Number}
     - equ.a * R(x,equ)^4 / 8 - equ.b * Z(x,equ)^2 / 2
 end
 

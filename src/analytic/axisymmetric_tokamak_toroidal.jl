@@ -28,49 +28,49 @@ function Base.show(io::IO, equ::AxisymmetricTokamakToroidal)
 end
 
 
-@inline function X(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
+function X(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
     R(x,equ) * cos(ϕ(x,equ))
 end
 
-@inline function Y(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
+function Y(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
     R(x,equ) * sin(ϕ(x,equ))
 end
 
-@inline function Z(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
+function Z(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
     r(x,equ) * sin(θ(x,equ))
 end
 
-@inline function R(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
+function R(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
     equ.R₀ + r(x,equ) * cos(θ(x,equ))
 end
 
-@inline function R²(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
+function R²(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
     R(x,equ)^2
 end
 
-@inline function r(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
+function r(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
     x[1]
 end
 
-@inline function r²(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
+function r²(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
     r(x,equ)^2
 end
 
-@inline function θ(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
+function θ(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
     x[2]
 end
 
-@inline function ϕ(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
+function ϕ(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
     x[3]
 end
 
 
-@inline function J(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
+function J(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
     r(x,equ) * R(x,equ)
 end
 
 
-@inline function periodicity(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
+function periodicity(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
     p = zero(x)
     p[2] = 2π
     p[3] = 2π
@@ -78,28 +78,28 @@ end
 end
 
 
-@inline function A₁(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
+function A₁(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
     zero(T)
 end
 
-@inline function A₂(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
+function A₂(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
     equ.B₀ * equ.R₀ / cos(θ(x,equ))^2 * ( r(x,equ) * cos(θ(x,equ)) - equ.R₀ * log(R(x,equ) / equ.R₀) )
 end
 
-@inline function A₃(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
+function A₃(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
     - equ.B₀ * r²(x,equ) / equ.q₀ / 2
 end
 
 
-@inline function g₁₁(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
+function g₁₁(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
     one(T)
 end
 
-@inline function g₂₂(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
+function g₂₂(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
     r²(x, equ)
 end
 
-@inline function g₃₃(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
+function g₃₃(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
     R²(x, equ)
 end
 
