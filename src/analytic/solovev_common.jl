@@ -41,6 +41,13 @@ end
 end
 
 
+@inline function periodicity(x::AbstractArray{T,1}, equ::AbstractSolovevEquilibrium) where {T <: Number}
+    p = zero(x)
+    p[3] = 2π
+    return p
+end
+
+
 @inline function A₁(x::AbstractArray{T,1}, equ::AbstractSolovevEquilibrium) where {T <: Number}
     + equ.B₀ * equ.R₀ * x[2] / x[1] / 2
 end

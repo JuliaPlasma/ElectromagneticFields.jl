@@ -19,6 +19,8 @@ r(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("
 
 J(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("J() not implemented for ", ET)
 
+periodicity(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = zero(x)
+
 A₁(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
 A₂(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
 A₃(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)

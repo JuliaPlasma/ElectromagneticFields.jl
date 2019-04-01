@@ -70,6 +70,14 @@ end
 end
 
 
+@inline function periodicity(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
+    p = zero(x)
+    p[2] = 2π
+    p[3] = 2π
+    return p
+end
+
+
 @inline function A₁(x::AbstractArray{T,1}, equ::AxisymmetricTokamakToroidal) where {T <: Number}
     zero(T)
 end

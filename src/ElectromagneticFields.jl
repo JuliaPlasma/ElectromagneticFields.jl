@@ -7,7 +7,7 @@ module ElectromagneticFields
     include("equilibrium.jl")
 
     export AnalyticEquilibrium, AnalyticPerturbation, ZeroPerturbation
-    export load_equilibrium
+    export load_equilibrium, periodicity
 
     include("analytic/analytic_equilibrium.jl")
 

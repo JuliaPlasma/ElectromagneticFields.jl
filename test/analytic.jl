@@ -67,6 +67,18 @@ test_equilibrium(ThetaPinchEquilibrium)
 test_equilibrium(ABCEquilibrium)
 
 
+x = [1., 1., 0.]
+
+@test periodicity(x, equ1) == [0., 0., 0.]
+@test periodicity(x, equ2) == [0., 0., 2π]
+@test periodicity(x, equ3) == [0., 2π, 2π]
+@test periodicity(x, equ4) == [0., 0., 2π]
+@test periodicity(x, equ5) == [0., 0., 2π]
+@test periodicity(x, equ6) == [0., 0., 2π]
+@test periodicity(x, equ7) == [0., 0., 0.]
+@test periodicity(x, equ8) == [0., 0., 0.]
+@test periodicity(x, equ9) == [0., 0., 0.]
+
 
 function test_axisymmetric_tokamak_cylindrical_equilibrium(equ_mod, t=0., x=[1.5, 0.5, π])
     @test equ_mod.B¹(t,x) ≈ - equ_mod.B₀ / equ_mod.q₀ * equ_mod.Z(t,x) / equ_mod.R(t,x)

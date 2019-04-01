@@ -66,6 +66,13 @@ end
 end
 
 
+@inline function periodicity(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
+    p = zero(x)
+    p[3] = 2π
+    return p
+end
+
+
 @inline function A₁(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCylindrical) where {T <: Number}
     + equ.B₀ * equ.R₀ * Z(x,equ) / R(x,equ) / 2
 end
