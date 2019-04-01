@@ -1,5 +1,12 @@
 
 function test_equilibrium(equ_mod, t=0., x=[2., 1., 4.])
+    @test equ_mod.X(x...) == equ_mod.X(t,x)
+    @test equ_mod.Y(x...) == equ_mod.Y(t,x)
+    @test equ_mod.Z(x...) == equ_mod.Z(t,x)
+
+    @test equ_mod.J(x...) == equ_mod.J(t,x)
+    @test equ_mod.B(x...) == equ_mod.B(t,x)
+
     @test equ_mod.A₁(x...) == equ_mod.A₁(t,x)
     @test equ_mod.A₂(x...) == equ_mod.A₂(t,x)
     @test equ_mod.A₃(x...) == equ_mod.A₃(t,x)
@@ -11,6 +18,18 @@ function test_equilibrium(equ_mod, t=0., x=[2., 1., 4.])
     @test equ_mod.b₁(x...) == equ_mod.b₁(t,x)
     @test equ_mod.b₂(x...) == equ_mod.b₂(t,x)
     @test equ_mod.b₃(x...) == equ_mod.b₃(t,x)
+
+    @test equ_mod.A¹(x...) == equ_mod.A¹(t,x)
+    @test equ_mod.A²(x...) == equ_mod.A²(t,x)
+    @test equ_mod.A³(x...) == equ_mod.A³(t,x)
+
+    @test equ_mod.B¹(x...) == equ_mod.B¹(t,x)
+    @test equ_mod.B²(x...) == equ_mod.B²(t,x)
+    @test equ_mod.B³(x...) == equ_mod.B³(t,x)
+
+    @test equ_mod.b¹(x...) == equ_mod.b¹(t,x)
+    @test equ_mod.b²(x...) == equ_mod.b²(t,x)
+    @test equ_mod.b³(x...) == equ_mod.b³(t,x)
 
     @test equ_mod.dA₁dx₁(x...) == equ_mod.dA₁dx₁(t,x)
     @test equ_mod.dA₁dx₂(x...) == equ_mod.dA₁dx₂(t,x)
