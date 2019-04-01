@@ -15,7 +15,7 @@ module ElectromagneticFields
            AxisymmetricTokamakToroidal,
            Solovev, SolovevXpoint, SolovevQuadratic, SymmetricQuadratic, ThetaPinch
     export SolovevITER, SolovevNSTX, SolovevXpointITER, SolovevXpointNSTX
-    export analyticA₁, analyticA₂, analyticA₃, analyticMetric, analyticHcoeffs
+    # export A₁, A₂, A₃, A, J, g
     export @axisymmetric_tokamak_equilibrium_cartesian,
            @axisymmetric_tokamak_equilibrium_cylindrical,
            @axisymmetric_tokamak_equilibrium_toroidal,
