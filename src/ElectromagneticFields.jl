@@ -16,11 +16,13 @@ module ElectromagneticFields
            Solovev, SolovevXpoint, SolovevQuadratic, SymmetricQuadratic, ThetaPinch
     export SolovevITER, SolovevNSTX, SolovevXpointITER, SolovevXpointNSTX
     # export A₁, A₂, A₃, A, J, g
-    export @axisymmetric_tokamak_equilibrium_cartesian,
+    export @abc_equilibrium,
+           @axisymmetric_tokamak_equilibrium_cartesian,
            @axisymmetric_tokamak_equilibrium_cylindrical,
            @axisymmetric_tokamak_equilibrium_toroidal,
            @solovev_equilibrium,
            @solovev_xpoint_equilibrium,
+           @solovev_equilibrium_quadratic,
            @symmetric_quadratic_equilibrium,
            @theta_pinch_equilibrium
 

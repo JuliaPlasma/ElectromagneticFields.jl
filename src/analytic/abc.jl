@@ -68,3 +68,8 @@ end
 function g₃₃(x::AbstractArray{T,1}, equ::ABC) where {T <: Number}
     one(T)
 end
+
+
+macro abc_equilibrium(a, b, c)
+    generate_equilibrium_code(ABC(a, b, c); output=false)
+end
