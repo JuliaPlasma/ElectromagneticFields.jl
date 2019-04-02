@@ -1,6 +1,3 @@
-
-using SymPy: Sym
-
 """
 Symmetric quadratic equilibrium in (x,y,z) coordinates.
 
