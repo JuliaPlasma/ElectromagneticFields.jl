@@ -25,6 +25,8 @@ A₁(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
 A₂(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
 A₃(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
 
+φ(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
+
 g₁₁(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
 g₁₂(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
 g₁₃(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
@@ -190,6 +192,19 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     DDBabs = [diff(diff(Babs, x[i]), x[j]) for i in 1:3, j in 1:3]
     symprint("DD|B|", DDBabs, output, 3)
 
+    # obtain scalar potential
+    φ⁰ = φ(x, equ) .+ φ(x, pert)
+
+    # compute components of electric field E
+    E¹ = [simplify(factor(diff(-φ⁰, x[1]))),
+          simplify(factor(diff(-φ⁰, x[2]))),
+          simplify(factor(diff(-φ⁰, x[3])))]
+    symprint("E¹", E¹, output, 2)
+
+    # compute electric field in contravariant coordinates
+    Evec = [get_vector_component(E¹, ginv, i) for i in 1:3]
+    symprint("Evec", Evec, output, 2)
+
 
     # collect all functions to generate code for
     functions = Dict{String,Any}()
@@ -207,15 +222,18 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
 
     functions["J"] = Jdet
     functions["B"] = Babs
+    functions["φ"] = φ⁰
 
     for i in 1:3
         functions["A" * indices[i]] = A¹[i]
         functions["B" * indices[i]] = B¹[i]
         functions["b" * indices[i]] = b¹[i]
+        functions["E" * indices[i]] = E¹[i]
 
         functions["A" * indicesup[i]] = Avec[i]
         functions["B" * indicesup[i]] = Bvec[i]
         functions["b" * indicesup[i]] = bvec[i]
+        functions["E" * indicesup[i]] = Evec[i]
 
         functions["dBdx" * indices[i]] = DBabs[i]
     end

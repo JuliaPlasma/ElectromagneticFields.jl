@@ -1,23 +1,32 @@
-"""
+@doc raw"""
 Symmetric quadratic equilibrium in (x,y,z) coordinates.
 
 ```math
-B(x,y,z) = B_0 \\, \\begin{pmatrix}
-0 \\\\
-0 \\\\
-1 + x^2 + y^2 \\\\
-\\end{pmatrix}
+B(x,y,z) = B_0 \, \begin{pmatrix}
+0 \\
+0 \\
+1 + x^2 + y^2 \\
+\end{pmatrix}
+```
+with electric field
+```math
+E(x,y,z) = E_0 \, \begin{pmatrix}
+0 \\
+0 \\
+\cos (2\pi z) \\
+\end{pmatrix}
 ```
 
-Parameters: `B₀`
+Parameters: `B₀`, `E₀`
 """
 struct SymmetricQuadratic{T <: Number} <: AnalyticEquilibrium
     name::String
     B₀::T
-    SymmetricQuadratic{T}(B₀::T) where T <: Number = new("SymmetricQuadraticEquilibrium", B₀)
+    E₀::T
+    SymmetricQuadratic{T}(B₀::T, E₀::T) where T <: Number = new("SymmetricQuadraticEquilibrium", B₀, E₀)
 end
 
-SymmetricQuadratic(B₀::T) where T <: Number = SymmetricQuadratic{T}(B₀)
+SymmetricQuadratic(B₀::T, E₀::T=zero(T)) where T <: Number = SymmetricQuadratic{T}(B₀, E₀)
 
 
 function Base.show(io::IO, equ::SymmetricQuadratic)
@@ -73,6 +82,11 @@ end
 
 function A₃(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
     zero(eltype(x))
+end
+
+
+function φ(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
+   equ.E₀ / (2π) * sin(2π * Z(x,equ))
 end
 
 
