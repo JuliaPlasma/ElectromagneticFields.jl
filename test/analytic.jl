@@ -78,18 +78,18 @@ module ThetaPinchEquilibrium end
 module ThetaPinchEquilibriumEzCosZPerturbation end
 module ABCEquilibrium end
 
-load_equilibrium(equ1, target_module=AxisymmetricTokamakCartesianEquilibrium)
-load_equilibrium(equ2, target_module=AxisymmetricTokamakCylindricalEquilibrium)
-load_equilibrium(equ3, target_module=AxisymmetricTokamakToroidalEquilibrium)
-load_equilibrium(equ4, target_module=SolovevEquilibrium)
-load_equilibrium(equ5, target_module=SolovevXpointEquilibrium)
-load_equilibrium(equ6, target_module=SolovevQuadraticEquilibrium)
-load_equilibrium(equ7, target_module=SymmetricQuadraticEquilibrium)
-load_equilibrium(equ8, target_module=ThetaPinchEquilibrium)
-load_equilibrium(equ9, target_module=ABCEquilibrium)
+load_equilibrium(equ1, target_module=AxisymmetricTokamakCartesianEquilibrium; output=1)
+load_equilibrium(equ2, target_module=AxisymmetricTokamakCylindricalEquilibrium; output=1)
+load_equilibrium(equ3, target_module=AxisymmetricTokamakToroidalEquilibrium; output=1)
+load_equilibrium(equ4, target_module=SolovevEquilibrium; output=1)
+load_equilibrium(equ5, target_module=SolovevXpointEquilibrium; output=1)
+load_equilibrium(equ6, target_module=SolovevQuadraticEquilibrium; output=1)
+load_equilibrium(equ7, target_module=SymmetricQuadraticEquilibrium; output=1)
+load_equilibrium(equ8, target_module=ThetaPinchEquilibrium; output=1)
+load_equilibrium(equ9, target_module=ABCEquilibrium; output=1)
 
-load_equilibrium(equ7, pert1, target_module=SymmetricQuadraticEquilibriumEzCosZPerturbation)
-load_equilibrium(equ8, pert1, target_module=ThetaPinchEquilibriumEzCosZPerturbation)
+load_equilibrium(equ7, pert1, target_module=SymmetricQuadraticEquilibriumEzCosZPerturbation; output=1)
+load_equilibrium(equ8, pert1, target_module=ThetaPinchEquilibriumEzCosZPerturbation; output=1)
 
 test_equilibrium(AxisymmetricTokamakCartesianEquilibrium)
 test_equilibrium(AxisymmetricTokamakCylindricalEquilibrium)
@@ -130,5 +130,8 @@ function test_axisymmetric_tokamak_toroidal_equilibrium(equ_mod, t=0., x=[0.5, �
     @test equ_mod.B³(t,x) ≈ equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t,x)^2
 end
 
+println("Verifying magnetic field of axisymmetric tokamak equilibrium in cylindrical coordinates")
 test_axisymmetric_tokamak_cylindrical_equilibrium(AxisymmetricTokamakCylindricalEquilibrium)
+
+println("Verifying magnetic field of axisymmetric tokamak equilibrium in toroidal coordinates")
 test_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidalEquilibrium)

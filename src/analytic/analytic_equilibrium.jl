@@ -275,8 +275,12 @@ Generate code for evaluating analytic equilibria.
 function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
 
     if output ≥ 1
-        println()
+        println("Generating code for ")
         println(equ)
+        if typeof(pert) != ZeroPerturbation
+            println("   and ")
+            println(pert)
+        end
         println()
     end
 
@@ -331,6 +335,8 @@ function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
         # append f_code to equ_code
         push!(equ_code.args, f_code)
     end
+
+    output ≥ 1 ? println() : nothing
 
     return equ_code
 end
