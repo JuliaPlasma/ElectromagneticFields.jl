@@ -6,7 +6,7 @@ Parameters:
     B₀: B-field at magnetic axis
     q₀: safety factor at magnetic axis
 """
-struct AxisymmetricTokamakCartesian{T <: Number} <: AnalyticEquilibrium
+struct AxisymmetricTokamakCartesian{T <: Number} <: CartesianEquilibrium
     name::String
     R₀::T
     B₀::T
@@ -27,18 +27,6 @@ function Base.show(io::IO, equ::AxisymmetricTokamakCartesian)
     print(io, "  q₀ = ", equ.q₀)
 end
 
-
-function X(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    x[1]
-end
-
-function Y(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    x[2]
-end
-
-function Z(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    x[3]
-end
 
 function R(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
     sqrt(X(x,equ)^2 + Y(x,equ)^2)
@@ -61,11 +49,6 @@ function ϕ(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <
 end
 
 
-function J(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    one(T)
-end
-
-
 function A₁(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
     + equ.B₀ * equ.R₀ * Z(x,equ) / R(x,equ) / 2
 end
@@ -76,19 +59,6 @@ end
 
 function A₃(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
     - equ.B₀ * r²(x,equ) / equ.q₀ / 2
-end
-
-
-function g₁₁(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    one(T)
-end
-
-function g₂₂(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    one(T)
-end
-
-function g₃₃(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    one(T)
 end
 
 

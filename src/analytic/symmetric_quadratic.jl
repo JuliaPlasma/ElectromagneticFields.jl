@@ -11,7 +11,7 @@ B(x,y,z) = B_0 \, \begin{pmatrix}
 
 Parameters: `B₀`
 """
-struct SymmetricQuadratic{T <: Number} <: AnalyticEquilibrium
+struct SymmetricQuadratic{T <: Number} <: CartesianEquilibrium
     name::String
     B₀::T
     SymmetricQuadratic{T}(B₀::T) where T <: Number = new("SymmetricQuadraticEquilibrium", B₀)
@@ -24,18 +24,6 @@ function Base.show(io::IO, equ::SymmetricQuadratic)
     print(io, "Symmetric Quadratic Equilibrium")
 end
 
-
-function X(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
-    x[1]
-end
-
-function Y(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
-    x[2]
-end
-
-function Z(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
-    x[3]
-end
 
 function R(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
     r(x,equ)
@@ -58,11 +46,6 @@ function ϕ(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
 end
 
 
-function J(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
-    one(T)
-end
-
-
 function A₁(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
     - equ.B₀ * x[2] * (2 + x[1]^2 + x[2]^2) / 4
 end
@@ -73,24 +56,6 @@ end
 
 function A₃(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
     zero(eltype(x))
-end
-
-
-function φ(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
-   equ.E₀ / (2π) * sin(2π * Z(x,equ))
-end
-
-
-function g₁₁(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
-    one(T)
-end
-
-function g₂₂(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
-    one(T)
-end
-
-function g₃₃(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
-    one(T)
 end
 
 

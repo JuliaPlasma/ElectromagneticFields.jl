@@ -4,7 +4,7 @@
 Parameters:
     B₀: B-field at magnetic axis
 """
-struct ThetaPinch{T <: Number} <: AnalyticEquilibrium
+struct ThetaPinch{T <: Number} <: CartesianEquilibrium
     name::String
     B₀::T
 
@@ -21,18 +21,6 @@ function Base.show(io::IO, equ::ThetaPinch)
     print(io, "  B₀ = ", equ.B₀)
 end
 
-
-function X(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    x[1]
-end
-
-function Y(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    x[2]
-end
-
-function Z(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    x[3]
-end
 
 function R(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
     r(x,equ)
@@ -55,11 +43,6 @@ function ϕ(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
 end
 
 
-function J(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    one(T)
-end
-
-
 function A₁(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
     - equ.B₀ * Y(x,equ) / 2
 end
@@ -70,19 +53,6 @@ end
 
 function A₃(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
     zero(eltype(x))
-end
-
-
-function g₁₁(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    one(T)
-end
-
-function g₂₂(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    one(T)
-end
-
-function g₃₃(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    one(T)
 end
 
 
