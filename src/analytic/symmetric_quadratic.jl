@@ -8,25 +8,16 @@ B(x,y,z) = B_0 \, \begin{pmatrix}
 1 + x^2 + y^2 \\
 \end{pmatrix}
 ```
-with electric field
-```math
-E(x,y,z) = E_0 \, \begin{pmatrix}
-0 \\
-0 \\
-\cos (2\pi z) \\
-\end{pmatrix}
-```
 
-Parameters: `B₀`, `E₀`
+Parameters: `B₀`
 """
 struct SymmetricQuadratic{T <: Number} <: AnalyticEquilibrium
     name::String
     B₀::T
-    E₀::T
-    SymmetricQuadratic{T}(B₀::T, E₀::T) where T <: Number = new("SymmetricQuadraticEquilibrium", B₀, E₀)
+    SymmetricQuadratic{T}(B₀::T) where T <: Number = new("SymmetricQuadraticEquilibrium", B₀)
 end
 
-SymmetricQuadratic(B₀::T, E₀::T=zero(T)) where T <: Number = SymmetricQuadratic{T}(B₀, E₀)
+SymmetricQuadratic(B₀::T) where T <: Number = SymmetricQuadratic{T}(B₀)
 
 
 function Base.show(io::IO, equ::SymmetricQuadratic)

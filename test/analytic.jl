@@ -6,6 +6,7 @@ function test_equilibrium(equ_mod, t=0., x=[2., 1., 4.])
 
     @test equ_mod.J(x...) == equ_mod.J(t,x)
     @test equ_mod.B(x...) == equ_mod.B(t,x)
+    @test equ_mod.φ(x...) == equ_mod.φ(t,x)
 
     @test equ_mod.A₁(x...) == equ_mod.A₁(t,x)
     @test equ_mod.A₂(x...) == equ_mod.A₂(t,x)
@@ -19,6 +20,10 @@ function test_equilibrium(equ_mod, t=0., x=[2., 1., 4.])
     @test equ_mod.b₂(x...) == equ_mod.b₂(t,x)
     @test equ_mod.b₃(x...) == equ_mod.b₃(t,x)
 
+    @test equ_mod.E₁(x...) == equ_mod.E₁(t,x)
+    @test equ_mod.E₂(x...) == equ_mod.E₂(t,x)
+    @test equ_mod.E₃(x...) == equ_mod.E₃(t,x)
+
     @test equ_mod.A¹(x...) == equ_mod.A¹(t,x)
     @test equ_mod.A²(x...) == equ_mod.A²(t,x)
     @test equ_mod.A³(x...) == equ_mod.A³(t,x)
@@ -30,6 +35,10 @@ function test_equilibrium(equ_mod, t=0., x=[2., 1., 4.])
     @test equ_mod.b¹(x...) == equ_mod.b¹(t,x)
     @test equ_mod.b²(x...) == equ_mod.b²(t,x)
     @test equ_mod.b³(x...) == equ_mod.b³(t,x)
+
+    @test equ_mod.E¹(x...) == equ_mod.E¹(t,x)
+    @test equ_mod.E²(x...) == equ_mod.E²(t,x)
+    @test equ_mod.E³(x...) == equ_mod.E³(t,x)
 
     @test equ_mod.dA₁dx₁(x...) == equ_mod.dA₁dx₁(t,x)
     @test equ_mod.dA₁dx₂(x...) == equ_mod.dA₁dx₂(t,x)
@@ -55,6 +64,8 @@ equ7 = SymmetricQuadratic(1.)
 equ8 = ThetaPinch(1.)
 equ9 = ABC(1., 0.5, 0.5)
 
+pert1 = EzCosZ(2.)
+
 module AxisymmetricTokamakCartesianEquilibrium end
 module AxisymmetricTokamakCylindricalEquilibrium end
 module AxisymmetricTokamakToroidalEquilibrium end
@@ -62,7 +73,9 @@ module SolovevEquilibrium end
 module SolovevXpointEquilibrium end
 module SolovevQuadraticEquilibrium end
 module SymmetricQuadraticEquilibrium end
+module SymmetricQuadraticEquilibriumEzCosZPerturbation end
 module ThetaPinchEquilibrium end
+module ThetaPinchEquilibriumEzCosZPerturbation end
 module ABCEquilibrium end
 
 load_equilibrium(equ1, target_module=AxisymmetricTokamakCartesianEquilibrium)
@@ -75,6 +88,9 @@ load_equilibrium(equ7, target_module=SymmetricQuadraticEquilibrium)
 load_equilibrium(equ8, target_module=ThetaPinchEquilibrium)
 load_equilibrium(equ9, target_module=ABCEquilibrium)
 
+load_equilibrium(equ7, pert1, target_module=SymmetricQuadraticEquilibriumEzCosZPerturbation)
+load_equilibrium(equ8, pert1, target_module=ThetaPinchEquilibriumEzCosZPerturbation)
+
 test_equilibrium(AxisymmetricTokamakCartesianEquilibrium)
 test_equilibrium(AxisymmetricTokamakCylindricalEquilibrium)
 test_equilibrium(AxisymmetricTokamakToroidalEquilibrium)
@@ -84,6 +100,9 @@ test_equilibrium(SolovevQuadraticEquilibrium)
 test_equilibrium(SymmetricQuadraticEquilibrium)
 test_equilibrium(ThetaPinchEquilibrium)
 test_equilibrium(ABCEquilibrium)
+
+test_equilibrium(SymmetricQuadraticEquilibriumEzCosZPerturbation)
+test_equilibrium(ThetaPinchEquilibriumEzCosZPerturbation)
 
 
 x = [1., 1., 0.]

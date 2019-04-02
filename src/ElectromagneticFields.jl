@@ -13,13 +13,14 @@ module ElectromagneticFields
     include("analytic/analytic_equilibrium.jl")
 
     export ABC, AxisymmetricTokamakCartesian, AxisymmetricTokamakCylindrical,
-           AxisymmetricTokamakToroidal,
+           AxisymmetricTokamakToroidal, EzCosZ,
            Solovev, SolovevXpoint, SolovevQuadratic, SymmetricQuadratic, ThetaPinch
     export SolovevITER, SolovevNSTX, SolovevXpointITER, SolovevXpointNSTX
     export @abc_equilibrium,
            @axisymmetric_tokamak_equilibrium_cartesian,
            @axisymmetric_tokamak_equilibrium_cylindrical,
            @axisymmetric_tokamak_equilibrium_toroidal,
+           @ezcosz_perturbation,
            @solovev_equilibrium,
            @solovev_xpoint_equilibrium,
            @solovev_equilibrium_quadratic,
@@ -30,6 +31,7 @@ module ElectromagneticFields
     include("analytic/axisymmetric_tokamak_cartesian.jl")
     include("analytic/axisymmetric_tokamak_cylindrical.jl")
     include("analytic/axisymmetric_tokamak_toroidal.jl")
+    include("analytic/ezcosz.jl")
     include("analytic/solovev_common.jl")
     include("analytic/solovev_psi.jl")
     include("analytic/solovev.jl")
