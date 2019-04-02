@@ -1,5 +1,6 @@
 module ElectromagneticFields
 
+    using Documenter
     using LinearAlgebra
 
     export MagneticEquilibrium
