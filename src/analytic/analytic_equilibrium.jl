@@ -91,6 +91,12 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     x₁, x₂, x₃ = symbols("x₁, x₂, x₃", real=true, positive=true)
     x = [x₁, x₂, x₃]
 
+    # check for compatible metric
+    if typeof(pert) != ZeroPerturbation
+        @assert J(x,equ) == J(x,pert)
+        @assert g(x,equ) == g(x,pert)
+    end
+
     # obtain metric
     gmat = g(x, equ)
     symprint("g", gmat, output, 2)
