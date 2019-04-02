@@ -5,7 +5,7 @@
 
 [![Documentation](https://img.shields.io/badge/docs-stable-blue.svg)](https://ddmgni.github.io/ElectromagneticFields.jl/stable/)
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://ddmgni.github.io/ElectromagneticFields.jl/latest/)
-[![License](https://img.shields.io/badge/license-MIT%20License-blue.svg)](LICENSE.md)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
 [![Build Status](https://travis-ci.org/DDMGNI/ElectromagneticFields.jl.svg?branch=master)](https://travis-ci.org/DDMGNI/ElectromagneticFields.jl)
 [![Coverage Status](https://coveralls.io/repos/github/DDMGNI/ElectromagneticFields.jl/badge.svg)](https://coveralls.io/github/DDMGNI/ElectromagneticFields.jl)
 [![codecov](https://codecov.io/gh/DDMGNI/ElectromagneticFields.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/DDMGNI/ElectromagneticFields.jl)
