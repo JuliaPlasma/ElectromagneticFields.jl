@@ -3,4 +3,4 @@ using ElectromagneticFields
 using Test
 
 println()
-include("analytic.jl")
+include("test_analytic.jl")
