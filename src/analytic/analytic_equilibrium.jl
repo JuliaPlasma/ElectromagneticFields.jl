@@ -312,7 +312,7 @@ function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
         output ≥ 1 ? println("Generating function ", key) : nothing
 
         # patch for removing Warnings with Julia v0.6 and SymPy v1.0
-        f_str  = sympy_meth(:julia_code, f_expr)
+        f_str  = sympy.julia_code(f_expr)
         f_str  = replace(f_str, ".+" => " .+ ")
         f_str  = replace(f_str, ".-" => " .- ")
         f_str  = replace(f_str, ".*" => " .* ")
