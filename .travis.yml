@@ -5,18 +5,21 @@ os:
 julia:
   - 1.0
   - 1.1
-  - nightly
 env:
   - PYTHON=""
 matrix:
-  allow_failures:
-    - julia: nightly
-    - os: osx
   fast_finish: true
 jobs:
   allow_failures:
+    - julia: nightly
     - script: bash ./docs/travis.sh
   include:
+    - stage: "Nightly"
+      julia: nightly
+      os:
+        - linux
+        - osx
+      after_success: skip
     - stage: "Documentation"
       julia: 1.1
       os: linux
