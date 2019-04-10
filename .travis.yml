@@ -16,9 +16,10 @@ jobs:
   include:
     - stage: "Nightly"
       julia: nightly
-      os:
-        - linux
-        - osx
+      os: linux
+      after_success: skip
+    - julia: nightly
+      os: osx
       after_success: skip
     - stage: "Documentation"
       julia: 1.1
