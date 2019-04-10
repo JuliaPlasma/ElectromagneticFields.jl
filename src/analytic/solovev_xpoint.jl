@@ -74,8 +74,8 @@ function SolovevXpoint(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, a::T, xₛₑₚ::
 end
 
 
-SolovevXpointITER = SolovevXpoint(6.2, 5.3, 0.32, 1.7, 0.33, -0.155, 0.88, -0.60)
-SolovevXpointNSTX = SolovevXpoint(0.85, 0.3, 0.78, 2.0, 0.35, -0.05, 0.70, -1.71)
+SolovevXpointITER() = SolovevXpoint(6.2, 5.3, 0.32, 1.7, 0.33, -0.155, 0.88, -0.60)
+SolovevXpointNSTX() = SolovevXpoint(0.85, 0.3, 0.78, 2.0, 0.35, -0.05, 0.70, -1.71)
 
 
 function Base.show(io::IO, equ::SolovevXpoint)

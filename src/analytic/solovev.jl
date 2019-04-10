@@ -60,8 +60,8 @@ function Solovev(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, a::T) where T <: Number
 end
 
 
-SolovevITER = Solovev(6.2, 5.3, 0.32, 1.7, 0.33, -0.155)
-SolovevNSTX = Solovev(0.85, 0.3, 0.78, 2.0, 0.35, 1.0)
+SolovevITER() = Solovev(6.2, 5.3, 0.32, 1.7, 0.33, -0.155)
+SolovevNSTX() = Solovev(0.85, 0.3, 0.78, 2.0, 0.35, 1.0)
 
 
 function Base.show(io::IO, equ::Solovev)
