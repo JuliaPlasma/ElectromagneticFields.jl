@@ -9,10 +9,10 @@ julia:
 env:
   - PYTHON=""
 matrix:
-  fast_finish: true
   allow_failures:
     - julia: nightly
     - os: osx
+  fast_finish: true
 jobs:
   allow_failures:
     - script: bash ./docs/travis.sh
