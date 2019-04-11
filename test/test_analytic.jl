@@ -131,7 +131,17 @@ println()
 
 # test correctness of some of the magnetic fields
 
-function test_axisymmetric_tokamak_cylindrical_equilibrium(equ_mod, t=0., x=[1.5, 0.5, π])
+function test_axisymmetric_tokamak_cartesian_equilibrium(equ_mod, t=0., x=[1.5, 0.0, 0.5])
+    @test equ_mod.B¹(t,x) == - equ_mod.B₀ / equ_mod.q₀ * (equ_mod.q₀ * equ_mod.R₀ * equ_mod.Y(t,x) + equ_mod.X(t,x) * equ_mod.Z(t,x) ) / equ_mod.R(t,x)^2
+    @test equ_mod.B²(t,x) == + equ_mod.B₀ / equ_mod.q₀ * (equ_mod.q₀ * equ_mod.R₀ * equ_mod.X(t,x) - equ_mod.Y(t,x) * equ_mod.Z(t,x) ) / equ_mod.R(t,x)^2
+    @test equ_mod.B³(t,x) == + equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t,x) - equ_mod.R₀) / equ_mod.R(t,x)
+
+    @test equ_mod.B₁(t,x) == - equ_mod.B₀ / equ_mod.q₀ * (equ_mod.q₀ * equ_mod.R₀ * equ_mod.Y(t,x) + equ_mod.X(t,x) * equ_mod.Z(t,x) ) / equ_mod.R(t,x)^2
+    @test equ_mod.B₂(t,x) == + equ_mod.B₀ / equ_mod.q₀ * (equ_mod.q₀ * equ_mod.R₀ * equ_mod.X(t,x) - equ_mod.Y(t,x) * equ_mod.Z(t,x) ) / equ_mod.R(t,x)^2
+    @test equ_mod.B₃(t,x) == + equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t,x) - equ_mod.R₀) / equ_mod.R(t,x)
+end
+
+function test_axisymmetric_tokamak_cylindrical_equilibrium(equ_mod, t=0., x=[1.5, 0.5, π/5])
     @test equ_mod.B¹(t,x) == - equ_mod.B₀ / equ_mod.q₀ * equ_mod.Z(t,x) / equ_mod.R(t,x)
     @test equ_mod.B²(t,x) == + equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t,x) - equ_mod.R₀) / equ_mod.R(t,x)
     @test equ_mod.B³(t,x) == - equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t,x)^2
@@ -141,7 +151,7 @@ function test_axisymmetric_tokamak_cylindrical_equilibrium(equ_mod, t=0., x=[1.5
     @test equ_mod.B₃(t,x) == - equ_mod.B₀ * equ_mod.R₀
 end
 
-function test_axisymmetric_tokamak_toroidal_equilibrium(equ_mod, t=0., x=[0.5, π/10, π])
+function test_axisymmetric_tokamak_toroidal_equilibrium(equ_mod, t=0., x=[0.5, π/10, π/5])
     @test equ_mod.B¹(t,x) == zero(eltype(x))
     @test equ_mod.B²(t,x) == equ_mod.B₀ / equ_mod.q₀ / equ_mod.R(t,x)
     @test equ_mod.B³(t,x) == equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t,x)^2
@@ -173,6 +183,7 @@ end
 
 
 @testset "$(rpad("Magnetic Fields",60))" begin
+    test_axisymmetric_tokamak_cartesian_equilibrium(AxisymmetricTokamakCartesianEquilibrium)
     test_axisymmetric_tokamak_cylindrical_equilibrium(AxisymmetricTokamakCylindricalEquilibrium)
     test_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidalEquilibrium)
     test_theta_pinch_equilibrium(ThetaPinchEquilibrium)
