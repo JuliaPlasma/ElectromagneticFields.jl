@@ -202,6 +202,19 @@ function test_theta_pinch_equilibrium(equ_mod, t=0., x=[1.0, 0.5, 0.5])
     @test equ_mod.b₃(t,x) == 1
 end
 
+function test_abc_equilibrium(equ_mod, t=0., x=[1.0, 0.5, 0.5])
+    @test equ_mod.B¹(t,x) == equ_mod.B₁(t,x)
+    @test equ_mod.B²(t,x) == equ_mod.B₂(t,x)
+    @test equ_mod.B³(t,x) == equ_mod.B₃(t,x)
+
+    @test equ_mod.B₁(t,x) == equ_mod.A₁(t,x)
+    @test equ_mod.B₂(t,x) == equ_mod.A₂(t,x)
+    @test equ_mod.B₃(t,x) == equ_mod.A₃(t,x)
+
+    @test equ_mod.B₁(t,x) == equ_mod.a * sin(equ_mod.Z(t,x)) + equ_mod.c * cos(equ_mod.Y(t,x))
+    @test equ_mod.B₂(t,x) == equ_mod.b * sin(equ_mod.X(t,x)) + equ_mod.a * cos(equ_mod.Z(t,x))
+    @test equ_mod.B₃(t,x) == equ_mod.c * sin(equ_mod.Y(t,x)) + equ_mod.b * cos(equ_mod.X(t,x))
+end
 
 @testset "$(rpad("Magnetic Fields",60))" begin
     test_axisymmetric_tokamak_cartesian_equilibrium(AxisymmetricTokamakCartesianEquilibrium)
@@ -209,5 +222,6 @@ end
     test_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidalEquilibrium)
     test_symmetric_quadratic_equilibrium(SymmetricQuadraticEquilibrium)
     test_theta_pinch_equilibrium(ThetaPinchEquilibrium)
+    test_abc_equilibrium(ABCEquilibrium)
 end
 println()
