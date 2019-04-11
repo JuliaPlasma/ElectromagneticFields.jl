@@ -84,15 +84,15 @@ module ThetaPinchEquilibriumEzCosZPerturbation end
 
 # equilibrium list (equilibrium, parameters, periodicity, module)
 eqs = (
-    (AxisymmetricTokamakCartesian,      (1., 2., 2.),   [0., 0., 0.],   AxisymmetricTokamakCartesianEquilibrium),
-    (AxisymmetricTokamakCylindrical,    (1., 2., 2.),   [0., 0., 2π],   AxisymmetricTokamakCylindricalEquilibrium),
-    (AxisymmetricTokamakToroidal,       (1., 2., 2.),   [0., 2π, 2π],   AxisymmetricTokamakToroidalEquilibrium),
+    (AxisymmetricTokamakCartesian,      (2., 3., 2.),   [0., 0., 0.],   AxisymmetricTokamakCartesianEquilibrium),
+    (AxisymmetricTokamakCylindrical,    (2., 3., 2.),   [0., 0., 2π],   AxisymmetricTokamakCylindricalEquilibrium),
+    (AxisymmetricTokamakToroidal,       (2., 3., 2.),   [0., 2π, 2π],   AxisymmetricTokamakToroidalEquilibrium),
     (SymmetricQuadratic,                (1.),           [0., 0., 0.],   SymmetricQuadraticEquilibrium),
     (ThetaPinch,                        (1.),           [0., 0., 0.],   ThetaPinchEquilibrium),
     (ABC,                               (1., 0.5, 0.5), [0., 0., 0.],   ABCEquilibrium),
-    (Solovev,           (6.2, 5.3, 0.32, 1.8, 0.45, -0.155),                [0., 0., 2π],   SolovevEquilibrium),
-    (SolovevXpoint,     (6.2, 5.3, 0.32, 1.8, 0.45, -0.155, 0.88, -0.60),   [0., 0., 2π],   SolovevXpointEquilibrium),
-    (SolovevQuadratic,  (6.2, 5.3, 1., 1.),                                 [0., 0., 2π],   SolovevQuadraticEquilibrium),
+    # (Solovev,           (6.2, 5.3, 0.32, 1.8, 0.45, -0.155),                [0., 0., 2π],   SolovevEquilibrium),
+    # (SolovevXpoint,     (6.2, 5.3, 0.32, 1.8, 0.45, -0.155, 0.88, -0.60),   [0., 0., 2π],   SolovevXpointEquilibrium),
+    # (SolovevQuadratic,  (6.2, 5.3, 1., 1.),                                 [0., 0., 2π],   SolovevQuadraticEquilibrium),
 )
 
 
@@ -132,15 +132,24 @@ println()
 # test correctness of some of the magnetic fields
 
 function test_axisymmetric_tokamak_cylindrical_equilibrium(equ_mod, t=0., x=[1.5, 0.5, π])
-    @test equ_mod.B¹(t,x) ≈ - equ_mod.B₀ / equ_mod.q₀ * equ_mod.Z(t,x) / equ_mod.R(t,x)
-    @test equ_mod.B²(t,x) ≈ equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t,x) - equ_mod.R₀) / equ_mod.R(t,x)
-    @test equ_mod.B³(t,x) ≈ - equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t,x)^2
+    @test equ_mod.B¹(t,x) == - equ_mod.B₀ / equ_mod.q₀ * equ_mod.Z(t,x) / equ_mod.R(t,x)
+    @test equ_mod.B²(t,x) == + equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t,x) - equ_mod.R₀) / equ_mod.R(t,x)
+    @test equ_mod.B³(t,x) == - equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t,x)^2
+
+    @test equ_mod.B₁(t,x) == - equ_mod.B₀ / equ_mod.q₀ * equ_mod.Z(t,x) / equ_mod.R(t,x)
+    @test equ_mod.B₂(t,x) == + equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t,x) - equ_mod.R₀) / equ_mod.R(t,x)
+    @test equ_mod.B₃(t,x) == - equ_mod.B₀ * equ_mod.R₀
 end
 
 function test_axisymmetric_tokamak_toroidal_equilibrium(equ_mod, t=0., x=[0.5, π/10, π])
     @test equ_mod.B¹(t,x) == zero(eltype(x))
-    @test equ_mod.B²(t,x) ≈ equ_mod.B₀ / equ_mod.q₀ / equ_mod.R(t,x)
-    @test equ_mod.B³(t,x) ≈ equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t,x)^2
+    @test equ_mod.B²(t,x) == equ_mod.B₀ / equ_mod.q₀ / equ_mod.R(t,x)
+    @test equ_mod.B³(t,x) == equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t,x)^2
+
+    @test equ_mod.B₁(t,x) == zero(eltype(x))
+    @test equ_mod.B₂(t,x) == equ_mod.B₀ / equ_mod.q₀ * equ_mod.r(t,x)^2 / equ_mod.R(t,x)
+    @test equ_mod.B₃(t,x) == equ_mod.B₀ * equ_mod.R₀
+end
 end
 
 
