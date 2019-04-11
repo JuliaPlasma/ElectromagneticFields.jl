@@ -1,3 +1,8 @@
 
+all: documenter
+
 documenter:
-	julia --color=yes make.jl
+	julia --color=yes --project=.. make.jl
+
+clean:
+	rm -Rf build

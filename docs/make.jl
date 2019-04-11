@@ -4,8 +4,8 @@ makedocs(
     sitename = "ElectromagneticFields.jl",
     format = Documenter.HTML(),
     pages = ["Home" => "index.md",
-             "Modules"    => "modules.md",
-             ]
+             "Modules" => "modules.md",
+            ]
 )
 
 deploydocs(
