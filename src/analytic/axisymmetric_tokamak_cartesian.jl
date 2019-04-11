@@ -29,7 +29,11 @@ end
 
 
 function R(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    sqrt(X(x,equ)^2 + Y(x,equ)^2)
+    sqrt(R²(x,equ))
+end
+
+function R²(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
+    X(x,equ)^2 + Y(x,equ)^2
 end
 
 function r(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
@@ -50,15 +54,15 @@ end
 
 
 function A₁(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    + equ.B₀ * equ.R₀ * Z(x,equ) / R(x,equ) / 2
+    + equ.B₀ * (equ.R₀ * X(x,equ) * Z(x,equ) - r²(x,equ) * Y(x,equ) / equ.q₀ ) / R²(x,equ) / 2
 end
 
 function A₂(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    - equ.B₀ * equ.R₀ * log(R(x,equ) / equ.R₀) / 2
+    + equ.B₀ * (equ.R₀ * Y(x,equ) * Z(x,equ) + r²(x,equ) * X(x,equ) / equ.q₀ ) / R²(x,equ) / 2
 end
 
 function A₃(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    - equ.B₀ * r²(x,equ) / equ.q₀ / 2
+    - equ.B₀ * equ.R₀ * log(R(x,equ) / equ.R₀) / 2
 end
 
 
