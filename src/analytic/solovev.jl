@@ -6,12 +6,12 @@ Axisymmetric Solov'ev equilibra in (R/R₀,Z/R₀,phi) coordinates.
 Based on Cerfon & Freidberg, Physics of Plasmas 17, 032502, 2010.
 
 Parameters:
-    R₀: position of magnetic axis
-    B₀: B-field at magnetic axis
-    ϵ:  inverse aspect ratio
-    κ:  elongation
-    δ:  triangularity
-    a:  free constant, determined to match a given beta value
+ * `R₀`: position of magnetic axis
+ * `B₀`: B-field at magnetic axis
+ * `ϵ`:  inverse aspect ratio
+ * `κ`:  elongation
+ * `δ`:  triangularity
+ * `a`:  free constant, determined to match a given beta value
 """
 struct Solovev{T <: Number} <: AbstractSolovevEquilibrium
     name::String

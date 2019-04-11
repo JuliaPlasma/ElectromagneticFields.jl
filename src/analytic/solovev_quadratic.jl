@@ -6,9 +6,9 @@ Quadratic Solov'ev equilibrium in (R,Z,phi) coordinates.
 Based on McCarthy, Physics of Plasmas 6, 3554, 1999.
 
 Parameters:
-    R₀: position of magnetic axis
-    B₀: B-field at magnetic axis
-    a,b: free constants
+ * `R₀`: position of magnetic axis
+ * `B₀`: B-field at magnetic axis
+ * `a`, b`: free constants
 """
 struct SolovevQuadratic{T <: Number} <: AbstractSolovevEquilibrium
     name::String

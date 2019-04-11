@@ -2,9 +2,9 @@
 Axisymmetric tokamak equilibrium in (R,Z,ϕ) coordinates.
 
 Parameters:
-    R₀: position of magnetic axis
-    B₀: B-field at magnetic axis
-    q₀: safety factor at magnetic axis
+ * `R₀`: position of magnetic axis
+ * `B₀`: B-field at magnetic axis
+ * `q₀`: safety factor at magnetic axis
 """
 struct AxisymmetricTokamakCylindrical{T <: Number} <: AnalyticEquilibrium
     name::String

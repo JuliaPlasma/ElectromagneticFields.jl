@@ -2,9 +2,9 @@
 ABC equilibrium in (x,y,z) coordinates.
 
 Parameters:
-    a:
-    b:
-    c:
+ * `a`:
+ * `b`:
+ * `c`:
 """
 struct ABC{T <: Number} <: AnalyticEquilibrium
     name::String
