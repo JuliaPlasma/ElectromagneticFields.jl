@@ -90,9 +90,9 @@ eqs = (
     (SymmetricQuadratic,                (1.),           [0., 0., 0.],   SymmetricQuadraticEquilibrium),
     (ThetaPinch,                        (1.),           [0., 0., 0.],   ThetaPinchEquilibrium),
     (ABC,                               (1., 0.5, 0.5), [0., 0., 0.],   ABCEquilibrium),
-    # (Solovev,           (6.2, 5.3, 0.32, 1.8, 0.45, -0.155),                [0., 0., 2π],   SolovevEquilibrium),
-    # (SolovevXpoint,     (6.2, 5.3, 0.32, 1.8, 0.45, -0.155, 0.88, -0.60),   [0., 0., 2π],   SolovevXpointEquilibrium),
-    # (SolovevQuadratic,  (6.2, 5.3, 1., 1.),                                 [0., 0., 2π],   SolovevQuadraticEquilibrium),
+    (Solovev,           (6.2, 5.3, 0.32, 1.8, 0.45, -0.155),                [0., 0., 2π],   SolovevEquilibrium),
+    (SolovevXpoint,     (6.2, 5.3, 0.32, 1.8, 0.45, -0.155, 0.88, -0.60),   [0., 0., 2π],   SolovevXpointEquilibrium),
+    (SolovevQuadratic,  (6.2, 5.3, 1., 1.),                                 [0., 0., 2π],   SolovevQuadraticEquilibrium),
 )
 
 
