@@ -8,6 +8,7 @@ Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
+SymPy = "24249f21-da20-56a4-8eb1-6a02cf4ae2e6"
 
 [compat]
 Combinatorics = "^1.0"
