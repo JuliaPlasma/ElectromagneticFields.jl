@@ -154,11 +154,11 @@ end
 function test_axisymmetric_tokamak_toroidal_equilibrium(equ_mod, t=0., x=[0.5, π/10, π/5])
     @test equ_mod.B¹(t,x) == 0
     @test equ_mod.B²(t,x) == equ_mod.B₀ / equ_mod.q₀ / equ_mod.R(t,x)
-    @test equ_mod.B³(t,x) == equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t,x)^2
+    @test equ_mod.B³(t,x) ≈ equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t,x)^2 atol=1E-14
 
     @test equ_mod.B₁(t,x) == 0
     @test equ_mod.B₂(t,x) == equ_mod.B₀ / equ_mod.q₀ * equ_mod.r(t,x)^2 / equ_mod.R(t,x)
-    @test equ_mod.B₃(t,x) == equ_mod.B₀ * equ_mod.R₀
+    @test equ_mod.B₃(t,x) ≈ equ_mod.B₀ * equ_mod.R₀ atol=1E-14
 end
 
 function test_symmetric_quadratic_equilibrium(equ_mod, t=0., x=[1.0, 0.5, 0.5])

@@ -1,4 +1,5 @@
 
+# using SymEngine: N, symbols, diff, expand, subs
 using SymPy: N, Sym, diff, expand, solve, subs
 
 """
@@ -66,6 +67,37 @@ function SolovevXpoint(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, a::T, xₛₑₚ::
         expand(subs(subs(diff(ψ, x[2], 2), x[1], 1-ϵ), x[2], 0) + (1 - asin(δ))^2 / (ϵ * κ^2) * subs(subs(diff(ψ, x[1]), x[1], 1-ϵ), x[2], 0)),
         expand(subs(subs(diff(ψ, x[1], 2), x[1], 1-δ*ϵ), x[2], κ*ϵ) - κ / (ϵ * (1 - δ^2)) * subs(subs(diff(ψ, x[2]), x[1], 1-δ*ϵ), x[2], κ*ϵ))
     ]
+
+    # x = [symbols("x" * string(i)) for i in 1:3]
+    # c = [symbols("c" * string(i)) for i in 1:n]
+    #
+    # ψ = (ψ₀(x,a) + c[1]  * ψ₁(x)
+    #              + c[2]  * ψ₂(x)
+    #              + c[3]  * ψ₃(x)
+    #              + c[4]  * ψ₄(x)
+    #              + c[5]  * ψ₅(x)
+    #              + c[6]  * ψ₆(x)
+    #              + c[7]  * ψ₇(x)
+    #              + c[8]  * ψ₈(x)
+    #              + c[9]  * ψ₉(x)
+    #              + c[10] * ψ₁₀(x)
+    #              + c[11] * ψ₁₁(x)
+    #              + c[12] * ψ₁₂(x) )
+    #
+    # eqs = [
+    #     expand(subs(subs(ψ, x[1]=>1+ϵ), x[2]=>0)),
+    #     expand(subs(subs(ψ, x[1]=>1-ϵ), x[2]=>0)),
+    #     expand(subs(subs(ψ, x[1]=>1-δ*ϵ), x[2]=>κ*ϵ)),
+    #     expand(subs(subs(ψ, x[1]=>xₛₑₚ), x[2]=>yₛₑₚ)),
+    #     expand(subs(subs(diff(ψ, x[2]), x[1]=>1+ϵ), x[2]=>0)),
+    #     expand(subs(subs(diff(ψ, x[2]), x[1]=>1-ϵ), x[2]=>0)),
+    #     expand(subs(subs(diff(ψ, x[1]), x[1]=>1-δ*ϵ), x[2]=>κ*ϵ)),
+    #     expand(subs(subs(diff(ψ, x[1]), x[1]=>xₛₑₚ), x[2]=>yₛₑₚ)),
+    #     expand(subs(subs(diff(ψ, x[2]), x[1]=>xₛₑₚ), x[2]=>yₛₑₚ)),
+    #     expand(subs(subs(diff(ψ, x[2], 2), x[1]=>1+ϵ), x[2]=>0) - (1 + asin(δ))^2 / (ϵ * κ^2) * subs(subs(diff(ψ, x[1]), x[1]=>1+ϵ), x[2]=>0)),
+    #     expand(subs(subs(diff(ψ, x[2], 2), x[1]=>1-ϵ), x[2]=>0) + (1 - asin(δ))^2 / (ϵ * κ^2) * subs(subs(diff(ψ, x[1]), x[1]=>1-ϵ), x[2]=>0)),
+    #     expand(subs(subs(diff(ψ, x[1], 2), x[1]=>1-δ*ϵ), x[2]=>κ*ϵ) - κ / (ϵ * (1 - δ^2)) * subs(subs(diff(ψ, x[2]), x[1]=>1-δ*ϵ), x[2]=>κ*ϵ))
+    # ]
 
     csym = solve(eqs, c)
     cnum = [N(csym[c[i]]) for i in 1:n]
