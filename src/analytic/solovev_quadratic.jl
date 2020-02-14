@@ -1,6 +1,3 @@
-
-using SymPy: N, Sym, diff, expand, solve, subs
-
 """
 Quadratic Solov'ev equilibrium in (R,Z,phi) coordinates.
 Based on McCarthy, Physics of Plasmas 6, 3554, 1999.

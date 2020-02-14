@@ -1,10 +1,11 @@
 
 using Combinatorics
-using SymPy
+using SymEngine
+# using SymPy
 
-simplify(x::Real) = x
-simplify(x::SymPy.Sym) = x
-atan2(y::SymPy.Sym, x::SymPy.Sym) = atan(y, x)
+# simplify(x::Real) = x
+# simplify(x::SymPy.Sym) = x
+# atan2(y::SymPy.Sym, x::SymPy.Sym) = atan(y, x)
 
 abstract type AnalyticEquilibrium <: MagneticEquilibrium end
 abstract type AnalyticPerturbation <: MagneticEquilibrium end
@@ -60,12 +61,12 @@ A₃(x::AbstractArray{T,1}, pert::ZeroPerturbation) where {T} = zero(T)
 
 "Returns the i-th component of the vector corresponding to the one-form α"
 function get_vector_component(α, g̅, i)
-    simplify(factor(g̅[i,1] * α[1] + g̅[i,2] * α[2] + g̅[i,3] * α[3]))
+    (expand(g̅[i,1] * α[1] + g̅[i,2] * α[2] + g̅[i,3] * α[3]))
 end
 
 "Returns the m-th component of the one-form corresponding to the two-form β"
 function hodge²¹(β, g̅, J, m)
-    α = Sym(0)
+    α = 0
 
     for i in 1:3
         for j in 1:3
@@ -77,7 +78,7 @@ function hodge²¹(β, g̅, J, m)
         end
     end
 
-    return simplify(factor(J*α))
+    return (expand(J*α))
 end
 
 
@@ -88,7 +89,7 @@ Generate functions for evaluating analytic equilibria.
 function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::AnalyticPerturbation; output=0)
     # define symbols for coordinates x = (x₁, x₂, x₃),
     # positive=true is set so that sqrt(x^2) does not become |x^2|
-    x₁, x₂, x₃ = symbols("x₁, x₂, x₃", real=true, positive=true)
+    x₁, x₂, x₃ = symbols("x₁, x₂, x₃")#, real=true, positive=true)
     x = [x₁, x₂, x₃]
 
     # check for compatible metric
@@ -105,13 +106,13 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     ginv = inv(gmat)
     for i in 1:3
         for j in 1:3
-            ginv[i,j] = simplify(factor(ginv[i,j]))
+            ginv[i,j] = (expand(ginv[i,j]))
         end
     end
     symprint("g⁻¹", ginv, output, 2)
 
     # compute Jacobian determinant
-    # Jdet² = factor(det(gmat))
+    # Jdet² = expand(det(gmat))
     # symprint("J²", Jdet², output, 2)
 
     # Jdet = sqrt(Jdet²)
@@ -127,23 +128,23 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("Avec", Avec, output, 2)
 
     # compute Jacobian of vector potential A
-    DA = [simplify(diff(A¹[i], x[j])) for i in 1:3, j in 1:3]
+    DA = [expand(diff(A¹[i], x[j])) for i in 1:3, j in 1:3]
     symprint("DA", DA, output, 3)
 
     # compute second derivative of vector potential A
-    DDA1 = [simplify(factor(diff(diff(A¹[1], x[i]), x[j]))) for i in 1:3, j in 1:3]
+    DDA1 = [(expand(diff(diff(A¹[1], x[i]), x[j]))) for i in 1:3, j in 1:3]
     symprint("DDA1", DDA1, output, 3)
 
-    DDA2 = [simplify(factor(diff(diff(A¹[2], x[i]), x[j]))) for i in 1:3, j in 1:3]
+    DDA2 = [(expand(diff(diff(A¹[2], x[i]), x[j]))) for i in 1:3, j in 1:3]
     symprint("DDA2", DDA2, output, 3)
 
-    DDA3 = [simplify(factor(diff(diff(A¹[3], x[i]), x[j]))) for i in 1:3, j in 1:3]
+    DDA3 = [(expand(diff(diff(A¹[3], x[i]), x[j]))) for i in 1:3, j in 1:3]
     symprint("DDA3", DDA3, output, 3)
 
     # compute components of magnetic field B
-    Bᶜ = [simplify(factor(diff(A¹[3], x[2]) - diff(A¹[2], x[3]))),
-          simplify(factor(diff(A¹[1], x[3]) - diff(A¹[3], x[1]))),
-          simplify(factor(diff(A¹[2], x[1]) - diff(A¹[1], x[2])))]
+    Bᶜ = [(expand(diff(A¹[3], x[2]) - diff(A¹[2], x[3]))),
+          (expand(diff(A¹[1], x[3]) - diff(A¹[3], x[1]))),
+          (expand(diff(A¹[2], x[1]) - diff(A¹[1], x[2])))]
     symprint("Bᶜ", Bᶜ, output, 2)
 
     # compute magnetic field two-form B²
@@ -161,11 +162,11 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("Bvec", Bvec, output, 2)
 
     # compute absolute value |B| of B
-    Babs = simplify(sqrt(factor(B¹[1] * Bvec[1] + B¹[2] * Bvec[2] + B¹[3] * Bvec[3])))
+    Babs = (sqrt(expand(B¹[1] * Bvec[1] + B¹[2] * Bvec[2] + B¹[3] * Bvec[3])))
     symprint("|B|", Babs, output, 2)
 
     # compute magnetic unit one-form
-    b¹ = [simplify(factor( B¹[i] / Babs )) for i in 1:3]
+    b¹ = [(expand( B¹[i] / Babs )) for i in 1:3]
     symprint("b¹", b¹, output, 2)
 
     # compute unit magnetic field in contravariant coordinates
@@ -202,9 +203,9 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     φ⁰ = φ(x, equ) .+ φ(x, pert)
 
     # compute components of electric field E
-    E¹ = [simplify(factor(diff(-φ⁰, x[1]))),
-          simplify(factor(diff(-φ⁰, x[2]))),
-          simplify(factor(diff(-φ⁰, x[3])))]
+    E¹ = [(expand(diff(-φ⁰, x[1]))),
+          (expand(diff(-φ⁰, x[2]))),
+          (expand(diff(-φ⁰, x[3])))]
     symprint("E¹", E¹, output, 2)
 
     # compute electric field in contravariant coordinates
@@ -265,7 +266,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
         end
     end
 
-    functions
+    (x₁, x₂, x₃), functions
 end
 
 
@@ -285,7 +286,7 @@ function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
     end
 
     parameters = fieldnames(typeof(equ))
-    functions = generate_equilibrium_functions(equ, pert; output=output)
+    x, functions = generate_equilibrium_functions(equ, pert; output=output)
 
     equ_code = :(  )
 
@@ -311,15 +312,7 @@ function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
 
         output ≥ 1 ? println("Generating function ", key) : nothing
 
-        # patch for removing Warnings with Julia v0.6 and SymPy v1.0
-        f_str  = sympy.julia_code(f_expr)
-        f_str  = replace(f_str, ".+" => " .+ ")
-        f_str  = replace(f_str, ".-" => " .- ")
-        f_str  = replace(f_str, ".*" => " .* ")
-        f_str  = replace(f_str, "./" => " ./ ")
-        f_str  = replace(f_str, ".^" => " .^ ")
-        f_body = Meta.parse(f_str)
-
+        f_body = convert(Expr, f_expr)
         output ≥ 2 ? println("   ", f_body) : nothing
 
         f_code = quote
