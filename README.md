@@ -9,7 +9,7 @@
 [![Build Status](https://travis-ci.org/DDMGNI/ElectromagneticFields.jl.svg?branch=master)](https://travis-ci.org/DDMGNI/ElectromagneticFields.jl)
 [![Coverage Status](https://coveralls.io/repos/github/DDMGNI/ElectromagneticFields.jl/badge.svg)](https://coveralls.io/github/DDMGNI/ElectromagneticFields.jl)
 [![codecov](https://codecov.io/gh/DDMGNI/ElectromagneticFields.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/DDMGNI/ElectromagneticFields.jl)
-
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.3662494.svg)](https://doi.org/10.5281/zenodo.3662494)
 
 ElectromagneticFields.jl provides a common interface for evaluating analytical and numerical magnetic equilibria, general electromagnetic fields and in the future also simple Maxwell solvers.
 For analytical equilibria, it generates Julia code providing high-level evaluation routines. Numerical equilibria
