@@ -2,33 +2,15 @@
 abstract type CartesianEquilibrium <: AnalyticEquilibrium end
 abstract type CartesianPerturbation <: AnalyticPerturbation end
 
-CartesianEquPert = Union{CartesianEquilibrium, CartesianPerturbation}
+CartesianField = Union{CartesianEquilibrium, CartesianPerturbation}
 
 
-function X(x::AbstractArray{T,1}, equ::CartesianEquPert) where {T <: Number}
-    x[1]
-end
+X(x::AbstractVector, ::CartesianField) = x[1]
+Y(x::AbstractVector, ::CartesianField) = x[2]
+Z(x::AbstractVector, ::CartesianField) = x[3]
 
-function Y(x::AbstractArray{T,1}, equ::CartesianEquPert) where {T <: Number}
-    x[2]
-end
+J(x::AbstractVector, ::CartesianField) = one(eltype(x))
 
-function Z(x::AbstractArray{T,1}, equ::CartesianEquPert) where {T <: Number}
-    x[3]
-end
-
-function J(x::AbstractArray{T,1}, equ::CartesianEquPert) where {T <: Number}
-    one(T)
-end
-
-function g₁₁(x::AbstractArray{T,1}, equ::CartesianEquPert) where {T <: Number}
-    one(T)
-end
-
-function g₂₂(x::AbstractArray{T,1}, equ::CartesianEquPert) where {T <: Number}
-    one(T)
-end
-
-function g₃₃(x::AbstractArray{T,1}, equ::CartesianEquPert) where {T <: Number}
-    one(T)
-end
+g₁₁(x::AbstractVector, ::CartesianField) = one(eltype(x))
+g₂₂(x::AbstractVector, ::CartesianField) = one(eltype(x))
+g₃₃(x::AbstractVector, ::CartesianField) = one(eltype(x))

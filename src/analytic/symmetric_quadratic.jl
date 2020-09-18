@@ -29,39 +29,17 @@ function Base.show(io::IO, equ::SymmetricQuadratic)
 end
 
 
-function R(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
-    r(x,equ)
-end
+r²(x::AbstractVector, equ::SymmetricQuadratic) = X(x,equ)^2 + Y(x,equ)^2
+r(x::AbstractVector, equ::SymmetricQuadratic) = sqrt(r²(x,equ))
+R(x::AbstractVector, equ::SymmetricQuadratic) = r(x,equ)
+θ(x::AbstractVector, equ::SymmetricQuadratic) = atan(Y(x,equ), X(x,equ))
+ϕ(x::AbstractVector, equ::SymmetricQuadratic) = θ(x,equ)
 
-function r(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
-    sqrt(r²(x,equ))
-end
+A₁(x::AbstractVector, equ::SymmetricQuadratic) = - equ.B₀ * x[2] * (2 + x[1]^2 + x[2]^2) / 4
+A₂(x::AbstractVector, equ::SymmetricQuadratic) = + equ.B₀ * x[1] * (2 + x[1]^2 + x[2]^2) / 4
+A₃(x::AbstractVector, equ::SymmetricQuadratic) = zero(eltype(x))
 
-function r²(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
-    X(x,equ)^2 + Y(x,equ)^2
-end
-
-function θ(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
-    atan2(Y(x,equ), X(x,equ))
-end
-
-function ϕ(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
-    θ(x,equ)
-end
-
-
-function A₁(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
-    - equ.B₀ * x[2] * (2 + x[1]^2 + x[2]^2) / 4
-end
-
-function A₂(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
-    + equ.B₀ * x[1] * (2 + x[1]^2 + x[2]^2) / 4
-end
-
-function A₃(x::AbstractArray{T,1}, equ::SymmetricQuadratic) where {T <: Number}
-    zero(eltype(x))
-end
-
+get_functions(::SymmetricQuadratic) = (X=X, Y=Y, Z=Z, R=R, r=r, θ=θ, ϕ=ϕ, r²=r²)
 
 macro symmetric_quadratic_equilibrium()
     generate_equilibrium_code(SymmetricQuadratic(1.); output=false)

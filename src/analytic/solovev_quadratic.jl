@@ -33,17 +33,9 @@ function Base.show(io::IO, equ::SolovevQuadratic)
 end
 
 
-function A₁(x::AbstractArray{T,1}, equ::SolovevQuadratic) where {T <: Number}
-    zero(T)
-end
-
-function A₂(x::AbstractArray{T,1}, equ::SolovevQuadratic) where {T <: Number}
-    zero(T)
-end
-
-function A₃(x::AbstractArray{T,1}, equ::SolovevQuadratic) where {T <: Number}
-    - equ.a * R(x,equ)^4 / 8 - equ.b * Z(x,equ)^2 / 2
-end
+A₁(x::AbstractVector, equ::SolovevQuadratic) = zero(eltype(x))
+A₂(x::AbstractVector, equ::SolovevQuadratic) = zero(eltype(x))
+A₃(x::AbstractVector, equ::SolovevQuadratic) = - equ.a * R(x,equ)^4 / 8 - equ.b * Z(x,equ)^2 / 2
 
 
 macro solovev_equilibrium_quadratic(R₀, B₀, a, b)

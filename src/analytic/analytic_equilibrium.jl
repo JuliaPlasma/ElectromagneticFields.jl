@@ -1,42 +1,35 @@
 
 using Combinatorics
 using SymEngine
-# using SymPy
 
-# simplify(x::Real) = x
-# simplify(x::SymPy.Sym) = x
-# atan2(y::SymPy.Sym, x::SymPy.Sym) = atan(y, x)
+abstract type AnalyticField <: ElectromagneticField end
+abstract type AnalyticEquilibrium <: AnalyticField end
+abstract type AnalyticPerturbation <: AnalyticField end
 
-abstract type AnalyticEquilibrium <: MagneticEquilibrium end
-abstract type AnalyticPerturbation <: MagneticEquilibrium end
+get_functions(::AnalyticField) = (;)
 
-X(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("X() not implemented for ", ET)
-Y(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("Y() not implemented for ", ET)
-Z(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("Z() not implemented for ", ET)
-R(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("R() not implemented for ", ET)
-r(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("r() not implemented for ", ET)
-θ(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("θ() not implemented for ", ET)
-ϕ(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("ϕ() not implemented for ", ET)
+periodicity(x::AbstractVector, ::AnalyticField) = zero(x)
 
-J(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = error("J() not implemented for ", ET)
+from_cartesian(::AbstractVector, ::AnalyticField) = error("from_cartesian() not implemented for ", ET)
+to_cartesian(::AbstractVector, ::AnalyticField) = error("from_cartesian() not implemented for ", ET)
 
-periodicity(x::AbstractArray{T,1}, equ::ET) where {T, ET <: MagneticEquilibrium} = zero(x)
+J(::AbstractVector, ::AnalyticField) = error("J() not implemented for ", ET)
 
-A₁(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
-A₂(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
-A₃(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
+g₁₁(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
+g₁₂(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
+g₁₃(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
+g₂₁(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
+g₂₂(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
+g₂₃(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
+g₃₁(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
+g₃₂(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
+g₃₃(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
 
-φ(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
+A₁(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
+A₂(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
+A₃(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
 
-g₁₁(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
-g₁₂(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
-g₁₃(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
-g₂₁(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
-g₂₂(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
-g₂₃(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
-g₃₁(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
-g₃₂(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
-g₃₃(x::AbstractArray{T,1}, equ::MagneticEquilibrium) where {T} = zero(T)
+φ(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
 
 function A(x, equ)
     [A₁(x,equ), A₂(x,equ), A₃(x,equ)]
@@ -54,9 +47,9 @@ struct ZeroPerturbation <: AnalyticPerturbation
     ZeroPerturbation() = new("ZeroPerturbation")
 end
 
-A₁(x::AbstractArray{T,1}, pert::ZeroPerturbation) where {T} = zero(T)
-A₂(x::AbstractArray{T,1}, pert::ZeroPerturbation) where {T} = zero(T)
-A₃(x::AbstractArray{T,1}, pert::ZeroPerturbation) where {T} = zero(T)
+A₁(::AbstractVector{T}, ::ZeroPerturbation) where {T} = zero(T)
+A₂(::AbstractVector{T}, ::ZeroPerturbation) where {T} = zero(T)
+A₃(::AbstractVector{T}, ::ZeroPerturbation) where {T} = zero(T)
 
 
 "Returns the i-th component of the vector corresponding to the one-form α"
@@ -158,15 +151,15 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("Bvec", Bvec, output, 2)
 
     # compute absolute value |B| of B
-    Babs = (sqrt((B¹[1] * Bvec[1] + B¹[2] * Bvec[2] + B¹[3] * Bvec[3])))
+    Babs = sqrt(B¹[1] * Bvec[1] + B¹[2] * Bvec[2] + B¹[3] * Bvec[3])
     symprint("|B|", Babs, output, 2)
 
     # compute magnetic unit one-form
-    b¹ = [ B¹[i] / Babs for i in 1:3]
+    b¹ = [B¹[i] / Babs for i in 1:3]
     symprint("b¹", b¹, output, 2)
 
     # compute unit magnetic field in contravariant coordinates
-    bvec = [get_vector_component(b¹, ginv, i) for i in 1:3]
+    bvec = [Bvec[i] / Babs for i in 1:3]
     symprint("bvec", bvec, output, 2)
 
     # compute Jacobian of magnetic field B
@@ -214,14 +207,9 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     indices   = ["₁", "₂", "₃"]
     indicesup = ["¹", "²", "³"]
 
-    functions["X"] = X(x, equ)
-    functions["Y"] = Y(x, equ)
-    functions["Z"] = Z(x, equ)
-
-    try functions["R"] = R(x, equ) catch end
-    try functions["r"] = r(x, equ) catch end
-    try functions["θ"] = θ(x, equ) catch end
-    try functions["ϕ"] = ϕ(x, equ) catch end
+    for f in pairs(get_functions(equ))
+        functions[string(f[1])] = f[2](x, equ)
+    end
 
     functions["J"] = Jdet
     functions["B"] = Babs

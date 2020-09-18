@@ -37,43 +37,18 @@ function Base.show(io::IO, equ::AxisymmetricTokamakCartesian)
 end
 
 
-function R(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    sqrt(R²(x,equ))
-end
+R²(x::AbstractVector, equ::AxisymmetricTokamakCartesian) = X(x,equ)^2 + Y(x,equ)^2
+r²(x::AbstractVector, equ::AxisymmetricTokamakCartesian) = (R(x,equ) - equ.R₀)^2 + Z(x,equ)^2
+R(x::AbstractVector, equ::AxisymmetricTokamakCartesian) = sqrt(R²(x,equ))
+r(x::AbstractVector, equ::AxisymmetricTokamakCartesian) = sqrt(r²(x,equ))
+θ(x::AbstractVector, equ::AxisymmetricTokamakCartesian) = atan(Z(x,equ), R(x,equ) - equ.R₀)
+ϕ(x::AbstractVector, equ::AxisymmetricTokamakCartesian) = atan(Y(x,equ), X(x,equ))
 
-function R²(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    X(x,equ)^2 + Y(x,equ)^2
-end
+A₁(x::AbstractVector, equ::AxisymmetricTokamakCartesian) = + equ.B₀ * (equ.R₀ * X(x,equ) * Z(x,equ) - r²(x,equ) * Y(x,equ) / equ.q₀ ) / R²(x,equ) / 2
+A₂(x::AbstractVector, equ::AxisymmetricTokamakCartesian) = + equ.B₀ * (equ.R₀ * Y(x,equ) * Z(x,equ) + r²(x,equ) * X(x,equ) / equ.q₀ ) / R²(x,equ) / 2
+A₃(x::AbstractVector, equ::AxisymmetricTokamakCartesian) = - equ.B₀ * equ.R₀ * log(R(x,equ) / equ.R₀) / 2
 
-function r(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    sqrt(r²(x,equ))
-end
-
-function r²(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    (R(x,equ) - equ.R₀)^2 + Z(x,equ)^2
-end
-
-function θ(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    atan2(Z(x, equ), R(x, equ) - equ.R₀)
-end
-
-function ϕ(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    atan2(Y(x,equ), X(x,equ))
-end
-
-
-function A₁(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    + equ.B₀ * (equ.R₀ * X(x,equ) * Z(x,equ) - r²(x,equ) * Y(x,equ) / equ.q₀ ) / R²(x,equ) / 2
-end
-
-function A₂(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    + equ.B₀ * (equ.R₀ * Y(x,equ) * Z(x,equ) + r²(x,equ) * X(x,equ) / equ.q₀ ) / R²(x,equ) / 2
-end
-
-function A₃(x::AbstractArray{T,1}, equ::AxisymmetricTokamakCartesian) where {T <: Number}
-    - equ.B₀ * equ.R₀ * log(R(x,equ) / equ.R₀) / 2
-end
-
+get_functions(::AxisymmetricTokamakCartesian) = (X=X, Y=Y, Z=Z, R=R, r=r, θ=θ, ϕ=ϕ, R²=R², r²=r²)
 
 macro axisymmetric_tokamak_equilibrium_cartesian(R₀, B₀, q₀)
     generate_equilibrium_code(AxisymmetricTokamakCartesian(R₀, B₀, q₀); output=false)

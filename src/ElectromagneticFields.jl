@@ -3,13 +3,13 @@ module ElectromagneticFields
     using Documenter
     using LinearAlgebra
 
-    export MagneticEquilibrium
+    export ElectromagneticField
 
-    include("equilibrium.jl")
+    include("field.jl")
 
-    export AnalyticEquilibrium, AnalyticPerturbation, ZeroPerturbation
+    export AnalyticField, AnalyticEquilibrium, AnalyticPerturbation, ZeroPerturbation
 
-    export CartesianEquilibrium, CartesianPerturbation
+    export CartesianField, CartesianEquilibrium, CartesianPerturbation
 
     export load_equilibrium, periodicity
 

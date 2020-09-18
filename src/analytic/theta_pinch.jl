@@ -30,38 +30,18 @@ function Base.show(io::IO, equ::ThetaPinch)
 end
 
 
-function R(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    r(x,equ)
-end
+R(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number} = r(x,equ)
+r(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number} = sqrt(r²(x,equ))
+r²(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number} = X(x,equ)^2 + Y(x,equ)^2
+θ(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number} = atan(Y(x,equ), X(x,equ))
+ϕ(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number} = θ(x,equ)
 
-function r(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    sqrt(r²(x,equ))
-end
-
-function r²(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    X(x,equ)^2 + Y(x,equ)^2
-end
-
-function θ(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    atan2(Y(x,equ), X(x,equ))
-end
-
-function ϕ(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    θ(x,equ)
-end
+A₁(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number} = - equ.B₀ * Y(x,equ) / 2
+A₂(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number} = + equ.B₀ * X(x,equ) / 2
+A₃(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number} = zero(eltype(x))
 
 
-function A₁(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    - equ.B₀ * Y(x,equ) / 2
-end
-
-function A₂(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    + equ.B₀ * X(x,equ) / 2
-end
-
-function A₃(x::AbstractArray{T,1}, equ::ThetaPinch) where {T <: Number}
-    zero(eltype(x))
-end
+get_functions(::ThetaPinch) = (X=X, Y=Y, Z=Z, R=R, r=r, θ=θ, ϕ=ϕ, r²=r²)
 
 
 macro zpinch_equilibrium(R₀, B₀)

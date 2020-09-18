@@ -1,2 +1,0 @@
-
-abstract type MagneticEquilibrium end

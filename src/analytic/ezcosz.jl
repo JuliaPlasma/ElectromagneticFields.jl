@@ -29,6 +29,9 @@ function φ(x::AbstractArray{T,1}, equ::EzCosZ) where {T <: Number}
 end
 
 
+get_functions(::EzCosZ) = (X=X, Y=Y, Z=Z)
+
+
 macro ezcosz_perturbation(E₀=1.)
     generate_equilibrium_code(EzCosZ(E₀); output=false)
 end
