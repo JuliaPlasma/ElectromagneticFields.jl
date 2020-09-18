@@ -12,7 +12,7 @@ SymPy = "24249f21-da20-56a4-8eb1-6a02cf4ae2e6"
 
 [compat]
 Combinatorics = "^1.0"
-Documenter = "0.23, 0.24"
+Documenter = "0.23, 0.24, 0.25"
 SymEngine = "0.7, 0.8"
 SymPy = "^1.0"
 julia = "^1.1"
