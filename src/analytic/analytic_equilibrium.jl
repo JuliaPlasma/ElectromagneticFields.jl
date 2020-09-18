@@ -8,22 +8,30 @@ abstract type AnalyticPerturbation <: AnalyticField end
 
 get_functions(::AnalyticField) = (;)
 
-periodicity(x::AbstractVector, ::AnalyticField) = zero(x)
+x¹(::AbstractVector{T}, ::AnalyticField) where {T} = error("x¹() not implemented for ", ET)
+x²(::AbstractVector{T}, ::AnalyticField) where {T} = error("x²() not implemented for ", ET)
+x³(::AbstractVector{T}, ::AnalyticField) where {T} = error("x³() not implemented for ", ET)
 
-from_cartesian(::AbstractVector, ::AnalyticField) = error("from_cartesian() not implemented for ", ET)
-to_cartesian(::AbstractVector, ::AnalyticField) = error("from_cartesian() not implemented for ", ET)
+ξ¹(::AbstractVector{T}, ::AnalyticField) where {T} = error("ξ¹() not implemented for ", ET)
+ξ²(::AbstractVector{T}, ::AnalyticField) where {T} = error("ξ²() not implemented for ", ET)
+ξ³(::AbstractVector{T}, ::AnalyticField) where {T} = error("ξ³() not implemented for ", ET)
 
 J(::AbstractVector, ::AnalyticField) = error("J() not implemented for ", ET)
 
-g₁₁(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
+g₁₁(::AbstractVector{T}, ::AnalyticField) where {T} = one(T)
 g₁₂(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
 g₁₃(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
 g₂₁(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
-g₂₂(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
+g₂₂(::AbstractVector{T}, ::AnalyticField) where {T} = one(T)
 g₂₃(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
 g₃₁(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
 g₃₂(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
-g₃₃(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
+g₃₃(::AbstractVector{T}, ::AnalyticField) where {T} = one(T)
+
+periodicity(x::AbstractVector, ::AnalyticField) = zero(x)
+
+from_cartesian(x::AbstractVector, equ::AnalyticField) = [ξ¹(x,equ), ξ²(x,equ), ξ³(x,equ)]
+to_cartesian(ξ::AbstractVector, equ::AnalyticField) = [x¹(ξ,equ), x²(ξ,equ), x³(ξ,equ)]
 
 A₁(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
 A₂(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
@@ -201,7 +209,6 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     Evec = [get_vector_component(E¹, ginv, i) for i in 1:3]
     symprint("Evec", Evec, output, 2)
 
-
     # collect all functions to generate code for
     functions = Dict{String,Any}()
     indices   = ["₁", "₂", "₃"]
@@ -210,6 +217,20 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     for f in pairs(get_functions(equ))
         functions[string(f[1])] = f[2](x, equ)
     end
+
+    # cartesian coordinates
+    functions["x¹"] = x¹(x, equ)
+    functions["x²"] = x²(x, equ)
+    functions["x³"] = x³(x, equ)
+
+    # curvilinear coordinates
+    functions["ξ¹"] = ξ¹(x, equ)
+    functions["ξ²"] = ξ²(x, equ)
+    functions["ξ³"] = ξ³(x, equ)
+
+    # coordinate conversion functions
+    functions["from_cartesian"] = from_cartesian(x, equ)
+    functions["to_cartesian"] = to_cartesian(x, equ)
 
     functions["J"] = Jdet
     functions["B"] = Babs
@@ -251,6 +272,18 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     end
 
     (x₁, x₂, x₃), functions
+end
+
+
+function replace_expr!(e, old, new)
+    for (i,a) in enumerate(e.args)
+        if a==old
+            e.args[i] = new
+        elseif a isa Expr
+            replace_expr!(a, old, new)
+        end
+    end
+    e
 end
 
 
@@ -297,6 +330,7 @@ function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
         output ≥ 1 ? println("Generating function ", key) : nothing
 
         f_body = convert(Expr, f_expr)
+        replace_expr!(f_body, :atan2, :atan)
         output ≥ 2 ? println("   ", f_body) : nothing
 
         f_code = quote

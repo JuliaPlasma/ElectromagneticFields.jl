@@ -1,3 +1,5 @@
+using SymEngine
+
 @doc raw"""
 Axisymmetric tokamak equilibrium in (R,Z,ϕ) coordinates with covariant
 components of the vector potential given by
@@ -51,6 +53,14 @@ J(x::AbstractVector, equ::AxisymmetricTokamakCylindrical) = R(x,equ)
 A₁(x::AbstractVector, equ::AxisymmetricTokamakCylindrical) = + equ.B₀ * equ.R₀ * Z(x,equ) / R(x,equ) / 2
 A₂(x::AbstractVector, equ::AxisymmetricTokamakCylindrical) = - equ.B₀ * equ.R₀ * log(R(x,equ) / equ.R₀) / 2
 A₃(x::AbstractVector, equ::AxisymmetricTokamakCylindrical) = - equ.B₀ * r²(x,equ) / equ.q₀ / 2
+
+x¹(ξ::AbstractVector, equ::AxisymmetricTokamakCylindrical) = X(ξ,equ)
+x²(ξ::AbstractVector, equ::AxisymmetricTokamakCylindrical) = Y(ξ,equ)
+x³(ξ::AbstractVector, equ::AxisymmetricTokamakCylindrical) = Z(ξ,equ)
+
+ξ¹(x::AbstractVector, equ::AxisymmetricTokamakCylindrical) = sqrt(x[1]^2 + x[2]^2)
+ξ²(x::AbstractVector, equ::AxisymmetricTokamakCylindrical) = x[3]
+ξ³(x::AbstractVector, equ::AxisymmetricTokamakCylindrical) = atan(x[2], x[1])
 
 g₁₁(x::AbstractVector, equ::AxisymmetricTokamakCylindrical) = one(eltype(x))
 g₂₂(x::AbstractVector, equ::AxisymmetricTokamakCylindrical) = one(eltype(x))

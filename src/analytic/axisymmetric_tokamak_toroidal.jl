@@ -1,3 +1,5 @@
+using SymEngine
+
 @doc raw"""
 Axisymmetric tokamak equilibrium in (r,θ,ϕ) coordinates with covariant
 components of the vector potential given by
@@ -51,6 +53,14 @@ A₁(x::AbstractVector, equ::AxisymmetricTokamakToroidal) = zero(eltype(x))
 A₂(x::AbstractVector, equ::AxisymmetricTokamakToroidal) = + equ.B₀ * equ.R₀ / cos(θ(x,equ))^2 * ( r(x,equ) * cos(θ(x,equ)) - equ.R₀ * log(R(x,equ) / equ.R₀) )
 A₃(x::AbstractVector, equ::AxisymmetricTokamakToroidal) = - equ.B₀ * r(x,equ)^2 / equ.q₀ / 2
 
+x¹(ξ::AbstractVector, equ::AxisymmetricTokamakToroidal) = X(ξ,equ)
+x²(ξ::AbstractVector, equ::AxisymmetricTokamakToroidal) = Y(ξ,equ)
+x³(ξ::AbstractVector, equ::AxisymmetricTokamakToroidal) = Z(ξ,equ)
+
+ξ¹(x::AbstractVector, equ::AxisymmetricTokamakToroidal) = sqrt((sqrt(x[1]^2 + x[2]^2)-equ.R₀)^2 + x[3]^2)
+ξ²(x::AbstractVector, equ::AxisymmetricTokamakToroidal) = atan(x[3], sqrt(x[1]^2 + x[2]^2)-equ.R₀)
+ξ³(x::AbstractVector, equ::AxisymmetricTokamakToroidal) = atan(x[2], x[1])
+
 g₁₁(x::AbstractVector, equ::AxisymmetricTokamakToroidal) = one(eltype(x))
 g₂₂(x::AbstractVector, equ::AxisymmetricTokamakToroidal) = r(x, equ)^2
 g₃₃(x::AbstractVector, equ::AxisymmetricTokamakToroidal) = R(x, equ)^2
@@ -65,7 +75,6 @@ function periodicity(x::AbstractVector, equ::AxisymmetricTokamakToroidal)
     p[3] = 2π
     return p
 end
-
 
 macro axisymmetric_tokamak_equilibrium_toroidal(R₀, B₀, q₀)
     generate_equilibrium_code(AxisymmetricTokamakToroidal(R₀, B₀, q₀); output=false)

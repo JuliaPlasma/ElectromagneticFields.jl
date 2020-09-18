@@ -64,6 +64,16 @@ function test_equilibrium(equ_mod, t, x)
     @test equ_mod.dA₃dx₁(x...) == equ_mod.dA₃dx₁(t,x)
     @test equ_mod.dA₃dx₂(x...) == equ_mod.dA₃dx₂(t,x)
     @test equ_mod.dA₃dx₃(x...) == equ_mod.dA₃dx₃(t,x)
+    
+    @test equ_mod.x¹(x...) == equ_mod.x¹(t,x)
+    @test equ_mod.x²(x...) == equ_mod.x²(t,x)
+    @test equ_mod.x³(x...) == equ_mod.x³(t,x)
+    
+    @test equ_mod.ξ¹(x...) == equ_mod.ξ¹(t,x)
+    @test equ_mod.ξ²(x...) == equ_mod.ξ²(t,x)
+    @test equ_mod.ξ³(x...) == equ_mod.ξ³(t,x)
+    
+    @test equ_mod.from_cartesian(t, equ_mod.to_cartesian(t, x)) == x
 end
 
 
