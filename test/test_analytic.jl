@@ -77,39 +77,24 @@ function test_equilibrium(equ_mod, t, x)
 end
 
 
-# modules that will hold the generated equilibrium code
-module AxisymmetricTokamakCartesianEquilibrium end
-module AxisymmetricTokamakCylindricalEquilibrium end
-module AxisymmetricTokamakToroidalEquilibrium end
-module SymmetricQuadraticEquilibrium end
-module ThetaPinchEquilibrium end
-module ABCEquilibrium end
-module SolovevEquilibrium end
-module SolovevXpointEquilibrium end
-module SolovevQuadraticEquilibrium end
-
-module SymmetricQuadraticEquilibriumEzCosZPerturbation end
-module ThetaPinchEquilibriumEzCosZPerturbation end
-
-
 # equilibrium list (equilibrium, parameters, periodicity, module)
 eqs = (
-    (AxisymmetricTokamakCartesian,      (2., 3., 2.),   [0., 0., 0.],   AxisymmetricTokamakCartesianEquilibrium),
-    (AxisymmetricTokamakCylindrical,    (2., 3., 2.),   [0., 0., 2π],   AxisymmetricTokamakCylindricalEquilibrium),
-    (AxisymmetricTokamakToroidal,       (2., 3., 2.),   [0., 2π, 2π],   AxisymmetricTokamakToroidalEquilibrium),
-    (SymmetricQuadratic,                (1.),           [0., 0., 0.],   SymmetricQuadraticEquilibrium),
-    (ThetaPinch,                        (1.),           [0., 0., 0.],   ThetaPinchEquilibrium),
-    (ABC,                               (1., 0.5, 0.5), [0., 0., 0.],   ABCEquilibrium),
-    (Solovev,           (6.2, 5.3, 0.32, 1.8, 0.45, -0.155),                [0., 0., 2π],   SolovevEquilibrium),
-    (SolovevXpoint,     (6.2, 5.3, 0.32, 1.8, 0.45, -0.155, 0.88, -0.60),   [0., 0., 2π],   SolovevXpointEquilibrium),
-    (SolovevQuadratic,  (6.2, 5.3, 1., 1.),                                 [0., 0., 2π],   SolovevQuadraticEquilibrium),
+    (AxisymmetricTokamakCartesian,      (2., 3., 2.),   [0., 0., 0.]),
+    (AxisymmetricTokamakCylindrical,    (2., 3., 2.),   [0., 0., 2π]),
+    (AxisymmetricTokamakToroidal,       (2., 3., 2.),   [0., 2π, 2π]),
+    (SymmetricQuadratic,                (1.),           [0., 0., 0.]),
+    (ThetaPinch,                        (1.),           [0., 0., 0.]),
+    (ABC,                               (1., 0.5, 0.5), [0., 0., 0.]),
+    (Solovev,           (6.2, 5.3, 0.32, 1.8, 0.45, -0.155),                [0., 0., 2π]),
+    (SolovevXpoint,     (6.2, 5.3, 0.32, 1.8, 0.45, -0.155, 0.88, -0.60),   [0., 0., 2π]),
+    (SolovevQuadratic,  (6.2, 5.3, 1., 1.),                                 [0., 0., 2π]),
 )
 
 
 # perturbation list (equilibrium, parameters, perturbation, parameters, module)
 perts = (
-    (SymmetricQuadratic,    (1.),   EzCosZ,    (2.),   SymmetricQuadraticEquilibriumEzCosZPerturbation),
-    (ThetaPinch,            (1.),   EzCosZ,    (2.),   ThetaPinchEquilibriumEzCosZPerturbation),
+    (SymmetricQuadratic,    (1.),   EzCosZ,    (2.)),
+    (ThetaPinch,            (1.),   EzCosZ,    (2.)),
 )
 
 
@@ -119,9 +104,9 @@ x = [1., 1., 1.]
 
 # test equilibria
 @testset "$(rpad(teststring(equ[1]),60))" for equ in eqs begin
-        equ_obj = equ[1](equ[2]...)
-        load_equilibrium(equ_obj, target_module=equ[4])
-        test_equilibrium(equ[4], t, x)
+        # @eval import .$(Symbol(equ[1]))
+        equ_obj = equ[1].init(equ[2]...)
+        test_equilibrium(equ[1], t, x)
         @test periodicity(x, equ_obj) == equ[3]
     end
 end
@@ -130,10 +115,10 @@ println()
 
 # test perturbations
 @testset "$(rpad(teststring(equ[1], equ[3]),60))" for equ in perts begin
-        equ_obj = equ[1](equ[2]...)
-        prt_obj = equ[3](equ[4]...)
-        load_equilibrium(equ_obj, prt_obj, target_module=equ[5])
-        test_equilibrium(equ[5], t, x)
+        # @eval import .$(Symbol(equ[1]))
+        # @eval import .$(Symbol(equ[3]))
+        equ_obj = equ[1].init(equ[2]..., perturbation=equ[3].init(equ[4]...))
+        test_equilibrium(equ[1], t, x)
     end
 end
 println()
@@ -227,11 +212,11 @@ function test_abc_equilibrium(equ_mod, t=0., x=[1.0, 0.5, 0.5])
 end
 
 @testset "$(rpad("Magnetic Fields",60))" begin
-    test_axisymmetric_tokamak_cartesian_equilibrium(AxisymmetricTokamakCartesianEquilibrium)
-    test_axisymmetric_tokamak_cylindrical_equilibrium(AxisymmetricTokamakCylindricalEquilibrium)
-    test_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidalEquilibrium)
-    test_symmetric_quadratic_equilibrium(SymmetricQuadraticEquilibrium)
-    test_theta_pinch_equilibrium(ThetaPinchEquilibrium)
-    test_abc_equilibrium(ABCEquilibrium)
+    test_axisymmetric_tokamak_cartesian_equilibrium(AxisymmetricTokamakCartesian)
+    test_axisymmetric_tokamak_cylindrical_equilibrium(AxisymmetricTokamakCylindrical)
+    test_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidal)
+    test_symmetric_quadratic_equilibrium(SymmetricQuadratic)
+    test_theta_pinch_equilibrium(ThetaPinch)
+    test_abc_equilibrium(ABC)
 end
 println()

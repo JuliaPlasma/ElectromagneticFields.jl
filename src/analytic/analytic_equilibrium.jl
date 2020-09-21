@@ -8,15 +8,15 @@ abstract type AnalyticPerturbation <: AnalyticField end
 
 get_functions(::AnalyticField) = (;)
 
-x¹(::AbstractVector{T}, ::AnalyticField) where {T} = error("x¹() not implemented for ", ET)
-x²(::AbstractVector{T}, ::AnalyticField) where {T} = error("x²() not implemented for ", ET)
-x³(::AbstractVector{T}, ::AnalyticField) where {T} = error("x³() not implemented for ", ET)
+x¹(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("x¹() not implemented for ", ET)
+x²(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("x²() not implemented for ", ET)
+x³(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("x³() not implemented for ", ET)
 
-ξ¹(::AbstractVector{T}, ::AnalyticField) where {T} = error("ξ¹() not implemented for ", ET)
-ξ²(::AbstractVector{T}, ::AnalyticField) where {T} = error("ξ²() not implemented for ", ET)
-ξ³(::AbstractVector{T}, ::AnalyticField) where {T} = error("ξ³() not implemented for ", ET)
+ξ¹(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("ξ¹() not implemented for ", ET)
+ξ²(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("ξ²() not implemented for ", ET)
+ξ³(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("ξ³() not implemented for ", ET)
 
-J(::AbstractVector, ::AnalyticField) = error("J() not implemented for ", ET)
+J(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("J() not implemented for ", ET)
 
 g₁₁(::AbstractVector{T}, ::AnalyticField) where {T} = one(T)
 g₁₂(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
@@ -33,9 +33,9 @@ periodicity(x::AbstractVector, ::AnalyticField) = zero(x)
 from_cartesian(x::AbstractVector, equ::AnalyticField) = [ξ¹(x,equ), ξ²(x,equ), ξ³(x,equ)]
 to_cartesian(ξ::AbstractVector, equ::AnalyticField) = [x¹(ξ,equ), x²(ξ,equ), x³(ξ,equ)]
 
-A₁(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
-A₂(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
-A₃(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
+A₁(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("A₁() not implemented for ", ET)
+A₂(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("A₂() not implemented for ", ET)
+A₃(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("A₃() not implemented for ", ET)
 
 φ(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
 
@@ -55,9 +55,9 @@ struct ZeroPerturbation <: AnalyticPerturbation
     ZeroPerturbation() = new("ZeroPerturbation")
 end
 
-A₁(::AbstractVector{T}, ::ZeroPerturbation) where {T} = zero(T)
-A₂(::AbstractVector{T}, ::ZeroPerturbation) where {T} = zero(T)
-A₃(::AbstractVector{T}, ::ZeroPerturbation) where {T} = zero(T)
+A₁(::AbstractVector{T}, ::AnalyticPerturbation) where {T} = zero(T)
+A₂(::AbstractVector{T}, ::AnalyticPerturbation) where {T} = zero(T)
+A₃(::AbstractVector{T}, ::AnalyticPerturbation) where {T} = zero(T)
 
 
 "Returns the i-th component of the vector corresponding to the one-form α"

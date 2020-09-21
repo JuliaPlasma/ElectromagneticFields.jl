@@ -9,12 +9,12 @@ module ElectromagneticFields
 
     export AnalyticField, AnalyticEquilibrium, AnalyticPerturbation, ZeroPerturbation
 
-    export CartesianField, CartesianEquilibrium, CartesianPerturbation
-
     export load_equilibrium, periodicity
 
     include("analytic/analytic_equilibrium.jl")
     include("analytic/cartesian_equilibrium.jl")
+
+    using .AnalyticCartesianField
 
     export ABC, AxisymmetricTokamakCartesian, AxisymmetricTokamakCylindrical,
            AxisymmetricTokamakToroidal, EzCosZ,
@@ -36,8 +36,7 @@ module ElectromagneticFields
     include("analytic/axisymmetric_tokamak_cylindrical.jl")
     include("analytic/axisymmetric_tokamak_toroidal.jl")
     include("analytic/ezcosz.jl")
-    include("analytic/solovev_common.jl")
-    include("analytic/solovev_psi.jl")
+    include("analytic/solovev_abstract.jl")
     include("analytic/solovev.jl")
     include("analytic/solovev_quadratic.jl")
     include("analytic/solovev_xpoint.jl")
