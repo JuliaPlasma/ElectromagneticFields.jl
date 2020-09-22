@@ -106,4 +106,16 @@ module Solovev
         return equilibrium
     end
 
+    function ITER(; perturbation=ZeroPerturbation())
+        equilibrium = SolovevEquilibriumITER()
+        load_equilibrium(equilibrium, perturbation; target_module=SolovevXpoint)
+        return equilibrium
+    end
+
+    function NSTX(; perturbation=ZeroPerturbation())
+        equilibrium = SolovevEquilibriumNSTX()
+        load_equilibrium(equilibrium, perturbation; target_module=SolovevXpoint)
+        return equilibrium
+    end
+
 end
