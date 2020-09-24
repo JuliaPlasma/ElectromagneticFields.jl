@@ -86,13 +86,13 @@ module Solovev
 
 
     function ElectromagneticFields.A₃(x::AbstractArray{T,1}, equ::SolovevEquilibrium) where {T <: Number}
-        ψ₀(x, equ.a) + equ.c[1] * ψ₁(x)
-                     + equ.c[2] * ψ₂(x)
-                     + equ.c[3] * ψ₃(x)
-                     + equ.c[4] * ψ₄(x)
-                     + equ.c[5] * ψ₅(x)
-                     + equ.c[6] * ψ₆(x)
-                     + equ.c[7] * ψ₇(x)
+        ( ψ₀(x, equ.a) + equ.c[1] * ψ₁(x)
+                       + equ.c[2] * ψ₂(x)
+                       + equ.c[3] * ψ₃(x)
+                       + equ.c[4] * ψ₄(x)
+                       + equ.c[5] * ψ₅(x)
+                       + equ.c[6] * ψ₆(x)
+                       + equ.c[7] * ψ₇(x) )
     end
 
 
