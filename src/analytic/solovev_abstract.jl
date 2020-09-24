@@ -8,8 +8,8 @@ module SolovevAbstract
     abstract type AbstractSolovevEquilibrium <: AnalyticEquilibrium end
 
 
-    Z(x::AbstractVector, equ::AbstractSolovevEquilibrium) = x[2] * equ.R₀
     R(x::AbstractVector, equ::AbstractSolovevEquilibrium) = x[1] * equ.R₀
+    Z(x::AbstractVector, equ::AbstractSolovevEquilibrium) = x[2] * equ.R₀
     ϕ(x::AbstractVector, equ::AbstractSolovevEquilibrium) = x[3]
 
     X(x::AbstractVector, equ::AbstractSolovevEquilibrium) = R(x,equ) * cos(ϕ(x,equ))
@@ -19,7 +19,7 @@ module SolovevAbstract
     r²(x::AbstractVector, equ::AbstractSolovevEquilibrium) = (R(x,equ) - equ.R₀)^2 + Z(x,equ)^2
     r(x::AbstractVector, equ::AbstractSolovevEquilibrium) = sqrt(r²(x, equ))
 
-    ElectromagneticFields.J(x::AbstractVector, equ::AbstractSolovevEquilibrium) = R(x,equ)
+    ElectromagneticFields.J(x::AbstractVector, equ::AbstractSolovevEquilibrium) = R(x,equ) * equ.R₀^2
 
     ElectromagneticFields.A₁(x::AbstractVector, equ::AbstractSolovevEquilibrium) = + equ.B₀ * equ.R₀ * x[2] / x[1] / 2
     ElectromagneticFields.A₂(x::AbstractVector, equ::AbstractSolovevEquilibrium) = - equ.B₀ * equ.R₀ * log(x[1]) / 2
@@ -32,8 +32,8 @@ module SolovevAbstract
     ElectromagneticFields.ξ²(x::AbstractVector, equ::AbstractSolovevEquilibrium) = x[3] / equ.R₀
     ElectromagneticFields.ξ³(x::AbstractVector, equ::AbstractSolovevEquilibrium) = atan(x[2], x[1])
 
-    ElectromagneticFields.g₁₁(x::AbstractVector, equ::AbstractSolovevEquilibrium) = one(eltype(x))
-    ElectromagneticFields.g₂₂(x::AbstractVector, equ::AbstractSolovevEquilibrium) = one(eltype(x))
+    ElectromagneticFields.g₁₁(x::AbstractVector, equ::AbstractSolovevEquilibrium) = equ.R₀^2
+    ElectromagneticFields.g₂₂(x::AbstractVector, equ::AbstractSolovevEquilibrium) = equ.R₀^2
     ElectromagneticFields.g₃₃(x::AbstractVector, equ::AbstractSolovevEquilibrium) = R(x, equ)^2
 
     ElectromagneticFields.get_functions(::AbstractSolovevEquilibrium) = (X=X, Y=Y, Z=Z, R=R, r=r, θ=θ, ϕ=ϕ, r²=r²)

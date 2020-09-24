@@ -61,7 +61,7 @@ module AxisymmetricTokamakCylindrical
 
     ElectromagneticFields.A₁(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = + equ.B₀ * equ.R₀ * Z(x,equ) / R(x,equ) / 2
     ElectromagneticFields.A₂(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = - equ.B₀ * equ.R₀ * log(R(x,equ) / equ.R₀) / 2
-    ElectromagneticFields.A₃(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = - equ.B₀ * r²(x,equ) / equ.q₀ / 2
+    ElectromagneticFields.A₃(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = + equ.B₀ * r²(x,equ) / equ.q₀ / 2
 
     ElectromagneticFields.x¹(ξ::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = X(ξ,equ)
     ElectromagneticFields.x²(ξ::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = Y(ξ,equ)

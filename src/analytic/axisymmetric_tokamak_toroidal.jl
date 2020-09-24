@@ -57,10 +57,10 @@ module AxisymmetricTokamakToroidal
     Z(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = r(x,equ) * sin(θ(x,equ))
 
     ElectromagneticFields.J(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = r(x,equ) * R(x,equ)
-
-    ElectromagneticFields.A₁(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = zero(eltype(x))
-    ElectromagneticFields.A₂(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = + equ.B₀ * equ.R₀ / cos(θ(x,equ))^2 * ( r(x,equ) * cos(θ(x,equ)) - equ.R₀ * log(R(x,equ) / equ.R₀) )
-    ElectromagneticFields.A₃(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = - equ.B₀ * r(x,equ)^2 / equ.q₀ / 2
+    
+    ElectromagneticFields.A₁(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = + equ.B₀ * equ.R₀ * ( Z(x,equ) / R(x,equ) * cos(θ(x,equ)) - log(R(x,equ) / equ.R₀) * sin(θ(x,equ)) ) / 2
+    ElectromagneticFields.A₂(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = - equ.B₀ * equ.R₀ * ( Z(x,equ) / R(x,equ) * sin(θ(x,equ)) + log(R(x,equ) / equ.R₀) * cos(θ(x,equ)) ) * r(x,equ) / 2
+    ElectromagneticFields.A₃(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = + equ.B₀ * r(x,equ)^2 / equ.q₀ / 2
 
     ElectromagneticFields.x¹(ξ::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = X(ξ,equ)
     ElectromagneticFields.x²(ξ::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = Y(ξ,equ)
