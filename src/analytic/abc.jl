@@ -19,9 +19,9 @@ module ABC
 
     struct ABCEquilibrium{T <: Number} <: CartesianEquilibrium
         name::String
-        a::T
-        b::T
-        c::T
+        a₀::T
+        b₀::T
+        c₀::T
 
         ABCEquilibrium{T}(a::T, b::T, c::T) where T <: Number = new("ABCEquilibrium", a, b, c)
     end
@@ -31,15 +31,15 @@ module ABC
 
     function Base.show(io::IO, equ::ABCEquilibrium)
         print(io, "ABC Equilibrium with\n")
-        print(io, "  A = ", equ.a, "\n")
-        print(io, "  B = ", equ.b, "\n")
-        print(io, "  C = ", equ.c)
+        print(io, "  A = ", equ.a₀, "\n")
+        print(io, "  B = ", equ.b₀, "\n")
+        print(io, "  C = ", equ.c₀)
     end
 
 
-    ElectromagneticFields.A₁(x::AbstractVector, equ::ABCEquilibrium) = equ.a * sin(x[3]) + equ.c * cos(x[2])
-    ElectromagneticFields.A₂(x::AbstractVector, equ::ABCEquilibrium) = equ.b * sin(x[1]) + equ.a * cos(x[3])
-    ElectromagneticFields.A₃(x::AbstractVector, equ::ABCEquilibrium) = equ.c * sin(x[2]) + equ.b * cos(x[1])
+    ElectromagneticFields.A₁(x::AbstractVector, equ::ABCEquilibrium) = equ.a₀ * sin(x[3]) + equ.c₀ * cos(x[2])
+    ElectromagneticFields.A₂(x::AbstractVector, equ::ABCEquilibrium) = equ.b₀ * sin(x[1]) + equ.a₀ * cos(x[3])
+    ElectromagneticFields.A₃(x::AbstractVector, equ::ABCEquilibrium) = equ.c₀ * sin(x[2]) + equ.b₀ * cos(x[1])
 
     ElectromagneticFields.get_functions(::ABCEquilibrium) = (X=X, Y=Y, Z=Z)
 
