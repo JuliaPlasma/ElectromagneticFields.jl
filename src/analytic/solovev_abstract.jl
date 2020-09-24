@@ -38,7 +38,7 @@ module SolovevAbstract
 
     ElectromagneticFields.get_functions(::AbstractSolovevEquilibrium) = (X=X, Y=Y, Z=Z, R=R, r=r, θ=θ, ϕ=ϕ, r²=r²)
 
-    function ElectromagneticFields.periodicity(x::AbstractArray{T,1}, equ::AbstractSolovevEquilibrium) where {T <: Number}
+    function ElectromagneticFields.periodicity(x::AbstractArray{T,1}, ::AbstractSolovevEquilibrium) where {T <: Number}
         p = zero(x)
         p[3] = 2π
         return p

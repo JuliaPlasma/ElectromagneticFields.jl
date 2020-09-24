@@ -34,7 +34,7 @@ module Solovev
         c::Vector{T}
 
         function SolovevEquilibrium{T}(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, a::T, c::Vector{T}) where T <: Number
-            new("SolovevEquilibrium", R₀, B₀, ϵ, κ, δ, a, c)
+            new("Solovev Equilibrium", R₀, B₀, ϵ, κ, δ, a, c)
         end
     end
 
@@ -45,13 +45,13 @@ module Solovev
         x = [Sym("x" * string(i)) for i in 1:3]
         c = [Sym("c" * string(i)) for i in 1:n]
 
-        ψ = (ψ₀(x,a) + c[1] * ψ₁(x)
-                    + c[2] * ψ₂(x)
-                    + c[3] * ψ₃(x)
-                    + c[4] * ψ₄(x)
-                    + c[5] * ψ₅(x)
-                    + c[6] * ψ₆(x)
-                    + c[7] * ψ₇(x) )
+        ψ = ( ψ₀(x,a) + c[1] * ψ₁(x)
+                      + c[2] * ψ₂(x)
+                      + c[3] * ψ₃(x)
+                      + c[4] * ψ₄(x)
+                      + c[5] * ψ₅(x)
+                      + c[6] * ψ₆(x)
+                      + c[7] * ψ₇(x) )
 
         eqs = [
             expand(subs(subs(ψ, x[1], 1+ϵ), x[2], 0)),
@@ -78,9 +78,9 @@ module Solovev
         print(io, "SolovevEquilibrium Equilibrium with\n")
         print(io, "  R₀ = ", equ.R₀, "\n")
         print(io, "  B₀ = ", equ.B₀, "\n")
-        print(io, "  ϵ  = ", equ.ϵ, "\n")
-        print(io, "  κ  = ", equ.κ, "\n")
-        print(io, "  δ  = ", equ.δ, "\n")
+        print(io, "  ϵ  = ", equ.ϵ,  "\n")
+        print(io, "  κ  = ", equ.κ,  "\n")
+        print(io, "  δ  = ", equ.δ,  "\n")
         print(io, "  a  = ", equ.a)
     end
 
