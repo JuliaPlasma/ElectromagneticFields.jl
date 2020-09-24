@@ -1,5 +1,5 @@
 @doc raw"""
-Symmetric quadratic equilibrium in (x,y,z) coordinates with covariant components of
+Symmetric quadratic mangetic field in (x,y,z) coordinates with covariant components of
 the vector potential given by
 ```math
 A (x,y,z) = \frac{B_0}{4} \big( - y \, (2 + x^2 + y^2) , \, x \, (2 + x^2 + y^2) , \, 0 \big)^T
@@ -29,14 +29,14 @@ module SymmetricQuadratic
     struct SymmetricQuadraticEquilibrium{T <: Number} <: CartesianEquilibrium
         name::String
         B₀::T
-        SymmetricQuadraticEquilibrium{T}(B₀::T) where T <: Number = new("SymmetricQuadraticEquilibrium", B₀)
+        SymmetricQuadraticEquilibrium{T}(B₀::T) where T <: Number = new("Symmetric Quadratic Magnetic Field", B₀)
     end
 
     SymmetricQuadraticEquilibrium(B₀::T=DEFAULT_B₀) where T <: Number = SymmetricQuadraticEquilibrium{T}(B₀)
 
 
     function Base.show(io::IO, equ::SymmetricQuadraticEquilibrium)
-        print(io, "Symmetric Quadratic Equilibrium")
+        print(io, equ.name)
     end
 
 
