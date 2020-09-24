@@ -18,14 +18,22 @@ module ElectromagneticFields
 
     using .AnalyticCartesianField
 
-    export ABC, AxisymmetricTokamakCartesian, AxisymmetricTokamakCylindrical,
-           AxisymmetricTokamakToroidal, EzCosZ,
-           Solovev, SolovevXpoint, SolovevQuadratic, SymmetricQuadratic, ThetaPinch
-    export SolovevITER, SolovevNSTX, SolovevXpointITER, SolovevXpointNSTX
+    export ABC, EzCosZ, 
+           AxisymmetricTokamakCartesian,
+           AxisymmetricTokamakCircular,
+           AxisymmetricTokamakCylindrical,
+           AxisymmetricTokamakToroidalRegularization,
+           Solovev, SolovevXpoint, SolovevQuadratic,
+           SymmetricQuadratic, ThetaPinch
+
+    export SolovevITER, SolovevXpointITER,
+           SolovevNSTX, SolovevXpointNSTX
+
     export @abc_equilibrium,
            @axisymmetric_tokamak_equilibrium_cartesian,
+           @axisymmetric_tokamak_equilibrium_circular,
            @axisymmetric_tokamak_equilibrium_cylindrical,
-           @axisymmetric_tokamak_equilibrium_toroidal,
+           @axisymmetric_tokamak_equilibrium_toroidal_regularisation,
            @ezcosz_perturbation,
            @solovev_equilibrium,
            @solovev_xpoint_equilibrium,
@@ -35,8 +43,9 @@ module ElectromagneticFields
 
     include("analytic/abc.jl")
     include("analytic/axisymmetric_tokamak_cartesian.jl")
+    include("analytic/axisymmetric_tokamak_circular.jl")
     include("analytic/axisymmetric_tokamak_cylindrical.jl")
-    include("analytic/axisymmetric_tokamak_toroidal.jl")
+    include("analytic/axisymmetric_tokamak_toroidal_regularization.jl")
     include("analytic/ezcosz.jl")
     include("analytic/solovev_abstract.jl")
     include("analytic/solovev.jl")
