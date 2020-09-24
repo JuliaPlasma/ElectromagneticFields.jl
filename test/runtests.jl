@@ -1,5 +1,6 @@
 
 using ElectromagneticFields
+using LinearAlgebra
 using Test
 
 println()
