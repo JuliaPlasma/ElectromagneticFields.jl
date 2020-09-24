@@ -98,6 +98,7 @@ eqs = (
     (AxisymmetricTokamakCircular,                (2., 3., 2.),   [0., 2π, 2π]),
     (AxisymmetricTokamakCylindrical,             (2., 3., 2.),   [0., 0., 2π]),
     (AxisymmetricTokamakToroidalRegularization,  (2., 3., 2.),   [0., 2π, 2π]),
+    (Singular,                                   (1.),           [0., 0., 0.]),
     (SymmetricQuadratic,                         (1.),           [0., 0., 0.]),
     (ThetaPinch,                                 (1.),           [0., 0., 0.]),
     (ABC,                                        (1., 0.5, 0.5), [0., 0., 0.]),

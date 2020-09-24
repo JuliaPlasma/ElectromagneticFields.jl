@@ -24,7 +24,7 @@ module ElectromagneticFields
            AxisymmetricTokamakCylindrical,
            AxisymmetricTokamakToroidalRegularization,
            Solovev, SolovevXpoint, SolovevQuadratic,
-           SymmetricQuadratic, ThetaPinch
+           Singular, SymmetricQuadratic, ThetaPinch
 
     export SolovevITER, SolovevXpointITER,
            SolovevNSTX, SolovevXpointNSTX
@@ -38,6 +38,7 @@ module ElectromagneticFields
            @solovev_equilibrium,
            @solovev_xpoint_equilibrium,
            @solovev_equilibrium_quadratic,
+           @singular_equilibrium,
            @symmetric_quadratic_equilibrium,
            @theta_pinch_equilibrium
 
@@ -51,6 +52,7 @@ module ElectromagneticFields
     include("analytic/solovev.jl")
     include("analytic/solovev_quadratic.jl")
     include("analytic/solovev_xpoint.jl")
+    include("analytic/singular.jl")
     include("analytic/symmetric_quadratic.jl")
     include("analytic/theta_pinch.jl")
 
