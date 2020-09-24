@@ -88,17 +88,32 @@ end
 Generate functions for evaluating analytic equilibria.
 """
 function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::AnalyticPerturbation; output=0)
-    # define symbols for coordinates x = (x₁, x₂, x₃),
+    # define symbols for time t and coordinates x = (x₁, x₂, x₃),
     # positive=true is set so that sqrt(x^2) does not become |x^2|
-    x₁, x₂, x₃ = symbols("x₁, x₂, x₃")#, real=true, positive=true)
+    t, x₁, x₂, x₃, ξ₁, ξ₂, ξ₃ = symbols("t, x₁, x₂, x₃, ξ₁, ξ₂, ξ₃")#, real=true, positive=true)
     x = [x₁, x₂, x₃]
+    ξ = [ξ₁, ξ₂, ξ₃]
     symprint("x", x, output, 2)
+    symprint("ξ", ξ, output, 2)
 
     # check for compatible metric
     if typeof(pert) != ZeroPerturbation
         @assert J(x,equ) == J(x,pert)
         @assert g(x,equ) == g(x,pert)
     end
+
+    # cartesian coordinates
+    x̂ = [x¹(x, equ), x²(x, equ), x³(x, equ)]
+
+    # curvilinear coordinates
+    ξ̂ = [ξ¹(x, equ), ξ²(x, equ), ξ³(x, equ)]
+
+    # Jacobian
+    DF = [diff(x̂[i], x[j]) for i in 1:3, j in 1:3]
+    symprint("DF", DF, output, 2)
+
+    DFinv = [diff(ξ̂[i], x[j]) for i in 1:3, j in 1:3]
+    symprint("DFinv", DFinv, output, 2)
 
     # obtain metric
     gmat = g(x, equ)
@@ -107,6 +122,10 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     # invert metric
     ginv = inv(gmat)
     symprint("g⁻¹", ginv, output, 2)
+
+    # derivatives of metric coefficients
+    Dg = [diff(gmat[i,j], x[k]) for i in 1:3, j in 1:3, k in 1:3]
+    symprint("Dg", Dg, output, 3)
 
     # compute Jacobian determinant
     # Jdet² = expand(det(gmat))
@@ -219,18 +238,18 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     end
 
     # cartesian coordinates
-    functions["x¹"] = x¹(x, equ)
-    functions["x²"] = x²(x, equ)
-    functions["x³"] = x³(x, equ)
+    functions["x¹"] = x̂[1]
+    functions["x²"] = x̂[2]
+    functions["x³"] = x̂[3]
 
     # curvilinear coordinates
-    functions["ξ¹"] = ξ¹(x, equ)
-    functions["ξ²"] = ξ²(x, equ)
-    functions["ξ³"] = ξ³(x, equ)
+    functions["ξ¹"] = ξ̂[1]
+    functions["ξ²"] = ξ̂[2]
+    functions["ξ³"] = ξ̂[3]
 
     # coordinate conversion functions
-    functions["from_cartesian"] = from_cartesian(x, equ)
     functions["to_cartesian"] = to_cartesian(x, equ)
+    functions["from_cartesian"] = from_cartesian(x, equ)
 
     functions["J"] = Jdet
     functions["B"] = Babs
@@ -255,6 +274,9 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
             functions["g"  * indices[i]   * indices[j]]   = gmat[i,j]
             functions["g"  * indicesup[i] * indicesup[j]] = ginv[i,j]
 
+            functions["DF" * indices[i]   * indices[j]]   = DF[i,j]
+            functions["DFᵢ"* indices[i]   * indices[j]]   = DFinv[i,j]
+
             functions["B"  * indices[i]   * indices[j]]   = B²[i,j]
 
             functions["dA" * indices[i] * "dx" * indices[j]] = DA[i,j]
@@ -271,7 +293,15 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
         end
     end
 
-    (x₁, x₂, x₃), functions
+    for i in 1:3
+        for j in 1:3
+            for k in 1:3
+                functions["dg" * indices[i] * indices[j] * "dx" * indices[k]] = Dg[i,j,k]
+            end
+        end
+    end
+
+    t, (x₁, x₂, x₃), functions
 end
 
 
@@ -303,7 +333,7 @@ function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
     end
 
     parameters = fieldnames(typeof(equ))
-    x, functions = generate_equilibrium_functions(equ, pert; output=output)
+    t, x, functions = generate_equilibrium_functions(equ, pert; output=output)
 
     equ_code = :(  )
 
@@ -335,17 +365,51 @@ function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
 
         f_code = quote
             export $f_symb
-            @inline function $f_symb(x₁, x₂, x₃)
+            @inline function $f_symb(t, x₁, x₂, x₃)
                 $f_body
             end
             @inline function $f_symb(t::Number, x::AbstractArray{T,1}) where {T <: Number}
-                $f_symb(x[1],x[2],x[3])
+                $f_symb(t,x[1],x[2],x[3])
             end
         end
 
         # append f_code to equ_code
         push!(equ_code.args, f_code)
     end
+
+    # generate Julia code and export special functions
+    f_code = quote
+        export b, b⃗, g, ginv, DF, DFinv
+        b(t,x) = [b₁(t,x), b₂(t,x), b₃(t,x)]
+        b⃗(t,x) = [b¹(t,x), b²(t,x), b³(t,x)]
+        
+        function DF(t, x)
+            [DF₁₁(t,x)  DF₁₂(t,x)  DF₁₃(t,x);
+             DF₂₁(t,x)  DF₂₂(t,x)  DF₂₃(t,x);
+             DF₃₁(t,x)  DF₃₂(t,x)  DF₃₃(t,x);]
+        end
+
+        function DFinv(t, x)
+            [DFᵢ₁₁(t,x)  DFᵢ₁₂(t,x)  DFᵢ₁₃(t,x);
+             DFᵢ₂₁(t,x)  DFᵢ₂₂(t,x)  DFᵢ₂₃(t,x);
+             DFᵢ₃₁(t,x)  DFᵢ₃₂(t,x)  DFᵢ₃₃(t,x);]
+        end
+
+        function g(t, x)
+            [g₁₁(t,x)  g₁₂(t,x)  g₁₃(t,x);
+             g₂₁(t,x)  g₂₂(t,x)  g₂₃(t,x);
+             g₃₁(t,x)  g₃₂(t,x)  g₃₃(t,x);]
+        end        
+
+        function ginv(t, x)
+            [g¹¹(t,x)  g¹²(t,x)  g¹³(t,x);
+             g²¹(t,x)  g²²(t,x)  g²³(t,x);
+             g³¹(t,x)  g³²(t,x)  g³³(t,x);]
+        end        
+    end
+
+    # append f_code to equ_code
+    push!(equ_code.args, f_code)
 
     output ≥ 1 ? println() : nothing
 
