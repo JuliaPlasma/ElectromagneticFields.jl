@@ -65,6 +65,11 @@ function get_vector_component(α, g̅, i)
     g̅[i,1] * α[1] + g̅[i,2] * α[2] + g̅[i,3] * α[3]
 end
 
+"Returns the i-th component of the one-form corresponding to the vector v"
+function get_oneform_component(v, g, i)
+    g[i,1] * v[1] + g[i,2] * v[2] + g[i,3] * v[3]
+end
+
 "Returns the m-th component of the one-form corresponding to the two-form β"
 function hodge²¹(β, g̅, J, m)
     α = 0
@@ -82,7 +87,62 @@ function hodge²¹(β, g̅, J, m)
     return J*α
 end
 
+"Returns the Christoffel symbol Γⱼₖˡ"
+function Γ(g, g̅, x, j, k, l)
+    γ = Basic(0)
+    for r in 1:3
+        γ += g̅[l,r] * diff(g[r,j], x[k])
+        γ += g̅[l,r] * diff(g[r,k], x[j])
+        γ -= g̅[l,r] * diff(g[j,k], x[r])
+    end
+    return γ / 2
+end
 
+
+"Returns the l-th component of the Levi-Civita connection"
+function connection(u, v, x, g, g̅, l)
+    w = Basic(0)
+    for j in 1:3
+        for k in 1:3
+            w += u[j] * ( diff(v[l], x[j]) + v[k] * Γ(g, g̅, x, j, k, l) )
+        end
+    end
+    return w
+end
+
+"Returns the m-th component of the cross-product between the vectors v and w"
+function crossproduct(v, w, g̅, J, l)
+    u = zero(J)
+
+    for i in 1:3
+        for j in 1:3
+            for k in 1:3
+                u += v[i] * w[j] * g̅[k,l] * levicivita([i,j,k])
+            end
+        end
+    end
+
+    return J*u
+end
+
+"Returns the length of the vector v"
+function magnitude(v, g)
+    l = Basic(0)
+
+    for i in 1:3
+        for j in 1:3
+            l += v[i] * g[i,j] * v[j]
+        end
+    end
+
+    return sqrt(l)
+end
+
+"Normalises the vector v in the metric g"
+function normalize(v, g)
+    return v ./ magnitude(v, g)
+end
+    
 
 """
 Generate functions for evaluating analytic equilibria.
@@ -112,8 +172,8 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     DF = [diff(x̂[i], x[j]) for i in 1:3, j in 1:3]
     symprint("DF", DF, output, 2)
 
-    DFinv = [diff(ξ̂[i], x[j]) for i in 1:3, j in 1:3]
-    symprint("DFinv", DFinv, output, 2)
+    DF̄ = [diff(ξ̂[i], x[j]) for i in 1:3, j in 1:3]
+    symprint("DF̄", DF̄, output, 2)
 
     # obtain metric
     gmat = g(x, equ)
@@ -178,7 +238,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("Bvec", Bvec, output, 2)
 
     # compute absolute value |B| of B
-    Babs = sqrt(B¹[1] * Bvec[1] + B¹[2] * Bvec[2] + B¹[3] * Bvec[3])
+    Babs = sqrt(transpose(Bvec) * B¹)
     symprint("|B|", Babs, output, 2)
 
     # compute magnetic unit one-form
@@ -193,9 +253,13 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     DB = [diff(B¹[i], x[j]) for i in 1:3, j in 1:3]
     symprint("DB", DB, output, 3)
 
-    # compute Jacobian of magnetic unit vector b
+    # compute Jacobian of magnetic unit oneform b
     Db = [diff(b¹[i], x[j]) for i in 1:3, j in 1:3]
     symprint("Db", Db, output, 3)
+
+    # compute Jacobian of magnetic unit vector b
+    Db⃗ = [diff(bvec[i], x[j]) for i in 1:3, j in 1:3]
+    symprint("Db⃗", Db⃗, output, 3)
 
     # compute second derivative of magnetic unit vector b
     DDb1 = [diff(diff(b¹[1], x[i]), x[j]) for i in 1:3, j in 1:3]
@@ -214,6 +278,35 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     # compute second derivatives of absolute value of magnetic field
     DDBabs = [diff(diff(Babs, x[i]), x[j]) for i in 1:3, j in 1:3]
     symprint("DD|B|", DDBabs, output, 3)
+
+    # compute unit vectors perpendicular to magnetic field
+    dbᶜ = [diff(b¹[3], x[2]) - diff(b¹[2], x[3]),
+           diff(b¹[1], x[3]) - diff(b¹[3], x[1]),
+           diff(b¹[2], x[1]) - diff(b¹[1], x[2])]
+    db² = [ 0         +dbᶜ[3]    -dbᶜ[2];
+            -dbᶜ[3]   0          +dbᶜ[1];
+            +dbᶜ[2]   -dbᶜ[1]    0    ] .* Rational(1,2)
+    db¹ = [hodge²¹(db², ginv, Jdet, i) for i in 1:3]
+    dbvec = [get_vector_component(db¹, ginv, i) for i in 1:3]
+    Avec = [crossproduct(dbvec, bvec, ginv, Jdet, i) for i in 1:3]
+
+    # Avec = [connection(bvec, bvec, x, gmat, ginv, i) for i in 1:3]
+
+    Amag = magnitude(Avec, gmat)
+    if Amag != 0
+        avec = Avec ./ Amag
+    else
+        if bvec[1] == 0
+            avec = [Basic(1), Basic(0), Basic(0)]
+        elseif bvec[2] == 0
+            avec = [Basic(0), Basic(1), Basic(0)]
+        elseif bvec[3] == 0
+            avec = [Basic(0), Basic(0), Basic(1)]
+        else
+            avec = normalize([crossproduct(bvec, [1, 0, 0], ginv, Jdet, i) for i in 1:3], gmat)
+        end
+    end
+    cvec = normalize([crossproduct(bvec, avec, ginv, Jdet, i) for i in 1:3], gmat)
 
     # obtain scalar potential
     φ⁰ = φ(x, equ) .+ φ(x, pert)
@@ -263,7 +356,9 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
 
         functions["A" * indicesup[i]] = Avec[i]
         functions["B" * indicesup[i]] = Bvec[i]
+        functions["a" * indicesup[i]] = avec[i]
         functions["b" * indicesup[i]] = bvec[i]
+        functions["c" * indicesup[i]] = cvec[i]
         functions["E" * indicesup[i]] = Evec[i]
 
         functions["dBdx" * indices[i]] = DBabs[i]
@@ -275,13 +370,14 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
             functions["g"  * indicesup[i] * indicesup[j]] = ginv[i,j]
 
             functions["DF" * indices[i]   * indices[j]]   = DF[i,j]
-            functions["DFᵢ"* indices[i]   * indices[j]]   = DFinv[i,j]
+            functions["DF̄" * indices[i]   * indices[j]]   = DF̄[i,j]
 
             functions["B"  * indices[i]   * indices[j]]   = B²[i,j]
 
-            functions["dA" * indices[i] * "dx" * indices[j]] = DA[i,j]
-            functions["dB" * indices[i] * "dx" * indices[j]] = DB[i,j]
-            functions["db" * indices[i] * "dx" * indices[j]] = Db[i,j]
+            functions["dA" * indices[i]   * "dx" * indices[j]] = DA[i,j]
+            functions["dB" * indices[i]   * "dx" * indices[j]] = DB[i,j]
+            functions["db" * indices[i]   * "dx" * indices[j]] = Db[i,j]
+            functions["db⃗" * indicesup[i] * "dx" * indices[j]] = Db⃗[i,j]
 
             functions["d²A₁" * "dx" * indices[i] * "dx" * indices[j]] = DDA1[i,j]
             functions["d²A₂" * "dx" * indices[i] * "dx" * indices[j]] = DDA2[i,j]
@@ -379,9 +475,12 @@ function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
 
     # generate Julia code and export special functions
     f_code = quote
-        export b, b⃗, g, ginv, DF, DFinv
+        export b, a⃗, b⃗, c⃗, g, ḡ, DF, DF̄
         b(t,x) = [b₁(t,x), b₂(t,x), b₃(t,x)]
+
+        a⃗(t,x) = [a¹(t,x), a²(t,x), a³(t,x)]
         b⃗(t,x) = [b¹(t,x), b²(t,x), b³(t,x)]
+        c⃗(t,x) = [c¹(t,x), c²(t,x), c³(t,x)]
         
         function DF(t, x)
             [DF₁₁(t,x)  DF₁₂(t,x)  DF₁₃(t,x);
@@ -389,10 +488,10 @@ function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
              DF₃₁(t,x)  DF₃₂(t,x)  DF₃₃(t,x);]
         end
 
-        function DFinv(t, x)
-            [DFᵢ₁₁(t,x)  DFᵢ₁₂(t,x)  DFᵢ₁₃(t,x);
-             DFᵢ₂₁(t,x)  DFᵢ₂₂(t,x)  DFᵢ₂₃(t,x);
-             DFᵢ₃₁(t,x)  DFᵢ₃₂(t,x)  DFᵢ₃₃(t,x);]
+        function DF̄(t, x)
+            [DF̄₁₁(t,x)  DF̄₁₂(t,x)  DF̄₁₃(t,x);
+             DF̄₂₁(t,x)  DF̄₂₂(t,x)  DF̄₂₃(t,x);
+             DF̄₃₁(t,x)  DF̄₃₂(t,x)  DF̄₃₃(t,x);]
         end
 
         function g(t, x)
@@ -401,7 +500,7 @@ function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
              g₃₁(t,x)  g₃₂(t,x)  g₃₃(t,x);]
         end        
 
-        function ginv(t, x)
+        function ḡ(t, x)
             [g¹¹(t,x)  g¹²(t,x)  g¹³(t,x);
              g²¹(t,x)  g²²(t,x)  g²³(t,x);
              g³¹(t,x)  g³²(t,x)  g³³(t,x);]

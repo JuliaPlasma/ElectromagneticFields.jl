@@ -77,18 +77,35 @@ function test_equilibrium(equ_mod, t, ξ)
 
     x = equ_mod.to_cartesian(t,ξ)
 
-    @test equ_mod.from_cartesian(t, x) == ξ
+    @test equ_mod.from_cartesian(t, x) ≈ ξ  atol=1E-14
 
     g = equ_mod.g(t,ξ)
-    ginv = equ_mod.ginv(t,ξ)
+    ḡ = equ_mod.ḡ(t,ξ)
     DF = equ_mod.DF(t,ξ)
-    DFinv = equ_mod.DFinv(t,x)
+    DF̄ = equ_mod.DF̄(t,x)
+
+    b = equ_mod.b(t,ξ)
+    a⃗ = equ_mod.a⃗(t,ξ)
+    b⃗ = equ_mod.b⃗(t,ξ)
+    c⃗ = equ_mod.c⃗(t,ξ)
+
 
     @test equ_mod.J(t,ξ) ≈ sqrt(det(DF' * DF))  atol=1E-12
-    @test ginv           ≈ inv(g)          atol=1E-12
-    @test DF'   * DF     ≈ g               atol=1E-12
-    @test DF    * DFinv  ≈ Array(I, 3, 3)  atol=1E-12
-    @test DFinv * DFinv' ≈ ginv            atol=1E-12
+    @test ḡ         ≈ inv(g)          atol=1E-12
+    @test DF' * DF  ≈ g               atol=1E-12
+    @test DF  * DF̄  ≈ Array(I, 3, 3)  atol=1E-12
+    @test DF̄  * DF̄' ≈ ḡ               atol=1E-12
+
+    @test b⃗' * b     ≈ 1  atol=1E-14
+    @test b' * ḡ * b ≈ 1  atol=1E-14
+    @test a⃗' * g * a⃗ ≈ 1  atol=1E-14
+    @test b⃗' * g * b⃗ ≈ 1  atol=1E-14
+    @test c⃗' * g * c⃗ ≈ 1  atol=1E-14
+
+    @test a⃗' * g * b⃗ ≈ 0  atol=1E-14
+    @test a⃗' * g * c⃗ ≈ 0  atol=1E-14
+    @test b⃗' * g * c⃗ ≈ 0  atol=1E-14
+
 end
 
 
@@ -117,7 +134,7 @@ perts = (
 
 # testing parameters
 t = 1.
-x = [1., 1., 1.]
+x = [1.05, 0.5, 0.5]
 
 # test equilibria
 @testset "$(rpad(teststring(equ[1]),60))" for equ in eqs begin
