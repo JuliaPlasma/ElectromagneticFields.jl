@@ -18,7 +18,7 @@ Parameters: `B₀`
 module Singular
 
     using LaTeXStrings
-    using Plots
+    # using Plots
     using RecipesBase
 
     import ..ElectromagneticFields
@@ -100,7 +100,7 @@ module Singular
             xguide := L"x"
             yguide := L"y"
             levels := doublelogrange(0.1, maximum(pot1), levels)
-            seriescolor := cgrad(:default, levels, scale = :log)
+            # seriescolor := cgrad(:default, levels, scale = :log)
             (xgrid, ygrid, pot1)
         end
 
@@ -110,7 +110,7 @@ module Singular
             xguide := L"x"
             yguide := L"y"
             levels := doublelogrange(0.1, maximum(pot2), levels)
-            seriescolor := cgrad(:default, levels, scale = :log)
+            # seriescolor := cgrad(:default, levels, scale = :log)
             (xgrid, ygrid, pot2)
         end
 
@@ -120,7 +120,7 @@ module Singular
             xguide := L"x"
             yguide := L"y"
             levels := logrange(maximum([0.1, minimum(Bfield)]), maximum(Bfield), levels)
-            seriescolor := cgrad(:default, levels, scale = :log)
+            # seriescolor := cgrad(:default, levels, scale = :log)
             (xgrid, ygrid, Bfield)
         end
     end
