@@ -5,16 +5,16 @@ Based on McCarthy, Physics of Plasmas 6, 3554, 1999.
 Parameters:
  * `R₀`: position of magnetic axis
  * `B₀`: B-field at magnetic axis
- * `a₀`, b₀`: free constants
+ * `a₀`, `b₀`: free constants
 """
 module SolovevSymmetric
 
     using RecipesBase
 
     import ..ElectromagneticFields
-    import ..ElectromagneticFields: ZeroPerturbation
+    import ..ElectromagneticFields: CartesianEquilibrium, ZeroPerturbation
     import ..ElectromagneticFields: load_equilibrium, generate_equilibrium_code
-    import ..SolovevAbstract: AbstractSolovevEquilibrium, X, Y, Z, R, r, θ, ϕ, r²
+    import ..AnalyticCartesianField: X, Y, Z
 
     export  SolovevSymmetricEquilibrium
 
@@ -23,7 +23,7 @@ module SolovevSymmetric
     const DEFAULT_a₀ = 2.0
     const DEFAULT_b₀ = 0.5
 
-    struct SolovevSymmetricEquilibrium{T <: Number} <: AbstractSolovevEquilibrium
+    struct SolovevSymmetricEquilibrium{T <: Number} <: CartesianEquilibrium
         name::String
         R₀::T
         B₀::T
@@ -48,10 +48,16 @@ module SolovevSymmetric
         print(io, "  b₀ = ", equ.b₀)
     end
 
+    # R²(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = X(x,equ)^2 + Y(x,equ)^2
+    # r²(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = R²(x,equ)
+    # R(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = sqrt(R²(x,equ))
+    # r(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = sqrt(r²(x,equ))
+    # θ(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = atan(Y(x,equ), X(x,equ))
+    # ϕ(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = θ(x,equ)
 
     ElectromagneticFields.A₁(x::AbstractVector, equ::SolovevSymmetricEquilibrium) = zero(eltype(x))
     ElectromagneticFields.A₂(x::AbstractVector, equ::SolovevSymmetricEquilibrium) = zero(eltype(x))
-    ElectromagneticFields.A₃(x::AbstractVector, equ::SolovevSymmetricEquilibrium) = - R(x,equ) * (equ.a₀ * R(x,equ)^4 / 4 + equ.b₀ * Z(x,equ)^2 ) / 2
+    ElectromagneticFields.A₃(x::AbstractVector, equ::SolovevSymmetricEquilibrium) = - (equ.a₀ * X(x,equ)^4 / 4 + equ.b₀ * Y(x,equ)^2 ) / 2
 
 
     macro solovev_equilibrium_quadratic(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, a₀=DEFAULT_a₀, b₀=DEFAULT_b₀)
@@ -72,7 +78,7 @@ module SolovevSymmetric
 
         xgrid = LinRange(xlims[1], xlims[2], nx)
         zgrid = LinRange(ylims[1], ylims[2], ny)
-        pot   = [A₃(0, xgrid[i], zgrid[j], 0.0) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
+        pot   = [A₃(0, xgrid[i], zgrid[j], 0.0) for i in eachindex(xgrid), j in eachindex(zgrid)]
 
         seriestype := :contour
         aspect_ratio := :equal
@@ -81,6 +87,8 @@ module SolovevSymmetric
         ylims  := ylims
         levels := levels
         legend := :none
+        xguide := "x"
+        yguide := "y"
 
         (xgrid, zgrid, pot')
     end
