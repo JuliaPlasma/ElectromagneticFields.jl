@@ -17,6 +17,10 @@ module ABC
 
     export ABCEquilibrium
 
+    const DEFAULT_A = 1.0
+    const DEFAULT_B = 1.0
+    const DEFAULT_C = 1.0
+
     struct ABCEquilibrium{T <: Number} <: CartesianEquilibrium
         name::String
         a₀::T
@@ -26,7 +30,7 @@ module ABC
         ABCEquilibrium{T}(a::T, b::T, c::T) where T <: Number = new("ABCEquilibrium", a, b, c)
     end
 
-    ABCEquilibrium(a::T, b::T, c::T) where T <: Number = ABCEquilibrium{T}(a, b, c)
+    ABCEquilibrium(a::T=DEFAULT_A, b::T=DEFAULT_B, c::T=DEFAULT_C) where T <: Number = ABCEquilibrium{T}(a, b, c)
 
 
     function Base.show(io::IO, equ::ABCEquilibrium)
@@ -43,11 +47,11 @@ module ABC
 
     ElectromagneticFields.get_functions(::ABCEquilibrium) = (X=X, Y=Y, Z=Z)
 
-    macro abc_equilibrium(a, b, c)
+    macro abc_equilibrium(a=DEFAULT_A, b=DEFAULT_B, c=DEFAULT_C)
         generate_equilibrium_code(ABCEquilibrium(a, b, c); output=false)
     end
 
-    function init(a, b, c; perturbation=ZeroPerturbation())
+    function init(a=DEFAULT_A, b=DEFAULT_B, c=DEFAULT_C; perturbation=ZeroPerturbation())
         equilibrium = ABCEquilibrium(a, b, c)
         load_equilibrium(equilibrium, perturbation; target_module=ABC)
         return equilibrium
