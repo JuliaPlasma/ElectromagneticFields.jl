@@ -74,6 +74,8 @@ module Solovev
 
     SolovevEquilibriumITER() = SolovevEquilibrium(6.2, 5.3, 0.32, 1.7, 0.33, -0.155)
     SolovevEquilibriumNSTX() = SolovevEquilibrium(0.85, 0.3, 0.78, 2.0, 0.35, 1.0)
+    SolovevEquilibriumFRC()  = SolovevEquilibrium(0.0, 0.0, 0.99, 10., 0.7, 0.0)
+    # SolovevEquilibriumFRC2() = SolovevEquilibrium(0.0, 0.0, 1.00, 10., 1.0, 0.0)
 
 
     function Base.show(io::IO, equ::SolovevEquilibrium)
@@ -120,9 +122,15 @@ module Solovev
         return equilibrium
     end
 
+    function FRC(; perturbation=ZeroPerturbation(), target_module=Solovev)
+        equilibrium = SolovevEquilibriumFRC()
+        load_equilibrium(equilibrium, perturbation; target_module=target_module)
+        return equilibrium
+    end
+
 
     @recipe function f(equ::SolovevEquilibrium;
-                       nx = 100, ny = 120, nτ = 200, levels = 50, size = (300,400),
+                       nx = 100, ny = 120, nτ = 200, levels = 50, size = (300,400), aspect_ratio = :equal,
                        xlims = ( 0.50,  1.50),
                        ylims = (-0.75, +0.75))
 
@@ -134,7 +142,7 @@ module Solovev
         boundary_X = 1 .+ equ.ϵ .* cos.(τ .+ asin(equ.δ) .* sin.(τ) )
         boundary_Y = equ.ϵ .* equ.κ .* sin.(τ)
 
-        aspect_ratio := :equal
+        aspect_ratio := aspect_ratio
         size   := size
         xlims  := xlims
         ylims  := ylims

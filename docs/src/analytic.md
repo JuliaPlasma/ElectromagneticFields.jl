@@ -151,13 +151,16 @@ plot_iter = plot(eq_sol_iter, title="ITER", xlims=(0.6,1.4))
 eq_sol_nstx = ElectromagneticFields.Solovev.NSTX()
 plot_nstx = plot(eq_sol_nstx, title="NSTX", xlims=(0.05, 2.3), ylims=(-2.25, +2.25), levels=50)
 
-plot(size=(600,400), plot_iter, plot_nstx)
+eq_sol_frc = ElectromagneticFields.Solovev.FRC()
+plot_frc = plot(eq_sol_frc, title="FRC", xlims=(0,2), ylims=(-10,+10), levels=25, aspect_ratio=1//5)
+
+plot(size=(800,400), layout=(1,3), plot_iter, plot_nstx, plot_frc)
 savefig("solovev.png")
 
 nothing
 ```
 
-Vector potential in ITER and NSTX:
+Vector potential in ITER, NSTX and a field reversed configuration:
 
 ![](solovev.png)
 
