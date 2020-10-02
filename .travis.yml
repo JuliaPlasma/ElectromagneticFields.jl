@@ -16,6 +16,8 @@ env:
 
 jobs:
   allow_failures:
+    - julia: 1.4
+    - julia: 1.5
     - julia: nightly
   fast_finish: true
 
