@@ -60,7 +60,7 @@ module ABC
     end
 
 
-    @recipe function f(equ::ABCEquilibrium; nx=99, ni=div(nx,2)+1, nl=12, size=(400,1000))
+    @recipe function f(equ::ABCEquilibrium; nx=99, ni=div(nx,2)+1, nl=12, size=(400,1200))
         xmin = 0
         xmax = 2π
         grid = LinRange(xmin, xmax, nx)
