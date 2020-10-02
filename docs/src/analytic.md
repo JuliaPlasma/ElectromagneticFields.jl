@@ -110,3 +110,84 @@ Vector potential and magnetic field components:
 
 ![](singular.png)
 
+
+
+## Symmetric Solov'ev Equilibrium
+
+```@docs
+SolovevSymmetric
+```
+
+```@eval
+using Plots
+using ElectromagneticFields
+
+eq_sol = ElectromagneticFields.SolovevSymmetric.init()
+plot(eq_sol)
+savefig("solovev_symmetric.png")
+
+nothing
+```
+
+Vector potential in y direction:
+
+![](solovev_symmetric.png)
+
+
+
+## Solov'ev Equilibrium
+
+```@docs
+Solovev
+```
+
+```@eval
+using Plots
+using ElectromagneticFields
+
+eq_sol_iter = ElectromagneticFields.Solovev.ITER()
+plot_iter = plot(eq_sol_iter, title="ITER", xlims=(0.6,1.4))
+
+eq_sol_nstx = ElectromagneticFields.Solovev.NSTX()
+plot_nstx = plot(eq_sol_nstx, title="NSTX", xlims=(0.05, 2.3), ylims=(-2.25, +2.25), levels=50)
+
+plot(size=(600,400), plot_iter, plot_nstx)
+savefig("solovev.png")
+
+nothing
+```
+
+Vector potential in ITER and NSTX:
+
+![](solovev.png)
+
+
+
+## Solov'ev Equilibrium with X-Point
+
+```@docs
+SolovevXpoint
+```
+
+```@eval
+using Plots
+using ElectromagneticFields
+
+eq_sol_iter = ElectromagneticFields.SolovevXpoint.ITER()
+plot_iter = plot(eq_sol_iter, title="ITER", xlims=(0.6,1.4))
+
+eq_sol_nstx = ElectromagneticFields.SolovevXpoint.NSTX()
+plot_nstx = plot(eq_sol_nstx, title="NSTX", xlims=(0.05, 2.3), ylims=(-2.25, +2.25), levels=50)
+
+plot(size=(600,400), plot_iter, plot_nstx)
+savefig("solovev_xpoint.png")
+
+nothing
+```
+
+Vector potential in ITER and NSTX:
+
+![](solovev_xpoint.png)
+
+
+

@@ -14,6 +14,8 @@ Parameters:
 """
 module SolovevXpoint
 
+    using RecipesBase
+
     using SymPy: N, Sym, diff, expand, solve, subs
 
     import ..ElectromagneticFields
@@ -121,22 +123,43 @@ module SolovevXpoint
         generate_equilibrium_code(SolovevXpointEquilibrium(R₀, B₀, ϵ, κ, δ, a, xₛₑₚ, yₛₑₚ); output=false)
     end
 
-    function init(R₀, B₀, ϵ, κ, δ, a, xₛₑₚ, yₛₑₚ; perturbation=ZeroPerturbation())
+    function init(R₀, B₀, ϵ, κ, δ, a, xₛₑₚ, yₛₑₚ; perturbation=ZeroPerturbation(), target_module=SolovevXpoint)
         equilibrium = SolovevXpointEquilibrium(R₀, B₀, ϵ, κ, δ, a, xₛₑₚ, yₛₑₚ)
-        load_equilibrium(equilibrium, perturbation; target_module=SolovevXpoint)
+        load_equilibrium(equilibrium, perturbation; target_module=target_module)
         return equilibrium
     end
 
-    function ITER(; perturbation=ZeroPerturbation())
+    function ITER(; perturbation=ZeroPerturbation(), target_module=SolovevXpoint)
         equilibrium = SolovevXpointEquilibriumITER()
-        load_equilibrium(equilibrium, perturbation; target_module=SolovevXpoint)
+        load_equilibrium(equilibrium, perturbation; target_module=target_module)
         return equilibrium
     end
 
-    function NSTX(; perturbation=ZeroPerturbation())
+    function NSTX(; perturbation=ZeroPerturbation(), target_module=SolovevXpoint)
         equilibrium = SolovevXpointEquilibriumNSTX()
-        load_equilibrium(equilibrium, perturbation; target_module=SolovevXpoint)
+        load_equilibrium(equilibrium, perturbation; target_module=target_module)
         return equilibrium
     end
 
+
+    @recipe function f(equ::SolovevXpointEquilibrium;
+                       nx = 100, ny = 120, levels = 50, size = (300,400),
+                       xlims = ( 0.50,  1.50),
+                       ylims = (-0.75, +0.75))
+
+        xgrid = LinRange(xlims[1], xlims[2], nx)
+        zgrid = LinRange(ylims[1], ylims[2], ny)
+        pot   = [A₃(0, xgrid[i], zgrid[j], 0.0) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
+
+        seriestype := :contour
+        aspect_ratio := :equal
+        size   := size
+        xlims  := xlims
+        ylims  := ylims
+        levels := levels
+        legend := :none
+
+        (xgrid, zgrid, pot')
+    end
+    
 end

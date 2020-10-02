@@ -12,6 +12,8 @@ Parameters:
 """
 module Solovev
 
+    using RecipesBase
+
     using SymPy: N, Sym, diff, expand, solve, subs
 
     import ..ElectromagneticFields
@@ -100,22 +102,56 @@ module Solovev
         generate_equilibrium_code(SolovevEquilibrium(R₀, B₀, ϵ, κ, δ, a); output=false)
     end
 
-    function init(R₀, B₀, ϵ, κ, δ, a; perturbation=ZeroPerturbation())
+    function init(R₀, B₀, ϵ, κ, δ, a; perturbation=ZeroPerturbation(), target_module=Solovev)
         equilibrium = SolovevEquilibrium(R₀, B₀, ϵ, κ, δ, a)
-        load_equilibrium(equilibrium, perturbation; target_module=Solovev)
+        load_equilibrium(equilibrium, perturbation; target_module=target_module)
         return equilibrium
     end
 
-    function ITER(; perturbation=ZeroPerturbation())
+    function ITER(; perturbation=ZeroPerturbation(), target_module=Solovev)
         equilibrium = SolovevEquilibriumITER()
-        load_equilibrium(equilibrium, perturbation; target_module=Solovev)
+        load_equilibrium(equilibrium, perturbation; target_module=target_module)
         return equilibrium
     end
 
-    function NSTX(; perturbation=ZeroPerturbation())
+    function NSTX(; perturbation=ZeroPerturbation(), target_module=Solovev)
         equilibrium = SolovevEquilibriumNSTX()
-        load_equilibrium(equilibrium, perturbation; target_module=Solovev)
+        load_equilibrium(equilibrium, perturbation; target_module=target_module)
         return equilibrium
     end
 
+
+    @recipe function f(equ::SolovevEquilibrium;
+                       nx = 100, ny = 120, nτ = 200, levels = 50, size = (300,400),
+                       xlims = ( 0.50,  1.50),
+                       ylims = (-0.75, +0.75))
+
+        xgrid = LinRange(xlims[1], xlims[2], nx)
+        zgrid = LinRange(ylims[1], ylims[2], ny)
+        pot   = [A₃(0, xgrid[i], zgrid[j], 0.0) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
+
+        τ = LinRange(0, 2π, nτ)
+        boundary_X = 1 .+ equ.ϵ .* cos.(τ .+ asin(equ.δ) .* sin.(τ) )
+        boundary_Y = equ.ϵ .* equ.κ .* sin.(τ)
+
+        aspect_ratio := :equal
+        size   := size
+        xlims  := xlims
+        ylims  := ylims
+        levels := levels
+        legend := :none
+
+        @series begin
+            seriestype := :contour
+            (xgrid, zgrid, pot')
+        end
+
+        @series begin
+            seriestype  := :path
+            seriescolor := :red
+            linewidth := 3
+            (boundary_X, boundary_Y)
+        end
+    end
+    
 end
