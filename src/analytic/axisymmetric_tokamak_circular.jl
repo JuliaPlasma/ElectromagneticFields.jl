@@ -17,6 +17,8 @@ Parameters:
 """
 module AxisymmetricTokamakCircular
 
+    using RecipesBase
+
     import ..ElectromagneticFields
     import ..ElectromagneticFields: AnalyticEquilibrium, ZeroPerturbation
     import ..ElectromagneticFields: load_equilibrium, generate_equilibrium_code
@@ -93,4 +95,26 @@ module AxisymmetricTokamakCircular
         return equilibrium
     end
 
+    @recipe function f(equ::AxisymmetricTokamakCircularEquilibrium; nx=100, nz=120, nl=100, size=(400,600))
+        xmin  = 0.5 * equ.R₀
+        xmax  = 1.5 * equ.R₀
+        zmin  = - 0.5 * equ.R₀
+        zmax  = + 0.5 * equ.R₀
+        xgrid = LinRange(xmin, xmax, nx)
+        zgrid = LinRange(zmin, zmax, nz)
+        rgrid = [ξ¹(0, xgrid[i], 0.0, zgrid[j]) for i in eachindex(xgrid), j in eachindex(zgrid)]
+        θgrid = [ξ²(0, xgrid[i], 0.0, zgrid[j]) for i in eachindex(xgrid), j in eachindex(zgrid)]
+        pot   = [A₃(0, rgrid[i,j], θgrid[i,j], 0.0) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
+
+        seriestype   := :contour
+        aspect_ratio := :equal
+        size   := size
+        xlims  := (xmin,xmax)
+        ylims  := (zmin,zmax)
+        levels := nl
+        legend := :none
+
+        (xgrid, zgrid, pot')
+    end
+    
 end
