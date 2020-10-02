@@ -121,7 +121,7 @@ SymmetricQuadratic
 using Plots
 using ElectromagneticFields
 
-eq_sng = ElectromagneticFields.SymmetricQuadratic.init()
+eq_sym = ElectromagneticFields.SymmetricQuadratic.init()
 plot(eq_sym)
 savefig("symmetric.png")
 
