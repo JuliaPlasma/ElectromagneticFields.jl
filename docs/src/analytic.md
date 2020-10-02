@@ -151,7 +151,7 @@ savefig("solovev_symmetric.png")
 nothing
 ```
 
-Vector potential in y direction:
+Vector potential in z direction:
 
 ![](solovev_symmetric.png)
 
