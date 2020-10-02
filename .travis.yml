@@ -27,5 +27,6 @@ coveralls: true
 
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - travis_wait 30 julia --project -e 'using Pkg; Pkg.build();';
-  - travis_wait 30 julia --project -e 'using Pkg; Pkg.test(; coverage=true)';
+  - julia --project -e 'using Pkg; Pkg.build();';
+  - julia --project -e 'using Pkg; Pkg.precompile();';
+  - julia --project -e 'using Pkg; Pkg.test(; coverage=true)';
