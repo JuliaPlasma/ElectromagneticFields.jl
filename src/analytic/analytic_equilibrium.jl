@@ -6,7 +6,7 @@ abstract type AnalyticField <: ElectromagneticField end
 abstract type AnalyticEquilibrium <: AnalyticField end
 abstract type AnalyticPerturbation <: AnalyticField end
 
-get_functions(::AnalyticField) = (;)
+get_functions(::AnalyticField) = NamedTuple()
 
 x¹(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("x¹() not implemented for ", ET)
 x²(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("x²() not implemented for ", ET)
