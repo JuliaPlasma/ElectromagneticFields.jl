@@ -2,6 +2,28 @@
 # Analytic Fields
 
 
+## Arnold-Beltrami-Childress (ABC) Field
+
+```@docs
+ABC
+```
+```@eval
+using Plots
+using ElectromagneticFields
+
+eq_abc = ElectromagneticFields.ABC.init()
+plot(eq_abc)
+savefig("abc.png")
+
+nothing
+```
+
+Absolut value of the magnetic field:
+
+![](abc.png)
+
+
+
 ## Axisymmetric Tokamak Equilibrium in Cartesian Coordinates
 
 ```@docs

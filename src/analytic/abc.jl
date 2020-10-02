@@ -10,6 +10,8 @@ Parameters: `a`, `b`, `c`
 """
 module ABC
 
+    using RecipesBase
+
     import ..ElectromagneticFields
     import ..ElectromagneticFields: CartesianEquilibrium, ZeroPerturbation
     import ..ElectromagneticFields: load_equilibrium, generate_equilibrium_code
@@ -55,6 +57,44 @@ module ABC
         equilibrium = ABCEquilibrium(a, b, c)
         load_equilibrium(equilibrium, perturbation; target_module=ABC)
         return equilibrium
+    end
+
+
+    @recipe function f(equ::ABCEquilibrium; nx=99, ni=div(nx,2)+1, nl=12, size=(400,1000))
+        xmin = 0
+        xmax = 2π
+        grid = LinRange(xmin, xmax, nx)
+        Bfield = [B(0, grid[i], grid[j], grid[k]) for i in eachindex(grid), j in eachindex(grid), k in eachindex(grid)]
+
+        seriestype   := :contour
+        aspect_ratio := :equal
+        layout := (3, 1)
+        size   := size
+        xlims  := (xmin,xmax)
+        ylims  := (xmin,xmax)
+        levels := nl
+        legend := :none
+
+        @series begin
+            subplot := 1
+            xguide := "x"
+            yguide := "y"
+            (grid, grid, Bfield[:,:,ni])
+        end
+
+        @series begin
+            subplot := 2
+            xguide := "x"
+            yguide := "z"
+            (grid, grid, Bfield[:,ni,:])
+        end
+
+        @series begin
+            subplot := 3
+            xguide := "y"
+            yguide := "z"
+            (grid, grid, Bfield[ni,:,:])
+        end
     end
 
 end
