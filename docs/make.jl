@@ -2,7 +2,9 @@ using Documenter, ElectromagneticFields
 
 makedocs(
     sitename = "ElectromagneticFields.jl",
-    format = Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true"),
+    format = Documenter.HTML(
+                prettyurls = get(ENV, "CI", nothing) == "true",
+                assets = [asset("assets/style.css", class=:css, islocal=true)]),
     pages = ["Home" => "index.md",
              "Modules" => "modules.md",
             ]
