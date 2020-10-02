@@ -216,3 +216,24 @@ Vector potential in ITER and NSTX:
 
 
 
+## Theta Pinch
+
+```@docs
+ThetaPinch
+```
+```@eval
+using Plots
+using ElectromagneticFields
+
+eq_thp = ElectromagneticFields.ThetaPinch.init()
+plot(eq_thp)
+savefig("theta_pinch.png")
+
+nothing
+```
+
+Vector potential components:
+
+![](theta_pinch.png)
+
+
