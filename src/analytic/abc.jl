@@ -79,6 +79,7 @@ module ABC
             subplot := 1
             xguide := "x"
             yguide := "y"
+            title  := "|B(x,y,π)|"
             (grid, grid, Bfield[:,:,ni])
         end
 
@@ -86,6 +87,7 @@ module ABC
             subplot := 2
             xguide := "x"
             yguide := "z"
+            title  := "|B(x,π,z)|"
             (grid, grid, Bfield[:,ni,:])
         end
 
@@ -93,6 +95,7 @@ module ABC
             subplot := 3
             xguide := "y"
             yguide := "z"
+            title  := "|B(π,y,z)|"
             (grid, grid, Bfield[ni,:,:])
         end
     end
