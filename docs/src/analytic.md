@@ -89,3 +89,24 @@ Vector potential in y direction:
 ![](axisymmetric_tokamak_toroidal.png)
 
 
+
+## Singular Magnetic Field
+
+```@docs
+Singular
+```
+```@eval
+using Plots
+using ElectromagneticFields
+
+eq_sng = ElectromagneticFields.Singular.init()
+plot(eq_sng)
+savefig("singular.png")
+
+nothing
+```
+
+Vector potential and magnetic field components:
+
+![](singular.png)
+
