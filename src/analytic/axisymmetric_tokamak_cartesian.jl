@@ -43,6 +43,8 @@ module AxisymmetricTokamakCartesian
 
     AxisymmetricTokamakCartesianEquilibrium(R₀::T=DEFAULT_R₀, B₀::T=DEFAULT_B₀, q₀::T=DEFAULT_q₀) where T <: Number = AxisymmetricTokamakCartesianEquilibrium{T}(R₀, B₀, q₀)
 
+    AxisymmetricTokamakCartesianEquilibriumITER() = AxisymmetricTokamakCartesianEquilibrium(6.2, 5.3, √2)
+
     function Base.show(io::IO, equ::AxisymmetricTokamakCartesianEquilibrium)
         print(io, "Axisymmetric Tokamak Equilibrium in (x,y,z) Coordinates with\n")
         print(io, "  R₀ = ", equ.R₀, "\n")
@@ -73,6 +75,13 @@ module AxisymmetricTokamakCartesian
         load_equilibrium(equilibrium, perturbation; target_module=AxisymmetricTokamakCartesian)
         return equilibrium
     end
+
+    function ITER(; perturbation=ZeroPerturbation())
+        equilibrium = AxisymmetricTokamakCartesianEquilibriumITER()
+        load_equilibrium(equilibrium, perturbation; target_module=AxisymmetricTokamakCartesian)
+        return equilibrium
+    end
+
 
     @recipe function f(equ::AxisymmetricTokamakCartesianEquilibrium; nx=100, nz=120, nl=100, size=(400,600))
         xmin  = 0.5 * equ.R₀

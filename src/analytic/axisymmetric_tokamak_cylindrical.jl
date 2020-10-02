@@ -42,6 +42,8 @@ module AxisymmetricTokamakCylindrical
 
     AxisymmetricTokamakCylindricalEquilibrium(R₀::T=DEFAULT_R₀, B₀::T=DEFAULT_B₀, q₀::T=DEFAULT_q₀) where T <: Number = AxisymmetricTokamakCylindricalEquilibrium{T}(R₀, B₀, q₀)
 
+    AxisymmetricTokamakCylindricalEquilibriumITER() = AxisymmetricTokamakCylindricalEquilibrium(6.2, 5.3, √2)
+
     function Base.show(io::IO, equ::AxisymmetricTokamakCylindricalEquilibrium)
         print(io, "Axisymmetric Tokamak Equilibrium in (R,Z,ϕ) Coordinates with\n")
         print(io, "  R₀ = ", equ.R₀, "\n")
@@ -94,6 +96,13 @@ module AxisymmetricTokamakCylindrical
         load_equilibrium(equilibrium, perturbation; target_module=AxisymmetricTokamakCylindrical)
         return equilibrium
     end
+
+    function ITER(; perturbation=ZeroPerturbation())
+        equilibrium = AxisymmetricTokamakCylindricalEquilibriumITER()
+        load_equilibrium(equilibrium, perturbation; target_module=AxisymmetricTokamakCylindrical)
+        return equilibrium
+    end
+
 
     @recipe function f(equ::AxisymmetricTokamakCylindricalEquilibrium; nr=100, nz=120, nl=100, size=(400,600))
         rmin  = 0.5 * equ.R₀

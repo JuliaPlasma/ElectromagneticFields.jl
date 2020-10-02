@@ -42,6 +42,8 @@ module AxisymmetricTokamakCircular
 
     AxisymmetricTokamakCircularEquilibrium(R₀::T=DEFAULT_R₀, B₀::T=DEFAULT_B₀, q₀::T=DEFAULT_q₀) where T <: Number = AxisymmetricTokamakCircularEquilibrium{T}(R₀, B₀, q₀)
 
+    AxisymmetricTokamakCircularEquilibriumITER() = AxisymmetricTokamakCircularEquilibrium(6.2, 5.3, √2)
+
     function Base.show(io::IO, equ::AxisymmetricTokamakCircularEquilibrium)
         print(io, "Axisymmetric Tokamak Equilibrium in Toroidal Coordinates with\n")
         print(io, "  R₀ = ", equ.R₀, "\n")
@@ -94,6 +96,13 @@ module AxisymmetricTokamakCircular
         load_equilibrium(equilibrium, perturbation; target_module=AxisymmetricTokamakCircular)
         return equilibrium
     end
+
+    function ITER(; perturbation=ZeroPerturbation())
+        equilibrium = AxisymmetricTokamakCircularEquilibriumITER()
+        load_equilibrium(equilibrium, perturbation; target_module=AxisymmetricTokamakCircular)
+        return equilibrium
+    end
+
 
     @recipe function f(equ::AxisymmetricTokamakCircularEquilibrium; nx=100, nz=120, nl=100, size=(400,600))
         xmin  = 0.5 * equ.R₀
