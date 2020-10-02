@@ -17,8 +17,9 @@ Parameters: `B₀`
 """
 module Singular
 
-    using RecipesBase
     using LaTeXStrings
+    using Plots
+    using RecipesBase
 
     import ..ElectromagneticFields
     import ..ElectromagneticFields: CartesianEquilibrium, ZeroPerturbation
@@ -49,8 +50,8 @@ module Singular
     θ(x::AbstractVector, equ::SingularEquilibrium) = atan(Y(x,equ), X(x,equ))
     ϕ(x::AbstractVector, equ::SingularEquilibrium) = θ(x,equ)
 
-    ElectromagneticFields.A₁(x::AbstractVector, equ::SingularEquilibrium) = - equ.B₀ * x[2] * (2 + x[1]^2 + x[2]^2) / 4
-    ElectromagneticFields.A₂(x::AbstractVector, equ::SingularEquilibrium) = + equ.B₀ * x[1] * (2 + x[1]^2 + x[2]^2) / 4
+    ElectromagneticFields.A₁(x::AbstractVector, equ::SingularEquilibrium) = + equ.B₀ * x[2] / sqrt(x[1]^2 + x[2]^2)^3
+    ElectromagneticFields.A₂(x::AbstractVector, equ::SingularEquilibrium) = - equ.B₀ * x[1] / sqrt(x[1]^2 + x[2]^2)^3
     ElectromagneticFields.A₃(x::AbstractVector, equ::SingularEquilibrium) = zero(eltype(x))
 
     ElectromagneticFields.get_functions(::SingularEquilibrium) = (X=X, Y=Y, Z=Z, R=R, r=r, θ=θ, ϕ=ϕ, r²=r²)
@@ -67,7 +68,7 @@ module Singular
 
 
     @recipe function f(equ::SingularEquilibrium;
-                       nx = 100, ny = 100, levels = 20, size = (400,1200),
+                       nx = 100, ny = 100, levels = 25, size = (400,1200),
                        xlims = (-1., +1.),
                        ylims = (-1., +1.))
 
@@ -86,11 +87,20 @@ module Singular
         levels := levels
         legend := :none
 
+        logrange(x1, x2, n) = collect(10^y for y in range(log10(x1), log10(x2), length=n))
+
+        function doublelogrange(x1, x2, n)
+            lvls = logrange(x1, x2, n)
+            vcat(-lvls, +lvls)
+        end
+
         @series begin
             subplot := 1
             title  := L"A_x (x,y)"
             xguide := L"x"
             yguide := L"y"
+            levels := doublelogrange(0.1, maximum(pot1), levels)
+            seriescolor := cgrad(:default, levels, scale = :log)
             (xgrid, ygrid, pot1)
         end
 
@@ -99,6 +109,8 @@ module Singular
             title  := L"A_y (x,y)"
             xguide := L"x"
             yguide := L"y"
+            levels := doublelogrange(0.1, maximum(pot2), levels)
+            seriescolor := cgrad(:default, levels, scale = :log)
             (xgrid, ygrid, pot2)
         end
 
@@ -107,6 +119,8 @@ module Singular
             title  := L"B_z (x,y)"
             xguide := L"x"
             yguide := L"y"
+            levels := logrange(maximum([0.1, minimum(Bfield)]), maximum(Bfield), levels)
+            seriescolor := cgrad(:default, levels, scale = :log)
             (xgrid, ygrid, Bfield)
         end
     end

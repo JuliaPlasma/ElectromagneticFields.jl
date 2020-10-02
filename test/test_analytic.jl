@@ -96,15 +96,18 @@ function test_equilibrium(equ_mod, t, ξ)
     @test DF  * DF̄  ≈ Array(I, 3, 3)  atol=1E-12
     @test DF̄  * DF̄' ≈ ḡ               atol=1E-12
 
-    @test b⃗' * b     ≈ 1  atol=1E-14
-    @test b' * ḡ * b ≈ 1  atol=1E-14
-    @test a⃗' * g * a⃗ ≈ 1  atol=1E-14
-    @test b⃗' * g * b⃗ ≈ 1  atol=1E-14
-    @test c⃗' * g * c⃗ ≈ 1  atol=1E-14
 
-    @test a⃗' * g * b⃗ ≈ 0  atol=1E-14
-    @test a⃗' * g * c⃗ ≈ 0  atol=1E-14
-    @test b⃗' * g * c⃗ ≈ 0  atol=1E-14
+    if equ_mod != Singular
+        @test b⃗' * b     ≈ 1  atol=1E-14
+        @test b' * ḡ * b ≈ 1  atol=1E-14
+        @test a⃗' * g * a⃗ ≈ 1  atol=1E-14
+        @test b⃗' * g * b⃗ ≈ 1  atol=1E-14
+        @test c⃗' * g * c⃗ ≈ 1  atol=1E-14
+
+        @test a⃗' * g * b⃗ ≈ 0  atol=1E-14
+        @test a⃗' * g * c⃗ ≈ 0  atol=1E-14
+        @test b⃗' * g * c⃗ ≈ 0  atol=1E-14
+    end
 
 end
 
