@@ -104,24 +104,24 @@ module AxisymmetricTokamakCylindrical
     end
 
 
-    @recipe function f(equ::AxisymmetricTokamakCylindricalEquilibrium; nr=100, nz=120, nl=100, size=(400,600))
-        rmin  = 0.5 * equ.R₀
-        rmax  = 1.5 * equ.R₀
-        zmin  = - 0.5 * equ.R₀
-        zmax  = + 0.5 * equ.R₀
-        rgrid = LinRange(rmin, rmax, nr)
-        zgrid = LinRange(zmin, zmax, nz)
-        pot   = [A₃(0, rgrid[i], zgrid[j], 0.0) / rgrid[i] for i in eachindex(rgrid), j in eachindex(zgrid)]
+    @recipe function f(equ::AxisymmetricTokamakCylindricalEquilibrium;
+                       nx = 100, ny = 120, levels = 50, size = (400,400),
+                       xlims = (  0.5 * equ.R₀,   1.5 * equ.R₀),
+                       ylims = (- 0.5 * equ.R₀, + 0.5 * equ.R₀))
+
+        xgrid = LinRange(xlims[1], xlims[2], nx)
+        zgrid = LinRange(ylims[1], ylims[2], ny)
+        pot   = [A₃(0, xgrid[i], zgrid[j], 0.0) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
 
         seriestype   := :contour
         aspect_ratio := :equal
         size   := size
-        xlims  := (rmin,rmax)
-        ylims  := (zmin,zmax)
-        levels := nl
+        xlims  := xlims
+        ylims  := ylims
+        levels := levels
         legend := :none
 
-        (rgrid, zgrid, pot')
+        (xgrid, zgrid, pot')
     end
     
 end

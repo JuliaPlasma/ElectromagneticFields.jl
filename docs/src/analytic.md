@@ -18,7 +18,10 @@ savefig("axisymmetric_tokamak_cartesian.png")
 nothing
 ```
 
+Vector potential in y direction:
+
 ![](axisymmetric_tokamak_cartesian.png)
+
 
 
 ## Axisymmetric Tokamak Equilibrium in Cylindrical Coordinates
@@ -37,7 +40,10 @@ savefig("axisymmetric_tokamak_cylindrical.png")
 nothing
 ```
 
+Vector potential in y direction:
+
 ![](axisymmetric_tokamak_cylindrical.png)
+
 
 
 ## Axisymmetric Tokamak Equilibrium in Toroidal Coordinates
@@ -55,6 +61,8 @@ savefig("axisymmetric_tokamak_toroidal.png")
 
 nothing
 ```
+
+Vector potential in y direction:
 
 ![](axisymmetric_tokamak_toroidal.png)
 
