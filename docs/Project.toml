@@ -1,3 +1,4 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 ElectromagneticFields = "d6c1ba6f-ee03-53af-b876-68cefeb88ec8"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
