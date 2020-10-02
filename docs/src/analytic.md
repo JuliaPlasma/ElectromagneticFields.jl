@@ -40,22 +40,22 @@ nothing
 ![](axisymmetric_tokamak_cylindrical.png)
 
 
-## Axisymmetric Tokamak Equilibrium in Circular Coordinates
+## Axisymmetric Tokamak Equilibrium in Toroidal Coordinates
 
 ```@docs
-AxisymmetricTokamakCircular
+AxisymmetricTokamakToroidal
 ```
 ```@eval
 using Plots
 using ElectromagneticFields
 
-eq_cir = ElectromagneticFields.AxisymmetricTokamakCircular.init()
+eq_cir = ElectromagneticFields.AxisymmetricTokamakToroidal.init()
 plot(eq_cir)
-savefig("axisymmetric_tokamak_circular.png")
+savefig("axisymmetric_tokamak_toroidal.png")
 
 nothing
 ```
 
-![](axisymmetric_tokamak_circular.png)
+![](axisymmetric_tokamak_toroidal.png)
 
 

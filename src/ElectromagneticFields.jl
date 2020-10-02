@@ -20,8 +20,8 @@ module ElectromagneticFields
 
     export ABC, EzCosZ, 
            AxisymmetricTokamakCartesian,
-           AxisymmetricTokamakCircular,
            AxisymmetricTokamakCylindrical,
+           AxisymmetricTokamakToroidal,
            AxisymmetricTokamakToroidalRegularization,
            Solovev, SolovevXpoint, SolovevQuadratic,
            Singular, SymmetricQuadratic, ThetaPinch
@@ -44,8 +44,8 @@ module ElectromagneticFields
 
     include("analytic/abc.jl")
     include("analytic/axisymmetric_tokamak_cartesian.jl")
-    include("analytic/axisymmetric_tokamak_circular.jl")
     include("analytic/axisymmetric_tokamak_cylindrical.jl")
+    include("analytic/axisymmetric_tokamak_toroidal.jl")
     include("analytic/axisymmetric_tokamak_toroidal_regularization.jl")
     include("analytic/ezcosz.jl")
     include("analytic/solovev_abstract.jl")

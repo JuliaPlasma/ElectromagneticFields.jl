@@ -112,8 +112,8 @@ end
 # equilibrium list (equilibrium, parameters, periodicity, module)
 eqs = (
     (AxisymmetricTokamakCartesian,               (2., 3., 2.),   [0., 0., 0.]),
-    (AxisymmetricTokamakCircular,                (2., 3., 2.),   [0., 2π, 2π]),
     (AxisymmetricTokamakCylindrical,             (2., 3., 2.),   [0., 0., 2π]),
+    (AxisymmetricTokamakToroidal,                (2., 3., 2.),   [0., 2π, 2π]),
     (AxisymmetricTokamakToroidalRegularization,  (2., 3., 2.),   [0., 2π, 2π]),
     (Singular,                                   (1.),           [0., 0., 0.]),
     (SymmetricQuadratic,                         (1.),           [0., 0., 0.]),
@@ -167,16 +167,6 @@ function test_axisymmetric_tokamak_cartesian_equilibrium(equ_mod, t=0., x=[1.5, 
     @test equ_mod.B₃(t,x) == + equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t,x) - equ_mod.R₀) / equ_mod.R(t,x)
 end
 
-function test_axisymmetric_tokamak_circular_equilibrium(equ_mod, t=0., x=[0.5, π/10, π/5])
-    @test equ_mod.B¹(t,x) == 0
-    @test equ_mod.B²(t,x) == - equ_mod.B₀ / equ_mod.q₀ / equ_mod.R(t,x)
-    @test equ_mod.B³(t,x) ≈  - equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t,x)^2 atol=1E-14
-
-    @test equ_mod.B₁(t,x) == 0
-    @test equ_mod.B₂(t,x) == - equ_mod.B₀ / equ_mod.q₀ * equ_mod.r(t,x)^2 / equ_mod.R(t,x)
-    @test equ_mod.B₃(t,x) ≈  - equ_mod.B₀ * equ_mod.R₀ atol=1E-14
-end
-
 function test_axisymmetric_tokamak_cylindrical_equilibrium(equ_mod, t=0., x=[1.5, 0.5, π/5])
     @test equ_mod.B¹(t,x) == + equ_mod.B₀ / equ_mod.q₀ * equ_mod.Z(t,x) / equ_mod.R(t,x)
     @test equ_mod.B²(t,x) == - equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t,x) - equ_mod.R₀) / equ_mod.R(t,x)
@@ -187,17 +177,14 @@ function test_axisymmetric_tokamak_cylindrical_equilibrium(equ_mod, t=0., x=[1.5
     @test equ_mod.B₃(t,x) == - equ_mod.B₀ * equ_mod.R₀
 end
 
-function test_consistency_axisymmetric_tokamak_circular_equilibrium(equ_tor, equ_car, t=0., ξ=[0.5, π/10, π/5])
-    x  = equ_tor.to_cartesian(t,ξ)
-    DF = equ_tor.DF(t,ξ)
+function test_axisymmetric_tokamak_toroidal_equilibrium(equ_mod, t=0., x=[0.5, π/10, π/5])
+    @test equ_mod.B¹(t,x) == 0
+    @test equ_mod.B²(t,x) == - equ_mod.B₀ / equ_mod.q₀ / equ_mod.R(t,x)
+    @test equ_mod.B³(t,x) ≈  - equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t,x)^2 atol=1E-14
 
-    B_tor = [equ_tor.B¹(t,ξ), equ_tor.B²(t,ξ), equ_tor.B³(t,ξ)]
-    B_car = [equ_car.B¹(t,x), equ_car.B²(t,x), equ_car.B³(t,x)]
-
-    B̂_tor = [equ_tor.B₁(t,ξ), equ_tor.B₂(t,ξ), equ_tor.B₃(t,ξ)]
-    B̂_car = [equ_car.B₁(t,x), equ_car.B₂(t,x), equ_car.B₃(t,x)]
-
-    @test B_tor' * B̂_tor ≈ B_car' * B̂_car atol=1E-12
+    @test equ_mod.B₁(t,x) == 0
+    @test equ_mod.B₂(t,x) == - equ_mod.B₀ / equ_mod.q₀ * equ_mod.r(t,x)^2 / equ_mod.R(t,x)
+    @test equ_mod.B₃(t,x) ≈  - equ_mod.B₀ * equ_mod.R₀ atol=1E-14
 end
 
 function test_consistency_axisymmetric_tokamak_cylindrical_equilibrium(equ_cyl, equ_car, t=0., ξ=[1.5, 0.5, π/5])
@@ -212,6 +199,23 @@ function test_consistency_axisymmetric_tokamak_cylindrical_equilibrium(equ_cyl, 
     B̂_car = [equ_car.B₁(t,x), equ_car.B₂(t,x), equ_car.B₃(t,x)]
 
     @test B_cyl' * B̂_cyl ≈ B_car' * B̂_car atol=1E-12
+    # @test DF * B_cyl == B_car
+    # @test DF * B̂_cyl == B̂_car
+end
+
+function test_consistency_axisymmetric_tokamak_toroidal_equilibrium(equ_tor, equ_car, t=0., ξ=[0.5, π/10, π/5])
+    x  = equ_tor.to_cartesian(t,ξ)
+    DF = equ_tor.DF(t,ξ)
+
+    B_tor = [equ_tor.B¹(t,ξ), equ_tor.B²(t,ξ), equ_tor.B³(t,ξ)]
+    B_car = [equ_car.B¹(t,x), equ_car.B²(t,x), equ_car.B³(t,x)]
+
+    B̂_tor = [equ_tor.B₁(t,ξ), equ_tor.B₂(t,ξ), equ_tor.B₃(t,ξ)]
+    B̂_car = [equ_car.B₁(t,x), equ_car.B₂(t,x), equ_car.B₃(t,x)]
+
+    @test B_tor' * B̂_tor ≈ B_car' * B̂_car atol=1E-12
+    # @test DF * B_tor == B_car
+    # @test DF * B̂_tor == B̂_car
 end
 
 function test_symmetric_quadratic_equilibrium(equ_mod, t=0., x=[1.0, 0.5, 0.5])
@@ -270,16 +274,16 @@ end
 
 @testset "$(rpad("Magnetic Fields",60))" begin
     test_axisymmetric_tokamak_cartesian_equilibrium(AxisymmetricTokamakCartesian)
-    test_axisymmetric_tokamak_circular_equilibrium(AxisymmetricTokamakCircular)
     test_axisymmetric_tokamak_cylindrical_equilibrium(AxisymmetricTokamakCylindrical)
+    test_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidal)
     test_symmetric_quadratic_equilibrium(SymmetricQuadratic)
     test_theta_pinch_equilibrium(ThetaPinch)
     test_abc_equilibrium(ABC)
 end
 
 @testset "$(rpad("Consistency",60))" begin
-    test_consistency_axisymmetric_tokamak_circular_equilibrium(AxisymmetricTokamakCircular, AxisymmetricTokamakCartesian)
     test_consistency_axisymmetric_tokamak_cylindrical_equilibrium(AxisymmetricTokamakCylindrical, AxisymmetricTokamakCartesian)
+    test_consistency_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidal, AxisymmetricTokamakCartesian)
 end
 
 println()
