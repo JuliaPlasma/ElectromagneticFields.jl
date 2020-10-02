@@ -112,6 +112,28 @@ Vector potential and magnetic field components:
 
 
 
+## Symmetric Magnetic Field
+
+```@docs
+SymmetricQuadratic
+```
+```@eval
+using Plots
+using ElectromagneticFields
+
+eq_sng = ElectromagneticFields.SymmetricQuadratic.init()
+plot(eq_sym)
+savefig("symmetric.png")
+
+nothing
+```
+
+Vector potential and magnetic field components:
+
+![](symmetric.png)
+
+
+
 ## Symmetric Solov'ev Equilibrium
 
 ```@docs

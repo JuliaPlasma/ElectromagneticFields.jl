@@ -17,6 +17,9 @@ Parameters: `B₀`
 """
 module SymmetricQuadratic
 
+    using RecipesBase
+    using LaTeXStrings
+
     import ..ElectromagneticFields
     import ..ElectromagneticFields: CartesianEquilibrium, ZeroPerturbation
     import ..ElectromagneticFields: load_equilibrium, generate_equilibrium_code
@@ -60,6 +63,52 @@ module SymmetricQuadratic
         equilibrium = SymmetricQuadraticEquilibrium(B₀)
         load_equilibrium(equilibrium, perturbation; target_module=SymmetricQuadratic)
         return equilibrium
+    end
+
+
+    @recipe function f(equ::SymmetricQuadraticEquilibrium;
+                       nx = 100, ny = 100, levels = 20, size = (400,1200),
+                       xlims = (-1., +1.),
+                       ylims = (-1., +1.))
+
+        xgrid = LinRange(xlims[1], xlims[2], nx)
+        ygrid = LinRange(ylims[1], ylims[2], ny)
+        pot1  = [A₁(0, xgrid[i], ygrid[j], 0.0) for i in eachindex(xgrid), j in eachindex(ygrid)]
+        pot2  = [A₂(0, xgrid[i], ygrid[j], 0.0) for i in eachindex(xgrid), j in eachindex(ygrid)]
+        Bfield = [B₃(0, xgrid[i], ygrid[j], 0.0) for i in eachindex(xgrid), j in eachindex(ygrid)]
+
+        seriestype   := :contour
+        aspect_ratio := :equal
+        layout := (3,1)
+        size   := size
+        xlims  := xlims
+        ylims  := ylims
+        levels := levels
+        legend := :none
+
+        @series begin
+            subplot := 1
+            title  := L"A_x (x,y)"
+            xguide := L"x"
+            yguide := L"y"
+            (xgrid, ygrid, pot1)
+        end
+
+        @series begin
+            subplot := 2
+            title  := L"A_y (x,y)"
+            xguide := L"x"
+            yguide := L"y"
+            (xgrid, ygrid, pot2)
+        end
+
+        @series begin
+            subplot := 3
+            title  := L"B_z (x,y)"
+            xguide := L"x"
+            yguide := L"y"
+            (xgrid, ygrid, Bfield)
+        end
     end
 
 end
