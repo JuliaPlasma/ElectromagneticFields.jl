@@ -9,8 +9,8 @@ Parameters:
  * `κ`:  elongation
  * `δ`:  triangularity
  * `a`:  free constant, determined to match a given beta value
- * `xₛₑₚ`: x position of the X point
- * `yₛₑₚ`: y position of the X point
+ * `xsep`: x position of the X point
+ * `ysep`: y position of the X point
 """
 module SolovevXpoint
 
@@ -35,16 +35,16 @@ module SolovevXpoint
         κ::T
         δ::T
         a::T
-        xₛₑₚ::T
-        yₛₑₚ::T
+        xsep::T
+        ysep::T
         c::Vector{T}
 
-        function SolovevXpointEquilibrium{T}(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, a::T, xₛₑₚ::T, yₛₑₚ::T, c::Vector{T}) where T <: Number
-            new("Solovev Equilibrium with X-point", R₀, B₀, ϵ, κ, δ, a, xₛₑₚ, yₛₑₚ, c)
+        function SolovevXpointEquilibrium{T}(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, a::T, xsep::T, ysep::T, c::Vector{T}) where T <: Number
+            new("Solovev Equilibrium with X-point", R₀, B₀, ϵ, κ, δ, a, xsep, ysep, c)
         end
     end
 
-    function SolovevXpointEquilibrium(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, a::T, xₛₑₚ::T, yₛₑₚ::T) where T <: Number
+    function SolovevXpointEquilibrium(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, a::T, xsep::T, ysep::T) where T <: Number
 
         n = 12
 
@@ -68,12 +68,12 @@ module SolovevXpoint
             expand(subs(subs(ψ, x[1], 1+ϵ), x[2], 0)),
             expand(subs(subs(ψ, x[1], 1-ϵ), x[2], 0)),
             expand(subs(subs(ψ, x[1], 1-δ*ϵ), x[2], κ*ϵ)),
-            expand(subs(subs(ψ, x[1], xₛₑₚ), x[2], yₛₑₚ)),
+            expand(subs(subs(ψ, x[1], xsep), x[2], ysep)),
             expand(subs(subs(diff(ψ, x[2]), x[1], 1+ϵ), x[2], 0)),
             expand(subs(subs(diff(ψ, x[2]), x[1], 1-ϵ), x[2], 0)),
             expand(subs(subs(diff(ψ, x[1]), x[1], 1-δ*ϵ), x[2], κ*ϵ)),
-            expand(subs(subs(diff(ψ, x[1]), x[1], xₛₑₚ), x[2], yₛₑₚ)),
-            expand(subs(subs(diff(ψ, x[2]), x[1], xₛₑₚ), x[2], yₛₑₚ)),
+            expand(subs(subs(diff(ψ, x[1]), x[1], xsep), x[2], ysep)),
+            expand(subs(subs(diff(ψ, x[2]), x[1], xsep), x[2], ysep)),
             expand(subs(subs(diff(ψ, x[2], 2), x[1], 1+ϵ), x[2], 0) - (1 + asin(δ))^2 / (ϵ * κ^2) * subs(subs(diff(ψ, x[1]), x[1], 1+ϵ), x[2], 0)),
             expand(subs(subs(diff(ψ, x[2], 2), x[1], 1-ϵ), x[2], 0) + (1 - asin(δ))^2 / (ϵ * κ^2) * subs(subs(diff(ψ, x[1]), x[1], 1-ϵ), x[2], 0)),
             expand(subs(subs(diff(ψ, x[1], 2), x[1], 1-δ*ϵ), x[2], κ*ϵ) - κ / (ϵ * (1 - δ^2)) * subs(subs(diff(ψ, x[2]), x[1], 1-δ*ϵ), x[2], κ*ϵ))
@@ -82,7 +82,7 @@ module SolovevXpoint
         csym = solve(eqs, c)
         cnum = [N(csym[c[i]]) for i in 1:n]
 
-        SolovevXpointEquilibrium{T}(R₀, B₀, ϵ, κ, δ, a, xₛₑₚ, yₛₑₚ, cnum)
+        SolovevXpointEquilibrium{T}(R₀, B₀, ϵ, κ, δ, a, xsep, ysep, cnum)
     end
 
 
@@ -98,8 +98,8 @@ module SolovevXpoint
         print(io, "  κ  = ", equ.κ,  "\n")
         print(io, "  δ  = ", equ.δ,  "\n")
         print(io, "  a  = ", equ.a,  "\n")
-        print(io, "  xₛₑₚ  = ", equ.xₛₑₚ, "\n")
-        print(io, "  yₛₑₚ  = ", equ.yₛₑₚ)
+        print(io, "  xsep  = ", equ.xsep, "\n")
+        print(io, "  ysep  = ", equ.ysep)
     end
 
 
@@ -119,12 +119,12 @@ module SolovevXpoint
     end
 
 
-    macro solovev_xpoint_equilibrium(R₀, B₀, ϵ, κ, δ, a, xₛₑₚ, yₛₑₚ)
-        generate_equilibrium_code(SolovevXpointEquilibrium(R₀, B₀, ϵ, κ, δ, a, xₛₑₚ, yₛₑₚ); output=false)
+    macro solovev_xpoint_equilibrium(R₀, B₀, ϵ, κ, δ, a, xsep, ysep)
+        generate_equilibrium_code(SolovevXpointEquilibrium(R₀, B₀, ϵ, κ, δ, a, xsep, ysep); output=false)
     end
 
-    function init(R₀, B₀, ϵ, κ, δ, a, xₛₑₚ, yₛₑₚ; perturbation=ZeroPerturbation(), target_module=SolovevXpoint)
-        equilibrium = SolovevXpointEquilibrium(R₀, B₀, ϵ, κ, δ, a, xₛₑₚ, yₛₑₚ)
+    function init(R₀, B₀, ϵ, κ, δ, a, xsep, ysep; perturbation=ZeroPerturbation(), target_module=SolovevXpoint)
+        equilibrium = SolovevXpointEquilibrium(R₀, B₀, ϵ, κ, δ, a, xsep, ysep)
         load_equilibrium(equilibrium, perturbation; target_module=target_module)
         return equilibrium
     end
