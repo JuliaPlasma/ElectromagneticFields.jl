@@ -20,10 +20,10 @@ are interpolated using ApproXD and can be evaluated with the very same interface
 
 Analytical equilibria:
 - simple axisymmetric tokamak equilibrium in cartesian, cylindrical and toroidal coordinates
-- flexible Solov'ev equilibria with and without X-point
-- simple quadratic Solov'ev equilibrium as well as symmetric quadratic field
-- ABC field
-- 3D perturbations (e.g., magnetic islands)
+- flexible Solov'ev equilibria with and without X-point (including ITER, NSTX and FRC configurations)
+- symmetric quadratic and singular magnetic fields, symmetric Solov'ev equilibria
+- Arnold-Beltrami-Childress (ABC) field
+- 3D perturbations (e.g., magnetic islands, electric fields)
 
 Numerical equilibria (planned):
 - projected analytic equilibria
