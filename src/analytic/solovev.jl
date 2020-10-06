@@ -5,7 +5,7 @@ Based on Cerfon & Freidberg, Physics of Plasmas 17, 032502, 2010,
 
 The covariant components of the vector potential are given by
 ```math
-A (x, y, \phi) = \frac{B_0 R_0}{2} \, \left( \frac{y}{x} , \, - \ln x , \, \psi(x,y) \right)^T ,
+A (x, y, \phi) = \left( \frac{B_0 R_0}{2} \, \frac{y}{x} , \, - \frac{B_0 R_0}{2} \, \ln x , \, \psi(x,y) \right)^T ,
 ```
 
 with $x = R/R_0$ and $y = Z/R_0$.
