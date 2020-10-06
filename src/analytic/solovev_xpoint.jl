@@ -1,6 +1,91 @@
-"""
+@doc raw"""
 Axisymmetric Solov'ev equilibra with X-point in (R/R₀,Z/R₀,phi) coordinates.
-Based on Cerfon & Freidberg, Physics of Plasmas 17, 032502, 2010.
+Based on Cerfon & Freidberg, Physics of Plasmas 17, 032502, 2010,
+      and Freidberg, Ideal Magnetohydrodynamics, 2014.
+
+The covariant components of the vector potential are given by
+```math
+A (x, y, \phi) = \frac{B_0 R_0}{2} \, \left( \frac{y}{x} , \, - \ln x , \, \psi(x,y) \right)^T ,
+```
+
+with $x = R/R_0$ and $y = Z/R_0$.
+The normalised poloidal flux $\psi$ is given by
+```math
+\psi (x,y) = \psi_0 + \sum \limits_{i=1}^{12} c_i \psi_i (x,y) ,
+```
+
+with
+```math
+\begin{aligned}
+\psi_{0}  &= \frac{x^4}{8} + \alpha \left( \frac{1}{2} x^2 \, \ln x - \frac{x^4}{8} \right) , \\
+\psi_{1}  &= 1 , \\
+\psi_{2}  &= x^2 , \\
+\psi_{3}  &= y^2 - x^2 \, \ln x , \\
+\psi_{4}  &= x^4 - 4 x^2 y^2 , \\
+\psi_{5}  &= 2 y^4 9 y^2 x^2 + 3 x^4 \, \ln x - 12 x^2 y^2 \, \ln x , \\
+\psi_{6}  &= x^6 - 12 x^4 y^2 + 8 x^2 y^4 , \\
+\psi_{7}  &= 8 y^6 - 140 y^4 x^2 + 75 y^2 x^4 - 15 x^6 \, \ln x + 180 x^4 y^2 \, \ln x - 120 x^2 y^4 \, \ln x , \\
+\psi_{8}  &= y , \\
+\psi_{9}  &= y x^2 , \\
+\psi_{10} &= y^3 - 3 y x^2 \, \ln x , \\
+\psi_{11} &= 3 y x^4 - 4 y^3 x^2 , \\
+\psi_{12} &= 8 y^5 - 45 y x^4 - 80 y^3 x^2 \, \ln x + 60 y x^4 \, \ln x .
+\end{aligned}
+```
+
+This formula describes exact solutions of the Grad-Shafranov equation with up-down asymmetry.
+The constants $c_i$ are determined from boundary constraints on $\psi$, that are derived from
+the following analytic model for a smooth, elongated "D" shaped cross section:
+```math
+\begin{aligned}
+x &= 1 + \epsilon \, \cos (\tau + \arcsin \delta \, \sin \tau) , \\
+y &= \epsilon \kappa \, \sin (\tau) ,
+\end{aligned}
+```
+where $0 \leq \tau < 2 \pi$, $\epsilon = a / R_0$ is the inverse aspect ratio, $\kappa$ the elongation,
+and $\sin \delta_0 = \delta$ is the triangularity.
+
+Defining four test points, namely
+- the high point $(1 - \delta \epsilon, \kappa \epsilon)$,
+- the inner equatorial point $(1 - \epsilon, 0)$,
+- and the outer equatorial point $(1 + \epsilon, 0)$,
+- the position of the X-point $(x_{\mathrm{sep}}, y_{\mathrm{sep}})$,
+
+the following geometric constraints can be posed on the solution:
+```math
+\begin{aligned}
+\psi (1 + \epsilon, 0) &= 0 , \\
+\psi (1 - \epsilon, 0) &= 0 , \\
+\psi (1 - \delta \epsilon, \kappa \epsilon) &= 0 , \\
+\psi (x_{\mathrm{sep}}, y_{\mathrm{sep}}) &= 0 , \\
+\psi_{y} (1 + \epsilon, 0) &= 0 , \\
+\psi_{y} (1 - \epsilon, 0) &= 0 , \\
+\psi_{x} (1 - \delta \epsilon, \kappa \epsilon) &= 0 , \\
+\psi_{x} (x_{\mathrm{sep}}, y_{\mathrm{sep}}) &= 0 , \\
+\psi_{y} (x_{\mathrm{sep}}, y_{\mathrm{sep}}) &= 0 , \\
+\psi_{yy} (1 + \epsilon, 0) &= - N_1 \psi_{x} (1 + \epsilon, 0) , \\
+\psi_{yy} (1 - \epsilon, 0) &= - N_2 \psi_{x} (1 - \epsilon, 0) , \\
+\psi_{xx} (1 - \delta \epsilon, \kappa \epsilon) &= - N_3 \psi_y (1 - \delta \epsilon, \kappa \epsilon) .
+\end{aligned}
+```
+
+The first four equations define the four test points, the fifth and sixth equations define the up-down
+symmetry, the seventh equations enforces the high point to be a maximum, the eighth and ninth eqaution
+set the $x$- and $y$-components of the magnetic field at the X-point to zero, and the last three
+equations define the curvature at the first three test points.
+
+The coefficients $N_j$ can be found from the analytic model cross section as
+```math
+\begin{aligned}
+N_1 &= \left[ \frac{d^2 x}{dy^2} \right]_{\tau = 0}     = - \frac{(1 + \delta_0)^2}{\epsilon \kappa^2} , \\
+N_2 &= \left[ \frac{d^2 x}{dy^2} \right]_{\tau = \pi}   = \hphantom{-} \frac{(1 - \delta_0)^2}{\epsilon \kappa^2} , \\
+N_3 &= \left[ \frac{d^2 x}{dy^2} \right]_{\tau = \pi/2} = - \frac{\kappa}{\epsilon \, \cos^2 \delta_0} .
+\end{aligned}
+```
+
+For a given value of the constant $a$ above conditions reduce to a set of seven linearinhomogeneous
+algebraic equations for the unknown $c_i$, which can easily be solved.
+
 
 Parameters:
  * `R₀`: position of magnetic axis
