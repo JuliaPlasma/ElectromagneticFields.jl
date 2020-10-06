@@ -5,7 +5,7 @@ Based on McCarthy, Physics of Plasmas 6, 3554, 1999.
 Parameters:
  * `R₀`: position of magnetic axis
  * `B₀`: B-field at magnetic axis
- * `a₀`, `b₀`: free constants
+ * `α`, `β`: free constants
 """
 module SolovevSymmetric
 
@@ -20,23 +20,23 @@ module SolovevSymmetric
 
     const DEFAULT_R₀ = 1.0
     const DEFAULT_B₀ = 1.0
-    const DEFAULT_a₀ = 2.0
-    const DEFAULT_b₀ = 0.5
+    const DEFAULT_α  = 2.0
+    const DEFAULT_β  = 0.5
 
     struct SolovevSymmetricEquilibrium{T <: Number} <: CartesianEquilibrium
         name::String
         R₀::T
         B₀::T
-        a₀::T
-        b₀::T
+        α::T
+        β::T
 
-        function SolovevSymmetricEquilibrium{T}(R₀::T, B₀::T, a₀::T, b₀::T) where T <: Number
-            new("QuadraticSolovevEquilibrium", R₀, B₀, a₀, b₀)
+        function SolovevSymmetricEquilibrium{T}(R₀::T, B₀::T, α::T, β::T) where T <: Number
+            new("QuadraticSolovevEquilibrium", R₀, B₀, α, β)
         end
     end
 
-    function SolovevSymmetricEquilibrium(R₀::T=DEFAULT_R₀, B₀::T=DEFAULT_B₀, a₀::T=DEFAULT_a₀, b₀::T=DEFAULT_b₀) where T <: Number
-        SolovevSymmetricEquilibrium{T}(R₀, B₀, a₀, b₀)
+    function SolovevSymmetricEquilibrium(R₀::T=DEFAULT_R₀, B₀::T=DEFAULT_B₀, α::T=DEFAULT_α, β::T=DEFAULT_β) where T <: Number
+        SolovevSymmetricEquilibrium{T}(R₀, B₀, α, β)
     end
 
 
@@ -44,8 +44,8 @@ module SolovevSymmetric
         print(io, "Quadratic Solovev Equilibrium with\n")
         print(io, "  R₀ = ", equ.R₀, "\n")
         print(io, "  B₀ = ", equ.B₀, "\n")
-        print(io, "  a₀ = ", equ.a₀, "\n")
-        print(io, "  b₀ = ", equ.b₀)
+        print(io, "  α  = ", equ.α,  "\n")
+        print(io, "  β  = ", equ.β)
     end
 
     # R²(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = X(x,equ)^2 + Y(x,equ)^2
@@ -57,15 +57,15 @@ module SolovevSymmetric
 
     ElectromagneticFields.A₁(x::AbstractVector, equ::SolovevSymmetricEquilibrium) = zero(eltype(x))
     ElectromagneticFields.A₂(x::AbstractVector, equ::SolovevSymmetricEquilibrium) = zero(eltype(x))
-    ElectromagneticFields.A₃(x::AbstractVector, equ::SolovevSymmetricEquilibrium) = - (equ.a₀ * X(x,equ)^4 / 4 + equ.b₀ * Y(x,equ)^2 ) / 2
+    ElectromagneticFields.A₃(x::AbstractVector, equ::SolovevSymmetricEquilibrium) = - equ.B₀ * (equ.α * (equ.R₀ + X(x,equ))^4 / 4 + equ.β * Y(x,equ)^2 ) / 2
 
 
-    macro solovev_equilibrium_quadratic(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, a₀=DEFAULT_a₀, b₀=DEFAULT_b₀)
-        generate_equilibrium_code(SolovevSymmetricEquilibrium(R₀, B₀, a₀, b₀); output=false)
+    macro solovev_equilibrium_quadratic(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, α=DEFAULT_α, β=DEFAULT_β)
+        generate_equilibrium_code(SolovevSymmetricEquilibrium(R₀, B₀, α, β); output=false)
     end
 
-    function init(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, a₀=DEFAULT_a₀, b₀=DEFAULT_b₀; perturbation=ZeroPerturbation())
-        equilibrium = SolovevSymmetricEquilibrium(R₀, B₀, a₀, b₀)
+    function init(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, α=DEFAULT_α, β=DEFAULT_β; perturbation=ZeroPerturbation())
+        equilibrium = SolovevSymmetricEquilibrium(R₀, B₀, α, β)
         load_equilibrium(equilibrium, perturbation; target_module=SolovevSymmetric)
         return equilibrium
     end
@@ -73,7 +73,7 @@ module SolovevSymmetric
 
     @recipe function f(equ::SolovevSymmetricEquilibrium;
                        nx = 100, ny = 120, levels = 25, size = (600,400),
-                       xlims = (-0.75, +0.75),
+                       xlims = (equ.R₀-0.75, equ.R₀+0.75),
                        ylims = (-0.50, +0.50))
 
         xgrid = LinRange(xlims[1], xlims[2], nx)

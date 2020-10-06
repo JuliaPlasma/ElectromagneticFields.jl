@@ -144,7 +144,7 @@ SolovevSymmetric
 using Plots
 using ElectromagneticFields
 
-eq_sol = ElectromagneticFields.SolovevSymmetric.init()
+eq_sol = ElectromagneticFields.SolovevSymmetric.init(0.0, 1.0, 2.0, 0.5)
 plot(eq_sol)
 savefig("solovev_symmetric.png")
 

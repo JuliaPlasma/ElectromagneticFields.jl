@@ -8,7 +8,7 @@ Parameters:
  * `ϵ`:  inverse aspect ratio
  * `κ`:  elongation
  * `δ`:  triangularity
- * `a`:  free constant, determined to match a given beta value
+ * `α`:  free constant, determined to match a given beta value
  * `xsep`: x position of the X point
  * `ysep`: y position of the X point
 """
@@ -34,24 +34,24 @@ module SolovevXpoint
         ϵ::T
         κ::T
         δ::T
-        a::T
+        α::T
         xsep::T
         ysep::T
         c::Vector{T}
 
-        function SolovevXpointEquilibrium{T}(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, a::T, xsep::T, ysep::T, c::Vector{T}) where T <: Number
-            new("Solovev Equilibrium with X-point", R₀, B₀, ϵ, κ, δ, a, xsep, ysep, c)
+        function SolovevXpointEquilibrium{T}(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, α::T, xsep::T, ysep::T, c::Vector{T}) where T <: Number
+            new("Solovev Equilibrium with X-point", R₀, B₀, ϵ, κ, δ, α, xsep, ysep, c)
         end
     end
 
-    function SolovevXpointEquilibrium(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, a::T, xsep::T, ysep::T) where T <: Number
+    function SolovevXpointEquilibrium(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, α::T, xsep::T, ysep::T) where T <: Number
 
         n = 12
 
         x = [Sym("x" * string(i)) for i in 1:3]
         c = [Sym("c" * string(i)) for i in 1:n]
 
-        ψ = ( ψ₀(x,a) + c[1]  * ψ₁(x)
+        ψ = ( ψ₀(x,α) + c[1]  * ψ₁(x)
                       + c[2]  * ψ₂(x)
                       + c[3]  * ψ₃(x)
                       + c[4]  * ψ₄(x)
@@ -82,7 +82,7 @@ module SolovevXpoint
         csym = solve(eqs, c)
         cnum = [N(csym[c[i]]) for i in 1:n]
 
-        SolovevXpointEquilibrium{T}(R₀, B₀, ϵ, κ, δ, a, xsep, ysep, cnum)
+        SolovevXpointEquilibrium{T}(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, cnum)
     end
 
 
@@ -97,14 +97,14 @@ module SolovevXpoint
         print(io, "  ϵ  = ", equ.ϵ,  "\n")
         print(io, "  κ  = ", equ.κ,  "\n")
         print(io, "  δ  = ", equ.δ,  "\n")
-        print(io, "  a  = ", equ.a,  "\n")
+        print(io, "  α  = ", equ.α,  "\n")
         print(io, "  xsep  = ", equ.xsep, "\n")
         print(io, "  ysep  = ", equ.ysep)
     end
 
 
     function ElectromagneticFields.A₃(x::AbstractArray{T,1}, equ::SolovevXpointEquilibrium) where {T <: Number}
-        ( ψ₀(x, equ.a) + equ.c[1]  * ψ₁(x)
+        ( ψ₀(x, equ.α) + equ.c[1]  * ψ₁(x)
                        + equ.c[2]  * ψ₂(x)
                        + equ.c[3]  * ψ₃(x)
                        + equ.c[4]  * ψ₄(x)
@@ -119,12 +119,12 @@ module SolovevXpoint
     end
 
 
-    macro solovev_xpoint_equilibrium(R₀, B₀, ϵ, κ, δ, a, xsep, ysep)
-        generate_equilibrium_code(SolovevXpointEquilibrium(R₀, B₀, ϵ, κ, δ, a, xsep, ysep); output=false)
+    macro solovev_xpoint_equilibrium(R₀, B₀, ϵ, κ, δ, α, xsep, ysep)
+        generate_equilibrium_code(SolovevXpointEquilibrium(R₀, B₀, ϵ, κ, δ, α, xsep, ysep); output=false)
     end
 
-    function init(R₀, B₀, ϵ, κ, δ, a, xsep, ysep; perturbation=ZeroPerturbation(), target_module=SolovevXpoint)
-        equilibrium = SolovevXpointEquilibrium(R₀, B₀, ϵ, κ, δ, a, xsep, ysep)
+    function init(R₀, B₀, ϵ, κ, δ, α, xsep, ysep; perturbation=ZeroPerturbation(), target_module=SolovevXpoint)
+        equilibrium = SolovevXpointEquilibrium(R₀, B₀, ϵ, κ, δ, α, xsep, ysep)
         load_equilibrium(equilibrium, perturbation; target_module=target_module)
         return equilibrium
     end

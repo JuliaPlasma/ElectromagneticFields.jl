@@ -8,7 +8,7 @@ Parameters:
  * `ϵ`:  inverse aspect ratio
  * `κ`:  elongation
  * `δ`:  triangularity
- * `a`:  free constant, determined to match a given beta value
+ * `α`:  free constant, determined to match a given beta value
 """
 module Solovev
 
@@ -32,22 +32,22 @@ module Solovev
         ϵ::T
         κ::T
         δ::T
-        a::T
+        α::T
         c::Vector{T}
 
-        function SolovevEquilibrium{T}(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, a::T, c::Vector{T}) where T <: Number
-            new("Solovev Equilibrium", R₀, B₀, ϵ, κ, δ, a, c)
+        function SolovevEquilibrium{T}(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, α::T, c::Vector{T}) where T <: Number
+            new("Solovev Equilibrium", R₀, B₀, ϵ, κ, δ, α, c)
         end
     end
 
-    function SolovevEquilibrium(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, a::T) where T <: Number
+    function SolovevEquilibrium(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, α::T) where T <: Number
 
         n = 7
 
         x = [Sym("x" * string(i)) for i in 1:3]
         c = [Sym("c" * string(i)) for i in 1:n]
 
-        ψ = ( ψ₀(x,a) + c[1] * ψ₁(x)
+        ψ = ( ψ₀(x,α) + c[1] * ψ₁(x)
                       + c[2] * ψ₂(x)
                       + c[3] * ψ₃(x)
                       + c[4] * ψ₄(x)
@@ -68,7 +68,7 @@ module Solovev
         csym = solve(eqs, c)
         cnum = [N(csym[c[i]]) for i in 1:n]
 
-        SolovevEquilibrium{T}(R₀, B₀, ϵ, κ, δ, a, cnum)
+        SolovevEquilibrium{T}(R₀, B₀, ϵ, κ, δ, α, cnum)
     end
 
 
@@ -85,12 +85,12 @@ module Solovev
         print(io, "  ϵ  = ", equ.ϵ,  "\n")
         print(io, "  κ  = ", equ.κ,  "\n")
         print(io, "  δ  = ", equ.δ,  "\n")
-        print(io, "  a  = ", equ.a)
+        print(io, "  α  = ", equ.α)
     end
 
 
     function ElectromagneticFields.A₃(x::AbstractArray{T,1}, equ::SolovevEquilibrium) where {T <: Number}
-        ( ψ₀(x, equ.a) + equ.c[1] * ψ₁(x)
+        ( ψ₀(x, equ.α) + equ.c[1] * ψ₁(x)
                        + equ.c[2] * ψ₂(x)
                        + equ.c[3] * ψ₃(x)
                        + equ.c[4] * ψ₄(x)
@@ -100,12 +100,12 @@ module Solovev
     end
 
 
-    macro solovev_equilibrium(R₀, B₀, ϵ, κ, δ, a)
-        generate_equilibrium_code(SolovevEquilibrium(R₀, B₀, ϵ, κ, δ, a); output=false)
+    macro solovev_equilibrium(R₀, B₀, ϵ, κ, δ, α)
+        generate_equilibrium_code(SolovevEquilibrium(R₀, B₀, ϵ, κ, δ, α); output=false)
     end
 
-    function init(R₀, B₀, ϵ, κ, δ, a; perturbation=ZeroPerturbation(), target_module=Solovev)
-        equilibrium = SolovevEquilibrium(R₀, B₀, ϵ, κ, δ, a)
+    function init(R₀, B₀, ϵ, κ, δ, α; perturbation=ZeroPerturbation(), target_module=Solovev)
+        equilibrium = SolovevEquilibrium(R₀, B₀, ϵ, κ, δ, α)
         load_equilibrium(equilibrium, perturbation; target_module=target_module)
         return equilibrium
     end
