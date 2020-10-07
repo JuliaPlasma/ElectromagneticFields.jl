@@ -418,15 +418,15 @@ module Solovev
         ]
 
         csym = solve(eqs, c)
-        cnum = [N(csym[c[i]]) for i in 1:n]
+        cnum = vcat([N(csym[c[i]]) for i in 1:n], zeros(5))
 
-        SolovevEquilibrium{T}(R₀, B₀, ϵ, κ, δ, α, cnum)
+        SolovevXpointEquilibrium{T}(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, cnum)
     end
 
 
     SolovevXpointEquilibriumITER() = SolovevXpointEquilibrium(6.2, 5.3, 0.32, 1.7, 0.33, -0.155, 0.88, -0.60)
     SolovevXpointEquilibriumNSTX() = SolovevXpointEquilibrium(0.85, 0.3, 0.78, 2.0, 0.35, -0.05, 0.70, -1.71)
-    SolovevDoublepointEquilibriumNSTX() = SolovevDoubleXpointEquilibrium(0.85, 0.3, 0.78, 2.0, 0.35, 0.0, 0.70, -1.71)
+    SolovevDoubleXpointEquilibriumNSTX() = SolovevDoubleXpointEquilibrium(0.85, 0.3, 0.78, 2.0, 0.35, 0.0, 0.70, -1.71)
 
 
     function Base.show(io::IO, equ::SolovevXpointEquilibrium)
@@ -500,7 +500,7 @@ module Solovev
     end
 
     function NSTXdoubleX(; perturbation=ZeroPerturbation(), target_module=Solovev)
-        equilibrium = SolovevDoublepointEquilibriumNSTX()
+        equilibrium = SolovevDoubleXpointEquilibriumNSTX()
         load_equilibrium(equilibrium, perturbation; target_module=target_module)
         return equilibrium
     end
