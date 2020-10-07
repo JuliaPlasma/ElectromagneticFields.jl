@@ -24,7 +24,8 @@ module ElectromagneticFields
            AxisymmetricTokamakToroidal,
            AxisymmetricTokamakToroidalRegularization,
            Solovev, SolovevXpoint, SolovevSymmetric,
-           Singular, SymmetricQuadratic, ThetaPinch
+           Singular, SymmetricQuadratic, ThetaPinch,
+           PenningTrapUniform, PenningTrapBottle, PenningTrapAsymmetric
 
     export @abc_equilibrium,
            @axisymmetric_tokamak_equilibrium_cartesian,
@@ -32,6 +33,9 @@ module ElectromagneticFields
            @axisymmetric_tokamak_equilibrium_cylindrical,
            @axisymmetric_tokamak_equilibrium_toroidal_regularisation,
            @ezcosz_perturbation,
+           @penning_trap_asymmetric,
+           @penning_trap_bottle,
+           @penning_trap_uniform,
            @solovev_equilibrium,
            @solovev_xpoint_equilibrium,
            @solovev_equilibrium_quadratic,
@@ -45,6 +49,9 @@ module ElectromagneticFields
     include("analytic/axisymmetric_tokamak_toroidal.jl")
     include("analytic/axisymmetric_tokamak_toroidal_regularization.jl")
     include("analytic/ezcosz.jl")
+    include("analytic/penning_trap_asymmetric.jl")
+    include("analytic/penning_trap_bottle.jl")
+    include("analytic/penning_trap_uniform.jl")
     include("analytic/solovev_abstract.jl")
     include("analytic/solovev.jl")
     include("analytic/solovev_symmetric.jl")

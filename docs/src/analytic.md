@@ -90,6 +90,30 @@ Vector potential in y direction:
 
 
 
+## Penning Trap with Uniform Magnetic Field
+
+```@docs
+PenningTrapUniform
+```
+
+
+
+## Penning Trap with Magnetic Bottle
+
+```@docs
+PenningTrapBottle
+```
+
+
+
+## Penning Trap with Asymmetric Magnetic Field
+
+```@docs
+PenningTrapAsymmetric
+```
+
+
+
 ## Singular Magnetic Field
 
 ```@docs

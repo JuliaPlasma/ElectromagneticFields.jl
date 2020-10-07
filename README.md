@@ -22,6 +22,7 @@ Analytical equilibria:
 - simple axisymmetric tokamak equilibrium in cartesian, cylindrical and toroidal coordinates
 - flexible Solov'ev equilibria with and without X-point (including ITER, NSTX and FRC configurations)
 - symmetric quadratic and singular magnetic fields, symmetric Solov'ev equilibria
+- Penning trap
 - Arnold-Beltrami-Childress (ABC) field
 - 3D perturbations (e.g., magnetic islands, electric fields)
 
