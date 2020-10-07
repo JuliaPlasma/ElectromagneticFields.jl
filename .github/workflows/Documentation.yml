@@ -16,9 +16,7 @@ jobs:
         with:
           version: 1.5
       - name: set environment variables
-        uses: allenevans/set-env@v1.0.0
-        with:
-          PYTHON: ''
+        run: echo "PYTHON=''" >> $GITHUB_ENV
       - name: Install dependencies
         run: julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
       - name: Build and deploy Documentation
