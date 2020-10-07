@@ -157,10 +157,12 @@ Vector potential in z direction:
 
 
 
-## Solov'ev Equilibrium
+## Solov'ev Equilibrium (Antoine Cerfon)
+
+### Solov'ev Equilibrium up/down symmetric
 
 ```@docs
-Solovev
+SolovevEquilibrium
 ```
 
 ```@eval
@@ -188,20 +190,20 @@ Vector potential in ITER, NSTX and a field reversed configuration:
 
 
 
-## Solov'ev Equilibrium with X-Point
+### Solov'ev Equilibrium with X-Point
 
 ```@docs
-SolovevXpoint
+SolovevXpointEquilibrium
 ```
 
 ```@eval
 using Plots
 using ElectromagneticFields
 
-eq_sol_iter = ElectromagneticFields.SolovevXpoint.ITER()
+eq_sol_iter = ElectromagneticFields.Solovev.ITER(xpoint=true)
 plot_iter = plot(eq_sol_iter, title="ITER", xlims=(0.6,1.4))
 
-eq_sol_nstx = ElectromagneticFields.SolovevXpoint.NSTX()
+eq_sol_nstx = ElectromagneticFields.Solovev.NSTX(xpoint=true)
 plot_nstx = plot(eq_sol_nstx, title="NSTX", xlims=(0.05, 2.3), ylims=(-2.25, +2.25), levels=50)
 
 plot(size=(600,400), plot_iter, plot_nstx)

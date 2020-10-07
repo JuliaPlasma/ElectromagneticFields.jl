@@ -48,7 +48,6 @@ module ElectromagneticFields
     include("analytic/solovev_abstract.jl")
     include("analytic/solovev.jl")
     include("analytic/solovev_symmetric.jl")
-    include("analytic/solovev_xpoint.jl")
     include("analytic/singular.jl")
     include("analytic/symmetric_quadratic.jl")
     include("analytic/theta_pinch.jl")
