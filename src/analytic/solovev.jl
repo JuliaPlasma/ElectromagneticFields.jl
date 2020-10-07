@@ -339,8 +339,41 @@ module Solovev
     end
 
 
+    function SolovevDoubleXpointEquilibrium(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, α::T, xsep::T, ysep::T) where T <: Number
+
+        n = 7
+
+        x = [Sym("x" * string(i)) for i in 1:3]
+        c = [Sym("c" * string(i)) for i in 1:n]
+
+        ψ = ( ψ₀(x,α) + c[1]  * ψ₁(x)
+                      + c[2]  * ψ₂(x)
+                      + c[3]  * ψ₃(x)
+                      + c[4]  * ψ₄(x)
+                      + c[5]  * ψ₅(x)
+                      + c[6]  * ψ₆(x)
+                      + c[7]  * ψ₇(x) )
+
+        eqs = [
+            expand(subs(subs(ψ, x[1], 1+ϵ), x[2], 0)),
+            expand(subs(subs(ψ, x[1], 1-ϵ), x[2], 0)),
+            expand(subs(subs(ψ, x[1], xsep), x[2], ysep)),
+            expand(subs(subs(diff(ψ, x[1]), x[1], xsep), x[2], ysep)),
+            expand(subs(subs(diff(ψ, x[2]), x[1], xsep), x[2], ysep)),
+            expand(subs(subs(diff(ψ, x[2], 2), x[1], 1+ϵ), x[2], 0) - (1 + asin(δ))^2 / (ϵ * κ^2) * subs(subs(diff(ψ, x[1]), x[1], 1+ϵ), x[2], 0)),
+            expand(subs(subs(diff(ψ, x[2], 2), x[1], 1-ϵ), x[2], 0) + (1 - asin(δ))^2 / (ϵ * κ^2) * subs(subs(diff(ψ, x[1]), x[1], 1-ϵ), x[2], 0)),
+        ]
+
+        csym = solve(eqs, c)
+        cnum = [N(csym[c[i]]) for i in 1:n]
+
+        SolovevEquilibrium{T}(R₀, B₀, ϵ, κ, δ, α, cnum)
+    end
+
+
     SolovevXpointEquilibriumITER() = SolovevXpointEquilibrium(6.2, 5.3, 0.32, 1.7, 0.33, -0.155, 0.88, -0.60)
     SolovevXpointEquilibriumNSTX() = SolovevXpointEquilibrium(0.85, 0.3, 0.78, 2.0, 0.35, -0.05, 0.70, -1.71)
+    SolovevDoublepointEquilibriumNSTX() = SolovevDoubleXpointEquilibrium(0.85, 0.3, 0.78, 2.0, 0.35, 0.0, 0.70, -1.71)
 
 
     function Base.show(io::IO, equ::SolovevXpointEquilibrium)
@@ -372,7 +405,7 @@ module Solovev
     end
 
 
-    
+
     macro solovev_equilibrium(R₀, B₀, ϵ, κ, δ, α)
         generate_equilibrium_code(SolovevEquilibrium(R₀, B₀, ϵ, κ, δ, α); output=false)
     end
@@ -409,6 +442,12 @@ module Solovev
         else
             equilibrium = SolovevEquilibriumNSTX()
         end
+        load_equilibrium(equilibrium, perturbation; target_module=target_module)
+        return equilibrium
+    end
+
+    function NSTXdoubleX(; perturbation=ZeroPerturbation(), target_module=Solovev)
+        equilibrium = SolovevDoublepointEquilibriumNSTX()
         load_equilibrium(equilibrium, perturbation; target_module=target_module)
         return equilibrium
     end
