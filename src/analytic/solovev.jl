@@ -473,8 +473,12 @@ module Solovev
         return equilibrium
     end
 
-    function init(R₀, B₀, ϵ, κ, δ, α, xsep, ysep; perturbation=ZeroPerturbation(), target_module=Solovev)
-        equilibrium = SolovevXpointEquilibrium(R₀, B₀, ϵ, κ, δ, α, xsep, ysep)
+    function init(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, doublex=false; perturbation=ZeroPerturbation(), target_module=Solovev)
+        if doublex
+            equilibrium = SolovevDoubleXpointEquilibrium(R₀, B₀, ϵ, κ, δ, α, xsep, ysep)
+        else
+            equilibrium = SolovevXpointEquilibrium(R₀, B₀, ϵ, κ, δ, α, xsep, ysep)
+        end
         load_equilibrium(equilibrium, perturbation; target_module=target_module)
         return equilibrium
     end
