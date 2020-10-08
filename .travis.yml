@@ -28,5 +28,7 @@ codecov: true
 coveralls: true
 
 script:
-  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - travis_wait 50 julia --project -e 'using Pkg; Pkg.build(; verbose = true); Pkg.precompile(); Pkg.test(; coverage=true)';
+  - travis_wait 30 julia --project --color=yes -e 'using Pkg; Pkg.build(verbose=true); Pkg.precompile(); Pkg.test(coverage=true)';
+
+after_success:
+  - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())';
