@@ -28,7 +28,8 @@ codecov: true
 coveralls: true
 
 script:
-  - travis_wait 30 julia --project --color=yes -e 'using Pkg; Pkg.build(verbose=true); Pkg.precompile(); Pkg.test(coverage=true)';
+  - travis_wait 30 julia --project --color=yes -e 'using Pkg; Pkg.add("PyCall"); Pkg.build("PyCall"; verbose=true); Pkg.test(coverage=true)';
 
 after_success:
   - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())';
+  - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())';
