@@ -524,6 +524,9 @@ function load_equilibrium(equ, pert=ZeroPerturbation(); target_module=Main, outp
     Core.eval(target_module, equ_code)
 end
 
+macro equilibrium(equ, pert=ZeroPerturbation())
+    generate_equilibrium_code(equ, pert; output=false)
+end
 
 function symprint(name, symexpr, output=1, detail_level=0)
     if output ≥ detail_level
