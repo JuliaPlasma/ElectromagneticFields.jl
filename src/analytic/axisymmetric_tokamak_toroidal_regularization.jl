@@ -83,7 +83,7 @@ module AxisymmetricTokamakToroidalRegularization
         return p
     end
 
-    macro axisymmetric_tokamak_equilibrium_toroidal_regularisation(R₀, B₀, q₀)
+    macro axisymmetric_tokamak_toroidal_regularisation(R₀, B₀, q₀)
         generate_equilibrium_code(AxisymmetricTokamakToroidalRegularizationEquilibrium(R₀, B₀, q₀); output=false)
     end
 

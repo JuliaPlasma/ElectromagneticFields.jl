@@ -56,7 +56,7 @@ module Singular
 
     ElectromagneticFields.get_functions(::SingularEquilibrium) = (X=X, Y=Y, Z=Z, R=R, r=r, θ=θ, ϕ=ϕ, r²=r²)
 
-    macro symmetric_quadratic_equilibrium(B₀=DEFAULT_B₀)
+    macro symmetric_quadratic(B₀=DEFAULT_B₀)
         generate_equilibrium_code(SingularEquilibrium(B₀); output=false)
     end
 

@@ -57,7 +57,7 @@ module ThetaPinch
     ElectromagneticFields.get_functions(::ThetaPinchEquilibrium) = (X=X, Y=Y, Z=Z, R=R, r=r, θ=θ, ϕ=ϕ, r²=r²)
 
 
-    macro zpinch_equilibrium(B₀=DEFAULT_B₀)
+    macro theta_pinch(B₀=DEFAULT_B₀)
         generate_equilibrium_code(ThetaPinchEquilibrium(B₀); output=false)
     end
 

@@ -49,7 +49,7 @@ module ABC
 
     ElectromagneticFields.get_functions(::ABCEquilibrium) = (X=X, Y=Y, Z=Z)
 
-    macro abc_equilibrium(a=DEFAULT_A, b=DEFAULT_B, c=DEFAULT_C)
+    macro abc(a=DEFAULT_A, b=DEFAULT_B, c=DEFAULT_C)
         generate_equilibrium_code(ABCEquilibrium(a, b, c); output=false)
     end
 

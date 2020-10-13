@@ -11,7 +11,7 @@ module ElectromagneticFields
 
     export AnalyticField, AnalyticEquilibrium, AnalyticPerturbation, ZeroPerturbation
 
-    export load_equilibrium, periodicity
+    export @equilibrium, load_equilibrium, periodicity
 
     include("analytic/analytic_equilibrium.jl")
     include("analytic/cartesian_equilibrium.jl")
@@ -27,21 +27,21 @@ module ElectromagneticFields
            Singular, SymmetricQuadratic, ThetaPinch,
            PenningTrapUniform, PenningTrapBottle, PenningTrapAsymmetric
 
-    export @abc_equilibrium,
-           @axisymmetric_tokamak_equilibrium_cartesian,
-           @axisymmetric_tokamak_equilibrium_circular,
-           @axisymmetric_tokamak_equilibrium_cylindrical,
-           @axisymmetric_tokamak_equilibrium_toroidal_regularisation,
+    export @abc,
+           @axisymmetric_tokamak_cartesian,
+           @axisymmetric_tokamak_circular,
+           @axisymmetric_tokamak_cylindrical,
+           @axisymmetric_tokamak_toroidal_regularisation,
            @ezcosz_perturbation,
            @penning_trap_asymmetric,
            @penning_trap_bottle,
            @penning_trap_uniform,
-           @solovev_equilibrium,
-           @solovev_xpoint_equilibrium,
-           @solovev_equilibrium_quadratic,
-           @singular_equilibrium,
-           @symmetric_quadratic_equilibrium,
-           @theta_pinch_equilibrium
+           @solovev,
+           @solovev_xpoint,
+           @solovev_symmetric,
+           @singular,
+           @symmetric_quadratic,
+           @theta_pinch
 
     include("analytic/abc.jl")
     include("analytic/axisymmetric_tokamak_cartesian.jl")

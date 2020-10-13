@@ -66,7 +66,7 @@ module AxisymmetricTokamakCartesian
 
     ElectromagneticFields.get_functions(::AxisymmetricTokamakCartesianEquilibrium) = (X=X, Y=Y, Z=Z, R=R, r=r, θ=θ, ϕ=ϕ, R²=R², r²=r²)
 
-    macro axisymmetric_tokamak_equilibrium_cartesian(R₀, B₀, q₀)
+    macro axisymmetric_tokamak_cartesian(R₀, B₀, q₀)
         generate_equilibrium_code(AxisymmetricTokamakCartesianEquilibrium(R₀, B₀, q₀); output=false)
     end
 

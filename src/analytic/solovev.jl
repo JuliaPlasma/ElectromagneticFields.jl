@@ -433,11 +433,11 @@ module Solovev
 
 
 
-    macro solovev_equilibrium(R₀, B₀, ϵ, κ, δ, α)
+    macro solovev(R₀, B₀, ϵ, κ, δ, α)
         generate_equilibrium_code(SolovevEquilibrium(R₀, B₀, ϵ, κ, δ, α); output=false)
     end
 
-    macro solovev_xpoint_equilibrium(R₀, B₀, ϵ, κ, δ, α, xsep, ysep)
+    macro solovev_xpoint(R₀, B₀, ϵ, κ, δ, α, xsep, ysep)
         generate_equilibrium_code(SolovevXpointEquilibrium(R₀, B₀, ϵ, κ, δ, α, xsep, ysep); output=false)
     end
 

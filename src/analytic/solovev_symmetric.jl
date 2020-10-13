@@ -65,7 +65,7 @@ module SolovevSymmetric
     ElectromagneticFields.A₃(x::AbstractVector, equ::SolovevSymmetricEquilibrium) = - equ.B₀ * (equ.α * (equ.R₀ + X(x,equ))^4 / 4 + equ.β * Y(x,equ)^2 ) / 2
 
 
-    macro solovev_equilibrium_quadratic(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, α=DEFAULT_α, β=DEFAULT_β)
+    macro solovev_symmetric(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, α=DEFAULT_α, β=DEFAULT_β)
         generate_equilibrium_code(SolovevSymmetricEquilibrium(R₀, B₀, α, β); output=false)
     end
 

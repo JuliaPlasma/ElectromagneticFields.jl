@@ -87,7 +87,7 @@ module AxisymmetricTokamakToroidal
         return p
     end
 
-    macro axisymmetric_tokamak_equilibrium_toroidal(R₀, B₀, q₀)
+    macro axisymmetric_tokamak_toroidal(R₀, B₀, q₀)
         generate_equilibrium_code(AxisymmetricTokamakToroidalEquilibrium(R₀, B₀, q₀); output=false)
     end
 
