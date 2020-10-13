@@ -7,7 +7,7 @@ module Solovev
 
     using RecipesBase
 
-    using SymPy: N, Sym, diff, expand, solve, subs
+    using SymEngine: N, symbols, diff, expand, subs
 
     import ..ElectromagneticFields
     import ..ElectromagneticFields: ZeroPerturbation
@@ -173,32 +173,25 @@ module Solovev
     function SolovevEquilibrium(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, α::T) where T <: Number
 
         n = 7
+        A = zeros(n,n+1)
 
-        x = [Sym("x" * string(i)) for i in 1:3]
-        c = [Sym("c" * string(i)) for i in 1:n]
+        x₁, x₂, x₃ = symbols("x₁, x₂, x₃")
+        x = [x₁, x₂, x₃]
+        ψ = [ψ₁(x), ψ₂(x), ψ₃(x), ψ₄(x), ψ₅(x), ψ₆(x), ψ₇(x), -ψ₀(x,α)]
 
-        ψ = ( ψ₀(x,α) + c[1] * ψ₁(x)
-                      + c[2] * ψ₂(x)
-                      + c[3] * ψ₃(x)
-                      + c[4] * ψ₄(x)
-                      + c[5] * ψ₅(x)
-                      + c[6] * ψ₆(x)
-                      + c[7] * ψ₇(x) )
+        for i in axes(A,2)
+            A[1,i] = N(subs(ψ[i], x[1]=>1+ϵ, x[2]=>0))
+            A[2,i] = N(subs(ψ[i], x[1]=>1-ϵ, x[2]=>0))
+            A[3,i] = N(subs(ψ[i], x[1]=>1-δ*ϵ, x[2]=>κ*ϵ))
+            A[4,i] = N(subs(diff(ψ[i], x[1]), x[1]=>1-δ*ϵ, x[2]=>κ*ϵ))
+            A[5,i] = N(subs(diff(ψ[i], x[2], 2), x[1]=>1+ϵ, x[2]=>0) - (1 + asin(δ))^2 / (ϵ * κ^2) * subs(diff(ψ[i], x[1]), x[1]=>1+ϵ, x[2]=>0))
+            A[6,i] = N(subs(diff(ψ[i], x[2], 2), x[1]=>1-ϵ, x[2]=>0) + (1 - asin(δ))^2 / (ϵ * κ^2) * subs(diff(ψ[i], x[1]), x[1]=>1-ϵ, x[2]=>0))
+            A[7,i] = N(subs(diff(ψ[i], x[1], 2), x[1]=>1-δ*ϵ, x[2]=>κ*ϵ) - κ / (ϵ * (1 - δ^2)) * subs(diff(ψ[i], x[2]), x[1]=>1-δ*ϵ, x[2]=>κ*ϵ))
+        end
 
-        eqs = [
-            expand(subs(subs(ψ, x[1], 1+ϵ), x[2], 0)),
-            expand(subs(subs(ψ, x[1], 1-ϵ), x[2], 0)),
-            expand(subs(subs(ψ, x[1], 1-δ*ϵ), x[2], κ*ϵ)),
-            expand(subs(subs(diff(ψ, x[1]), x[1], 1-δ*ϵ), x[2], κ*ϵ)),
-            expand(subs(subs(diff(ψ, x[2], 2), x[1], 1+ϵ), x[2], 0) - (1 + asin(δ))^2 / (ϵ * κ^2) * subs(subs(diff(ψ, x[1]), x[1], 1+ϵ), x[2], 0)),
-            expand(subs(subs(diff(ψ, x[2], 2), x[1], 1-ϵ), x[2], 0) + (1 - asin(δ))^2 / (ϵ * κ^2) * subs(subs(diff(ψ, x[1]), x[1], 1-ϵ), x[2], 0)),
-            expand(subs(subs(diff(ψ, x[1], 2), x[1], 1-δ*ϵ), x[2], κ*ϵ) - κ / (ϵ * (1 - δ^2)) * subs(subs(diff(ψ, x[2]), x[1], 1-δ*ϵ), x[2], κ*ϵ))
-        ]
+        c = A[1:n,1:n] \ A[1:n,n+1]
 
-        csym = solve(eqs, c)
-        cnum = [N(csym[c[i]]) for i in 1:n]
-
-        SolovevEquilibrium{T}(R₀, B₀, ϵ, κ, δ, α, cnum)
+        SolovevEquilibrium{T}(R₀, B₀, ϵ, κ, δ, α, c)
     end
 
 
@@ -353,74 +346,55 @@ module Solovev
     function SolovevXpointEquilibrium(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, α::T, xsep::T, ysep::T) where T <: Number
 
         n = 12
+        A = zeros(n,n+1)
 
-        x = [Sym("x" * string(i)) for i in 1:3]
-        c = [Sym("c" * string(i)) for i in 1:n]
+        x₁, x₂, x₃ = symbols("x₁, x₂, x₃")
+        x = [x₁, x₂, x₃]
+        ψ = [ψ₁(x), ψ₂(x), ψ₃(x), ψ₄(x), ψ₅(x), ψ₆(x), ψ₇(x), ψ₈(x), ψ₉(x), ψ₁₀(x), ψ₁₁(x), ψ₁₂(x), -ψ₀(x,α)]
 
-        ψ = ( ψ₀(x,α) + c[1]  * ψ₁(x)
-                      + c[2]  * ψ₂(x)
-                      + c[3]  * ψ₃(x)
-                      + c[4]  * ψ₄(x)
-                      + c[5]  * ψ₅(x)
-                      + c[6]  * ψ₆(x)
-                      + c[7]  * ψ₇(x)
-                      + c[8]  * ψ₈(x)
-                      + c[9]  * ψ₉(x)
-                      + c[10] * ψ₁₀(x)
-                      + c[11] * ψ₁₁(x)
-                      + c[12] * ψ₁₂(x) )
+        for i in axes(A,2)
+            A[ 1,i] = N(subs(ψ[i], x[1]=>1+ϵ, x[2]=>0))
+            A[ 2,i] = N(subs(ψ[i], x[1]=>1-ϵ, x[2]=>0))
+            A[ 3,i] = N(subs(ψ[i], x[1]=>1-δ*ϵ, x[2]=>κ*ϵ))
+            A[ 4,i] = N(subs(ψ[i], x[1]=>xsep, x[2]=>ysep))
+            A[ 5,i] = N(subs(diff(ψ[i], x[2]), x[1]=>1+ϵ, x[2]=>0))
+            A[ 6,i] = N(subs(diff(ψ[i], x[2]), x[1]=>1-ϵ, x[2]=>0))
+            A[ 7,i] = N(subs(diff(ψ[i], x[1]), x[1]=>1-δ*ϵ, x[2]=>κ*ϵ))
+            A[ 8,i] = N(subs(diff(ψ[i], x[1]), x[1]=>xsep, x[2]=>ysep))
+            A[ 9,i] = N(subs(diff(ψ[i], x[2]), x[1]=>xsep, x[2]=>ysep))
+            A[10,i] = N(subs(diff(ψ[i], x[2], 2), x[1]=>1+ϵ, x[2]=>0) - (1 + asin(δ))^2 / (ϵ * κ^2) * subs(diff(ψ[i], x[1]), x[1]=>1+ϵ, x[2]=>0))
+            A[11,i] = N(subs(diff(ψ[i], x[2], 2), x[1]=>1-ϵ, x[2]=>0) + (1 - asin(δ))^2 / (ϵ * κ^2) * subs(diff(ψ[i], x[1]), x[1]=>1-ϵ, x[2]=>0))
+            A[12,i] = N(subs(diff(ψ[i], x[1], 2), x[1]=>1-δ*ϵ, x[2]=>κ*ϵ) - κ / (ϵ * (1 - δ^2)) * subs(diff(ψ[i], x[2]), x[1]=>1-δ*ϵ, x[2]=>κ*ϵ))
+        end
 
-        eqs = [
-            expand(subs(subs(ψ, x[1], 1+ϵ), x[2], 0)),
-            expand(subs(subs(ψ, x[1], 1-ϵ), x[2], 0)),
-            expand(subs(subs(ψ, x[1], 1-δ*ϵ), x[2], κ*ϵ)),
-            expand(subs(subs(ψ, x[1], xsep), x[2], ysep)),
-            expand(subs(subs(diff(ψ, x[2]), x[1], 1+ϵ), x[2], 0)),
-            expand(subs(subs(diff(ψ, x[2]), x[1], 1-ϵ), x[2], 0)),
-            expand(subs(subs(diff(ψ, x[1]), x[1], 1-δ*ϵ), x[2], κ*ϵ)),
-            expand(subs(subs(diff(ψ, x[1]), x[1], xsep), x[2], ysep)),
-            expand(subs(subs(diff(ψ, x[2]), x[1], xsep), x[2], ysep)),
-            expand(subs(subs(diff(ψ, x[2], 2), x[1], 1+ϵ), x[2], 0) - (1 + asin(δ))^2 / (ϵ * κ^2) * subs(subs(diff(ψ, x[1]), x[1], 1+ϵ), x[2], 0)),
-            expand(subs(subs(diff(ψ, x[2], 2), x[1], 1-ϵ), x[2], 0) + (1 - asin(δ))^2 / (ϵ * κ^2) * subs(subs(diff(ψ, x[1]), x[1], 1-ϵ), x[2], 0)),
-            expand(subs(subs(diff(ψ, x[1], 2), x[1], 1-δ*ϵ), x[2], κ*ϵ) - κ / (ϵ * (1 - δ^2)) * subs(subs(diff(ψ, x[2]), x[1], 1-δ*ϵ), x[2], κ*ϵ))
-        ]
+        c = A[1:n,1:n] \ A[1:n,n+1]
 
-        csym = solve(eqs, c)
-        cnum = [N(csym[c[i]]) for i in 1:n]
-
-        SolovevXpointEquilibrium{T}(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, cnum)
+        SolovevXpointEquilibrium{T}(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, c)
     end
 
 
     function SolovevDoubleXpointEquilibrium(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, α::T, xsep::T, ysep::T) where T <: Number
 
         n = 7
+        A = zeros(n,n+1)
 
-        x = [Sym("x" * string(i)) for i in 1:3]
-        c = [Sym("c" * string(i)) for i in 1:n]
+        x₁, x₂, x₃ = symbols("x₁, x₂, x₃")
+        x = [x₁, x₂, x₃]
+        ψ = [ψ₁(x), ψ₂(x), ψ₃(x), ψ₄(x), ψ₅(x), ψ₆(x), ψ₇(x), -ψ₀(x,α)]
 
-        ψ = ( ψ₀(x,α) + c[1]  * ψ₁(x)
-                      + c[2]  * ψ₂(x)
-                      + c[3]  * ψ₃(x)
-                      + c[4]  * ψ₄(x)
-                      + c[5]  * ψ₅(x)
-                      + c[6]  * ψ₆(x)
-                      + c[7]  * ψ₇(x) )
+        for i in axes(A,2)
+            A[1,i] = N(subs(ψ[i], x[1]=>1+ϵ, x[2]=>0))
+            A[2,i] = N(subs(ψ[i], x[1]=>1-ϵ, x[2]=>0))
+            A[3,i] = N(subs(ψ[i], x[1]=>xsep, x[2]=>ysep))
+            A[4,i] = N(subs(diff(ψ[i], x[1]), x[1]=>xsep, x[2]=>ysep))
+            A[5,i] = N(subs(diff(ψ[i], x[2]), x[1]=>xsep, x[2]=>ysep))
+            A[6,i] = N(subs(diff(ψ[i], x[2], 2), x[1]=>1+ϵ, x[2]=>0) - (1 + asin(δ))^2 / (ϵ * κ^2) * subs(diff(ψ[i], x[1]), x[1]=>1+ϵ, x[2]=>0))
+            A[7,i] = N(subs(diff(ψ[i], x[2], 2), x[1]=>1-ϵ, x[2]=>0) + (1 - asin(δ))^2 / (ϵ * κ^2) * subs(diff(ψ[i], x[1]), x[1]=>1-ϵ, x[2]=>0))
+        end
 
-        eqs = [
-            expand(subs(subs(ψ, x[1], 1+ϵ), x[2], 0)),
-            expand(subs(subs(ψ, x[1], 1-ϵ), x[2], 0)),
-            expand(subs(subs(ψ, x[1], xsep), x[2], ysep)),
-            expand(subs(subs(diff(ψ, x[1]), x[1], xsep), x[2], ysep)),
-            expand(subs(subs(diff(ψ, x[2]), x[1], xsep), x[2], ysep)),
-            expand(subs(subs(diff(ψ, x[2], 2), x[1], 1+ϵ), x[2], 0) - (1 + asin(δ))^2 / (ϵ * κ^2) * subs(subs(diff(ψ, x[1]), x[1], 1+ϵ), x[2], 0)),
-            expand(subs(subs(diff(ψ, x[2], 2), x[1], 1-ϵ), x[2], 0) + (1 - asin(δ))^2 / (ϵ * κ^2) * subs(subs(diff(ψ, x[1]), x[1], 1-ϵ), x[2], 0)),
-        ]
+        c = vcat(A[1:n,1:n] \ A[1:n,n+1], zeros(5))
 
-        csym = solve(eqs, c)
-        cnum = vcat([N(csym[c[i]]) for i in 1:n], zeros(5))
-
-        SolovevXpointEquilibrium{T}(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, cnum)
+        SolovevXpointEquilibrium{T}(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, c)
     end
 
 
