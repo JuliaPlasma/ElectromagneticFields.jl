@@ -24,4 +24,11 @@ notifications:
 codecov: true
 coveralls: true
 
+script:
+  - julia --project --color=yes -e 'using Pkg; Pkg.build(verbose=true)';
+  - julia --project --color=yes -e 'using Pkg; Pkg.precompile()';
+  - travis_wait 30 julia --project --color=yes -e 'using Pkg; Pkg.test(coverage=true)';
 
+after_success:
+  - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())';
+  - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())';
