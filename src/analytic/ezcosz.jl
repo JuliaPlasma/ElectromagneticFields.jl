@@ -13,8 +13,7 @@ Parameters: `E₀`
 module EzCosZ
 
     import ..ElectromagneticFields
-    import ..ElectromagneticFields: CartesianPerturbation
-    import ..ElectromagneticFields: load_equilibrium, generate_equilibrium_code
+    import ..ElectromagneticFields: CartesianPerturbation, code
     import ..AnalyticCartesianField: X, Y, Z
 
     export EzCosZPerturbation
@@ -29,6 +28,13 @@ module EzCosZ
 
     EzCosZPerturbation(E₀::T=DEFAULT_E₀) where T <: Number = EzCosZPerturbation{T}(E₀)
 
+    function init(E₀=DEFAULT_E₀)
+        EzCosZPerturbation(E₀)
+    end
+
+    macro code(E₀=DEFAULT_E₀)
+        code(init(E₀); escape=true)
+    end
 
     function Base.show(io::IO, equ::EzCosZPerturbation)
         print(io, "Simple perturbation in electric field")
@@ -38,14 +44,5 @@ module EzCosZ
     ElectromagneticFields.φ(x::AbstractVector, equ::EzCosZPerturbation) = equ.E₀ / (2π) * sin(2π * Z(x,equ))
 
     ElectromagneticFields.get_functions(::EzCosZPerturbation) = (X=X, Y=Y, Z=Z)
-
-
-    macro ezcosz_perturbation(E₀=1.)
-        generate_equilibrium_code(EzCosZPerturbation(E₀); output=false)
-    end
-
-    function init(E₀=DEFAULT_E₀)
-        EzCosZPerturbation(E₀)
-    end
 
 end

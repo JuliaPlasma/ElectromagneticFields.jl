@@ -340,9 +340,11 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     functions["ξ²"] = ξ̂[2]
     functions["ξ³"] = ξ̂[3]
 
+    functions["periodicity"] = periodicity([x₁, x₂, x₃], equ)
+    
     # coordinate conversion functions
-    functions["to_cartesian"] = to_cartesian(x, equ)
-    functions["from_cartesian"] = from_cartesian(x, equ)
+    # functions["to_cartesian"] = to_cartesian(x, equ)
+    # functions["from_cartesian"] = from_cartesian(x, equ)
 
     functions["J"] = Jdet
     functions["B"] = Babs
@@ -413,10 +415,13 @@ function replace_expr!(e, old, new)
 end
 
 
+fnesc(name, escape) = escape ? esc(name) : name
+
+
 """
 Generate code for evaluating analytic equilibria.
 """
-function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
+function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false, output=0)
 
     if output ≥ 1
         println("Generating code for ")
@@ -431,26 +436,90 @@ function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
     parameters = fieldnames(typeof(equ))
     t, x, functions = generate_equilibrium_functions(equ, pert; output=output)
 
-    equ_code = :(  )
+    equ_code = quote end
 
     # generate Julia code and export parameters
-    for param in parameters
-        if param != :name
-            value = getfield(equ, param)
+    if export_parameters
+        for param in parameters
+            if param != :name
+                value = getfield(equ, param)
 
-            p_code = quote
-                export $param
-                $param = $value
+                p_code = quote
+                    export $param
+                    $(fnesc(param, escape)) = $value
+                end
+
+                # append p_code to equ_code
+                append!(equ_code.args, p_code.args)
             end
-
-            # append p_code to equ_code
-            push!(equ_code.args, p_code)
         end
     end
 
+    # add wrapper functions
+    functions["b"] = quote
+       [$(fnesc(:b₁, escape))(t, x₁, x₂, x₃),
+        $(fnesc(:b₂, escape))(t, x₁, x₂, x₃),
+        $(fnesc(:b₃, escape))(t, x₁, x₂, x₃)] 
+    end
+
+    functions["a⃗"] = quote
+        [$(fnesc(:a¹, escape))(t, x₁, x₂, x₃),
+         $(fnesc(:a², escape))(t, x₁, x₂, x₃),
+         $(fnesc(:a³, escape))(t, x₁, x₂, x₃)]
+    end
+
+    functions["b⃗"] = quote
+        [$(fnesc(:b¹, escape))(t, x₁, x₂, x₃),
+         $(fnesc(:b², escape))(t, x₁, x₂, x₃),
+         $(fnesc(:b³, escape))(t, x₁, x₂, x₃)]
+    end
+
+    functions["c⃗"] = quote
+        [$(fnesc(:c¹, escape))(t, x₁, x₂, x₃),
+         $(fnesc(:c², escape))(t, x₁, x₂, x₃),
+         $(fnesc(:c³, escape))(t, x₁, x₂, x₃)]
+    end
+
+    functions["from_cartesian"] = quote
+        [$(fnesc(:ξ¹, escape))(t, x₁, x₂, x₃),
+         $(fnesc(:ξ², escape))(t, x₁, x₂, x₃),
+         $(fnesc(:ξ³, escape))(t, x₁, x₂, x₃)]
+    end
+
+    functions["to_cartesian"] = quote
+        [$(fnesc(:x¹, escape))(t, x₁, x₂, x₃),
+         $(fnesc(:x², escape))(t, x₁, x₂, x₃),
+         $(fnesc(:x³, escape))(t, x₁, x₂, x₃)]
+    end
+
+    functions["DF"] = quote
+        [$(fnesc(:DF₁₁, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF₁₂, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF₁₃, escape))(t, x₁, x₂, x₃);
+         $(fnesc(:DF₂₁, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF₂₂, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF₂₃, escape))(t, x₁, x₂, x₃);
+         $(fnesc(:DF₃₁, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF₃₂, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF₃₃, escape))(t, x₁, x₂, x₃);]
+    end
+
+    functions["DF̄"] = quote
+        [$(fnesc(:DF̄₁₁, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF̄₁₂, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF̄₁₃, escape))(t, x₁, x₂, x₃);
+         $(fnesc(:DF̄₂₁, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF̄₂₂, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF̄₂₃, escape))(t, x₁, x₂, x₃);
+         $(fnesc(:DF̄₃₁, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF̄₃₂, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF̄₃₃, escape))(t, x₁, x₂, x₃);]
+    end
+    
+    functions["g"] = quote
+        [$(fnesc(:g₁₁, escape))(t, x₁, x₂, x₃)  $(fnesc(:g₁₂, escape))(t, x₁, x₂, x₃)  $(fnesc(:g₁₃, escape))(t, x₁, x₂, x₃);
+         $(fnesc(:g₂₁, escape))(t, x₁, x₂, x₃)  $(fnesc(:g₂₂, escape))(t, x₁, x₂, x₃)  $(fnesc(:g₂₃, escape))(t, x₁, x₂, x₃);
+         $(fnesc(:g₃₁, escape))(t, x₁, x₂, x₃)  $(fnesc(:g₃₂, escape))(t, x₁, x₂, x₃)  $(fnesc(:g₃₃, escape))(t, x₁, x₂, x₃);]
+    end
+ 
+    functions["ḡ"] = quote
+        [$(fnesc(:g¹¹, escape))(t, x₁, x₂, x₃)  $(fnesc(:g¹², escape))(t, x₁, x₂, x₃)  $(fnesc(:g¹³, escape))(t, x₁, x₂, x₃);
+         $(fnesc(:g²¹, escape))(t, x₁, x₂, x₃)  $(fnesc(:g²², escape))(t, x₁, x₂, x₃)  $(fnesc(:g²³, escape))(t, x₁, x₂, x₃);
+         $(fnesc(:g³¹, escape))(t, x₁, x₂, x₃)  $(fnesc(:g³², escape))(t, x₁, x₂, x₃)  $(fnesc(:g³³, escape))(t, x₁, x₂, x₃);]
+    end        
+
+
     # generate Julia code and export functions
     for (key, value) in functions
-        f_symb = Symbol(key)
+        f_symb = fnesc(Symbol(key), escape)
         f_expr = value
 
         output ≥ 1 ? println("Generating function ", key) : nothing
@@ -461,56 +530,29 @@ function generate_equilibrium_code(equ, pert=ZeroPerturbation(); output=0)
 
         f_code = quote
             export $f_symb
-            @inline function $f_symb(t, x₁, x₂, x₃)
+            function $f_symb(t, x₁, x₂, x₃)
                 $f_body
             end
-            @inline function $f_symb(t::Number, x::AbstractArray{T,1}) where {T <: Number}
+            function $f_symb(t::Number, x::AbstractVector)
                 $f_symb(t,x[1],x[2],x[3])
             end
         end
 
         # append f_code to equ_code
-        push!(equ_code.args, f_code)
+        append!(equ_code.args, f_code.args)
     end
 
-    # generate Julia code and export special functions
+    # generate Julia code and export wrapper functions
     f_code = quote
-        export b, a⃗, b⃗, c⃗, g, ḡ, DF, DF̄
-        b(t,x) = [b₁(t,x), b₂(t,x), b₃(t,x)]
-
-        a⃗(t,x) = [a¹(t,x), a²(t,x), a³(t,x)]
-        b⃗(t,x) = [b¹(t,x), b²(t,x), b³(t,x)]
-        c⃗(t,x) = [c¹(t,x), c²(t,x), c³(t,x)]
-        
-        function DF(t, x)
-            [DF₁₁(t,x)  DF₁₂(t,x)  DF₁₃(t,x);
-             DF₂₁(t,x)  DF₂₂(t,x)  DF₂₃(t,x);
-             DF₃₁(t,x)  DF₃₂(t,x)  DF₃₃(t,x);]
-        end
-
-        function DF̄(t, x)
-            [DF̄₁₁(t,x)  DF̄₁₂(t,x)  DF̄₁₃(t,x);
-             DF̄₂₁(t,x)  DF̄₂₂(t,x)  DF̄₂₃(t,x);
-             DF̄₃₁(t,x)  DF̄₃₂(t,x)  DF̄₃₃(t,x);]
-        end
-
-        function g(t, x)
-            [g₁₁(t,x)  g₁₂(t,x)  g₁₃(t,x);
-             g₂₁(t,x)  g₂₂(t,x)  g₂₃(t,x);
-             g₃₁(t,x)  g₃₂(t,x)  g₃₃(t,x);]
-        end        
-
-        function ḡ(t, x)
-            [g¹¹(t,x)  g¹²(t,x)  g¹³(t,x);
-             g²¹(t,x)  g²²(t,x)  g²³(t,x);
-             g³¹(t,x)  g³²(t,x)  g³³(t,x);]
-        end        
+        $(fnesc(:periodicity, escape))(x) = $(fnesc(:periodicity, escape))(0, x)
     end
 
-    # append f_code to equ_code
-    push!(equ_code.args, f_code)
+    # # append f_code to equ_code
+    append!(equ_code.args, f_code.args)
 
     output ≥ 1 ? println() : nothing
+
+    # println(equ_code)
 
     return equ_code
 end
@@ -520,12 +562,8 @@ end
 Evaluate functions for evaluating analytic equilibria.
 """
 function load_equilibrium(equ, pert=ZeroPerturbation(); target_module=Main, output=0)
-    equ_code = generate_equilibrium_code(equ, pert; output=output)
+    equ_code = code(equ, pert; output=output)
     Core.eval(target_module, equ_code)
-end
-
-macro equilibrium(equ, pert=ZeroPerturbation())
-    generate_equilibrium_code(equ, pert; output=false)
 end
 
 function symprint(name, symexpr, output=1, detail_level=0)

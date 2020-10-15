@@ -17,8 +17,7 @@ module SolovevSymmetric
     using RecipesBase
 
     import ..ElectromagneticFields
-    import ..ElectromagneticFields: CartesianEquilibrium, ZeroPerturbation
-    import ..ElectromagneticFields: load_equilibrium, generate_equilibrium_code
+    import ..ElectromagneticFields: CartesianEquilibrium, code
     import ..AnalyticCartesianField: X, Y, Z
 
     export  SolovevSymmetricEquilibrium
@@ -44,6 +43,13 @@ module SolovevSymmetric
         SolovevSymmetricEquilibrium{T}(R₀, B₀, α, β)
     end
 
+    function init(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, α=DEFAULT_α, β=DEFAULT_β)
+        SolovevSymmetricEquilibrium(R₀, B₀, α, β)
+    end
+
+    macro code(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, α=DEFAULT_α, β=DEFAULT_β)
+        code(init(R₀, B₀, α, β); escape=true)
+    end
 
     function Base.show(io::IO, equ::SolovevSymmetricEquilibrium)
         print(io, "Quadratic Solovev Equilibrium with\n")
@@ -53,27 +59,11 @@ module SolovevSymmetric
         print(io, "  β  = ", equ.β)
     end
 
-    # R²(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = X(x,equ)^2 + Y(x,equ)^2
-    # r²(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = R²(x,equ)
-    # R(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = sqrt(R²(x,equ))
-    # r(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = sqrt(r²(x,equ))
-    # θ(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = atan(Y(x,equ), X(x,equ))
-    # ϕ(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = θ(x,equ)
-
     ElectromagneticFields.A₁(x::AbstractVector, equ::SolovevSymmetricEquilibrium) = zero(eltype(x))
     ElectromagneticFields.A₂(x::AbstractVector, equ::SolovevSymmetricEquilibrium) = zero(eltype(x))
     ElectromagneticFields.A₃(x::AbstractVector, equ::SolovevSymmetricEquilibrium) = - equ.B₀ * (equ.α * (equ.R₀ + X(x,equ))^4 / 4 + equ.β * Y(x,equ)^2 ) / 2
 
-
-    macro solovev_symmetric(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, α=DEFAULT_α, β=DEFAULT_β)
-        generate_equilibrium_code(SolovevSymmetricEquilibrium(R₀, B₀, α, β); output=false)
-    end
-
-    function init(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, α=DEFAULT_α, β=DEFAULT_β; perturbation=ZeroPerturbation())
-        equilibrium = SolovevSymmetricEquilibrium(R₀, B₀, α, β)
-        load_equilibrium(equilibrium, perturbation; target_module=SolovevSymmetric)
-        return equilibrium
-    end
+    ElectromagneticFields.get_functions(::SolovevSymmetricEquilibrium) = (X=X, Y=Y, Z=Z)
 
 
     @recipe function f(equ::SolovevSymmetricEquilibrium;

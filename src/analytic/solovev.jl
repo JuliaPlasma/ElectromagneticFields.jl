@@ -10,8 +10,7 @@ module Solovev
     using SymEngine: N, symbols, diff, expand, subs
 
     import ..ElectromagneticFields
-    import ..ElectromagneticFields: ZeroPerturbation
-    import ..ElectromagneticFields: load_equilibrium, generate_equilibrium_code
+    import ..ElectromagneticFields: code
     import ..SolovevAbstract: AbstractSolovevEquilibrium, X, Y, Z, R, r, θ, ϕ, r²
 
     export  SolovevEquilibrium, SolovevXpointEquilibrium
@@ -192,6 +191,14 @@ module Solovev
         c = A[1:n,1:n] \ A[1:n,n+1]
 
         SolovevEquilibrium{T}(R₀, B₀, ϵ, κ, δ, α, c)
+    end
+
+    function init(R₀, B₀, ϵ, κ, δ, α)
+        SolovevEquilibrium(R₀, B₀, ϵ, κ, δ, α)
+    end
+
+    macro code(R₀, B₀, ϵ, κ, δ, α)
+        code(init(R₀, B₀, ϵ, κ, δ, α); escape=true)
     end
 
 
@@ -397,6 +404,18 @@ module Solovev
         SolovevXpointEquilibrium{T}(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, c)
     end
 
+    function init(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, doublex=false)
+        if doublex
+            return SolovevDoubleXpointEquilibrium(R₀, B₀, ϵ, κ, δ, α, xsep, ysep)
+        else
+            return SolovevXpointEquilibrium(R₀, B₀, ϵ, κ, δ, α, xsep, ysep)
+        end
+    end
+
+    macro code_xpoint(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, doublex=false)
+        code(SolovevXpointEquilibrium(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, doublex); escape=true)
+    end
+
 
     SolovevXpointEquilibriumITER() = SolovevXpointEquilibrium(6.2, 5.3, 0.32, 1.7, 0.33, -0.155, 0.88, -0.60)
     SolovevXpointEquilibriumNSTX() = SolovevXpointEquilibrium(0.85, 0.3, 0.78, 2.0, 0.35, -0.05, 0.70, -1.71)
@@ -432,61 +451,58 @@ module Solovev
     end
 
 
-
-    macro solovev(R₀, B₀, ϵ, κ, δ, α)
-        generate_equilibrium_code(SolovevEquilibrium(R₀, B₀, ϵ, κ, δ, α); output=false)
+    function ITER(; xpoint=false)
+        if xpoint
+            return SolovevXpointEquilibriumITER()
+        else
+            return SolovevEquilibriumITER()
+        end
     end
 
-    macro solovev_xpoint(R₀, B₀, ϵ, κ, δ, α, xsep, ysep)
-        generate_equilibrium_code(SolovevXpointEquilibrium(R₀, B₀, ϵ, κ, δ, α, xsep, ysep); output=false)
+    function NSTX(; xpoint=false)
+        if xpoint
+            return SolovevXpointEquilibriumNSTX()
+        else
+            return SolovevEquilibriumNSTX()
+        end
     end
 
-    function init(R₀, B₀, ϵ, κ, δ, α; perturbation=ZeroPerturbation(), target_module=Solovev)
-        equilibrium = SolovevEquilibrium(R₀, B₀, ϵ, κ, δ, α)
-        load_equilibrium(equilibrium, perturbation; target_module=target_module)
-        return equilibrium
+    function NSTXdoubleX()
+        SolovevDoubleXpointEquilibriumNSTX()
     end
 
-    function init(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, doublex=false; perturbation=ZeroPerturbation(), target_module=Solovev)
+    function FRC()
+        SolovevEquilibriumFRC()
+    end
+
+
+    macro code_iter(xpoint=false)
+        code(ITER(xpoint=xpoint); escape=true)
+    end
+
+    macro code_iter_xpoint()
+        code(ITER(xpoint=true); escape=true)
+    end
+
+    macro code_nstx(xpoint=false)
+        code(NSTX(xpoint=xpoint); escape=true)
+    end
+
+    macro code_nstx_xpoint(doublex=false)
         if doublex
-            equilibrium = SolovevDoubleXpointEquilibrium(R₀, B₀, ϵ, κ, δ, α, xsep, ysep)
+            equilibrium = NSTXdoubleX()
         else
-            equilibrium = SolovevXpointEquilibrium(R₀, B₀, ϵ, κ, δ, α, xsep, ysep)
+            equilibrium = NSTX(xpoint=true)
         end
-        load_equilibrium(equilibrium, perturbation; target_module=target_module)
-        return equilibrium
+        code(equilibrium; escape=true)
     end
 
-    function ITER(; perturbation=ZeroPerturbation(), xpoint=false, target_module=Solovev)
-        if xpoint
-            equilibrium = SolovevXpointEquilibriumITER()
-        else
-            equilibrium = SolovevEquilibriumITER()
-        end
-        load_equilibrium(equilibrium, perturbation; target_module=target_module)
-        return equilibrium
+    macro code_nstx_double_xpoint()
+        code(NSTXdoubleX(); escape=true)
     end
 
-    function NSTX(; perturbation=ZeroPerturbation(), xpoint=false, target_module=Solovev)
-        if xpoint
-            equilibrium = SolovevXpointEquilibriumNSTX()
-        else
-            equilibrium = SolovevEquilibriumNSTX()
-        end
-        load_equilibrium(equilibrium, perturbation; target_module=target_module)
-        return equilibrium
-    end
-
-    function NSTXdoubleX(; perturbation=ZeroPerturbation(), target_module=Solovev)
-        equilibrium = SolovevDoubleXpointEquilibriumNSTX()
-        load_equilibrium(equilibrium, perturbation; target_module=target_module)
-        return equilibrium
-    end
-
-    function FRC(; perturbation=ZeroPerturbation(), target_module=Solovev)
-        equilibrium = SolovevEquilibriumFRC()
-        load_equilibrium(equilibrium, perturbation; target_module=target_module)
-        return equilibrium
+    macro code_frc()
+        code(FRC(); escape=true)
     end
 
 
@@ -544,4 +560,41 @@ module Solovev
         (xgrid, zgrid, pot')
     end
 
+end
+
+
+module SolovevFRC
+    import ..Solovev: @code_frc
+    export @code
+    var"@code" = var"@code_frc"
+end
+
+module SolovevITER
+    import ..Solovev: @code_iter
+    export @code
+    var"@code" = var"@code_iter"
+end
+
+module SolovevITERwXpoint
+    import ..Solovev: @code_iter_xpoint
+    export @code
+    var"@code" = var"@code_iter_xpoint"
+end
+
+module SolovevNSTX
+    import ..Solovev: @code_nstx
+    export @code
+    var"@code" = var"@code_nstx"
+end
+
+module SolovevNSTXwXpoint
+    import ..Solovev: @code_nstx_xpoint
+    export @code
+    var"@code" = var"@code_nstx_xpoint"
+end
+
+module SolovevNSTXwDoubleXpoint
+    import ..Solovev: @code_nstx_double_xpoint
+    export @code
+    var"@code" = var"@code_nstx_double_xpoint"
 end

@@ -20,8 +20,7 @@ module AxisymmetricTokamakToroidal
     using RecipesBase
 
     import ..ElectromagneticFields
-    import ..ElectromagneticFields: AnalyticEquilibrium, ZeroPerturbation
-    import ..ElectromagneticFields: load_equilibrium, generate_equilibrium_code
+    import ..ElectromagneticFields: AnalyticEquilibrium, code
 
     export  AxisymmetricTokamakToroidalEquilibrium
 
@@ -42,8 +41,22 @@ module AxisymmetricTokamakToroidal
 
     AxisymmetricTokamakToroidalEquilibrium(R₀::T=DEFAULT_R₀, B₀::T=DEFAULT_B₀, q₀::T=DEFAULT_q₀) where T <: Number = AxisymmetricTokamakToroidalEquilibrium{T}(R₀, B₀, q₀)
 
-    AxisymmetricTokamakToroidalEquilibriumITER() = AxisymmetricTokamakToroidalEquilibrium(6.2, 5.3, √2)
+    function init(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, q₀=DEFAULT_q₀)
+        AxisymmetricTokamakToroidalEquilibrium(R₀, B₀, q₀)
+    end
 
+    function ITER()
+        AxisymmetricTokamakToroidalEquilibrium(ITER_R₀, ITER_B₀, ITER_q₀)
+    end
+
+    macro code(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, q₀=DEFAULT_q₀)
+        code(init(R₀, B₀, q₀); escape=true)
+    end
+
+    macro code_iter()
+        code(ITER(); escape=true)
+    end
+    
     function Base.show(io::IO, equ::AxisymmetricTokamakToroidalEquilibrium)
         print(io, "Axisymmetric Tokamak Equilibrium in Toroidal Coordinates with\n")
         print(io, "  R₀ = ", equ.R₀, "\n")
@@ -85,22 +98,6 @@ module AxisymmetricTokamakToroidal
         p[2] = 2π
         p[3] = 2π
         return p
-    end
-
-    macro axisymmetric_tokamak_toroidal(R₀, B₀, q₀)
-        generate_equilibrium_code(AxisymmetricTokamakToroidalEquilibrium(R₀, B₀, q₀); output=false)
-    end
-
-    function init(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, q₀=DEFAULT_q₀; perturbation=ZeroPerturbation())
-        equilibrium = AxisymmetricTokamakToroidalEquilibrium(R₀, B₀, q₀)
-        load_equilibrium(equilibrium, perturbation; target_module=AxisymmetricTokamakToroidal)
-        return equilibrium
-    end
-
-    function ITER(; perturbation=ZeroPerturbation())
-        equilibrium = AxisymmetricTokamakToroidalEquilibriumITER()
-        load_equilibrium(equilibrium, perturbation; target_module=AxisymmetricTokamakToroidal)
-        return equilibrium
     end
 
 

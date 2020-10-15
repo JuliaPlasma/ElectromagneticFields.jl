@@ -18,8 +18,7 @@ module ThetaPinch
     using LaTeXStrings
 
     import ..ElectromagneticFields
-    import ..ElectromagneticFields: CartesianEquilibrium, ZeroPerturbation
-    import ..ElectromagneticFields: load_equilibrium, generate_equilibrium_code
+    import ..ElectromagneticFields: CartesianEquilibrium, code
     import ..AnalyticCartesianField: X, Y, Z
 
     export ThetaPinchEquilibrium
@@ -36,6 +35,15 @@ module ThetaPinch
     end
 
     ThetaPinchEquilibrium(B₀::T=DEFAULT_B₀) where T <: Number = ThetaPinchEquilibrium{T}(B₀)
+
+
+    function init(B₀=DEFAULT_B₀)
+        ThetaPinchEquilibrium(B₀)
+    end
+
+    macro code(B₀=DEFAULT_B₀)
+        code(init(B₀); escape=true)
+    end
 
 
     function Base.show(io::IO, equ::ThetaPinchEquilibrium)
@@ -55,17 +63,6 @@ module ThetaPinch
     ElectromagneticFields.A₃(x::AbstractVector, equ::ThetaPinchEquilibrium) = zero(eltype(x))
 
     ElectromagneticFields.get_functions(::ThetaPinchEquilibrium) = (X=X, Y=Y, Z=Z, R=R, r=r, θ=θ, ϕ=ϕ, r²=r²)
-
-
-    macro theta_pinch(B₀=DEFAULT_B₀)
-        generate_equilibrium_code(ThetaPinchEquilibrium(B₀); output=false)
-    end
-
-    function init(B₀=DEFAULT_B₀; perturbation=ZeroPerturbation())
-        equilibrium = ThetaPinchEquilibrium(B₀)
-        load_equilibrium(equilibrium, perturbation; target_module=ThetaPinch)
-        return equilibrium
-    end
 
 
     @recipe function f(equ::ThetaPinchEquilibrium;

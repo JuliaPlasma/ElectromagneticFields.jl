@@ -29,8 +29,7 @@ module PenningTrapUniform
     using RecipesBase
 
     import ..ElectromagneticFields
-    import ..ElectromagneticFields: CartesianEquilibrium, ZeroPerturbation
-    import ..ElectromagneticFields: load_equilibrium, generate_equilibrium_code
+    import ..ElectromagneticFields: CartesianEquilibrium, code
     import ..AnalyticCartesianField: X, Y, Z
 
     export  PenningTrapUniformEquilibrium
@@ -50,6 +49,14 @@ module PenningTrapUniform
 
     PenningTrapUniformEquilibrium(B₀::T=DEFAULT_B₀, E₀::T=DEFAULT_E₀) where T <: Number = PenningTrapUniformEquilibrium{T}(B₀, E₀)
 
+    function init(B₀=DEFAULT_B₀, E₀=DEFAULT_E₀)
+        PenningTrapUniformEquilibrium(B₀, E₀)
+    end
+    
+    macro code(B₀=DEFAULT_B₀, E₀=DEFAULT_E₀)
+        code(init(B₀, E₀); escape=true)
+    end
+
     function Base.show(io::IO, equ::PenningTrapUniformEquilibrium)
         print(io, "Penning trap with uniform magnetic field in (x,y,z) coordinates with\n")
         print(io, "  B₀ = ", equ.B₀, "\n")
@@ -64,14 +71,4 @@ module PenningTrapUniform
 
     ElectromagneticFields.get_functions(::PenningTrapUniformEquilibrium) = (X=X, Y=Y, Z=Z)
 
-    macro penning_trap_uniform(B₀, E₀)
-        generate_equilibrium_code(PenningTrapUniformEquilibrium(B₀, E₀); output=false)
-    end
-
-    function init(B₀=DEFAULT_B₀, E₀=DEFAULT_E₀; perturbation=ZeroPerturbation())
-        equilibrium = PenningTrapUniformEquilibrium(B₀, E₀)
-        load_equilibrium(equilibrium, perturbation; target_module=PenningTrapUniform)
-        return equilibrium
-    end
-    
 end

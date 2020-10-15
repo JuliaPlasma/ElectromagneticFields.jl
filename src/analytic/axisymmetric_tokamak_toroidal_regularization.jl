@@ -18,8 +18,7 @@ Parameters:
 module AxisymmetricTokamakToroidalRegularization
 
     import ..ElectromagneticFields
-    import ..ElectromagneticFields: AnalyticEquilibrium, ZeroPerturbation
-    import ..ElectromagneticFields: load_equilibrium, generate_equilibrium_code
+    import ..ElectromagneticFields: AnalyticEquilibrium, code
 
     export  AxisymmetricTokamakToroidalRegularizationEquilibrium
 
@@ -39,6 +38,14 @@ module AxisymmetricTokamakToroidalRegularization
     end
 
     AxisymmetricTokamakToroidalRegularizationEquilibrium(R₀::T=DEFAULT_R₀, B₀::T=DEFAULT_B₀, q₀::T=DEFAULT_q₀) where T <: Number = AxisymmetricTokamakToroidalRegularizationEquilibrium{T}(R₀, B₀, q₀)
+
+    function init(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, q₀=DEFAULT_q₀)
+        AxisymmetricTokamakToroidalRegularizationEquilibrium(R₀, B₀, q₀)
+    end
+
+    macro code(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, q₀=DEFAULT_q₀)
+        code(init(R₀, B₀, q₀); escape=true)
+    end
 
     function Base.show(io::IO, equ::AxisymmetricTokamakToroidalRegularizationEquilibrium)
         print(io, "Axisymmetric Tokamak Equilibrium with Toroidal Regularization in Circular Coordinates with\n")
@@ -81,16 +88,6 @@ module AxisymmetricTokamakToroidalRegularization
         p[2] = 2π
         p[3] = 2π
         return p
-    end
-
-    macro axisymmetric_tokamak_toroidal_regularisation(R₀, B₀, q₀)
-        generate_equilibrium_code(AxisymmetricTokamakToroidalRegularizationEquilibrium(R₀, B₀, q₀); output=false)
-    end
-
-    function init(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, q₀=DEFAULT_q₀; perturbation=ZeroPerturbation())
-        equilibrium = AxisymmetricTokamakToroidalRegularizationEquilibrium(R₀, B₀, q₀)
-        load_equilibrium(equilibrium, perturbation; target_module=AxisymmetricTokamakToroidalRegularization)
-        return equilibrium
     end
 
 end

@@ -20,14 +20,17 @@ module AxisymmetricTokamakCylindrical
     using RecipesBase
 
     import ..ElectromagneticFields
-    import ..ElectromagneticFields: AnalyticEquilibrium, ZeroPerturbation
-    import ..ElectromagneticFields: load_equilibrium, generate_equilibrium_code
+    import ..ElectromagneticFields: AnalyticEquilibrium, code
 
     export  AxisymmetricTokamakCylindricalEquilibrium
 
     const DEFAULT_R₀ = 1.0
     const DEFAULT_B₀ = 1.0
     const DEFAULT_q₀ = 2.0
+
+    const ITER_R₀ = 6.2
+    const ITER_B₀ = 5.3
+    const ITER_q₀ = √2
 
     struct AxisymmetricTokamakCylindricalEquilibrium{T <: Number} <: AnalyticEquilibrium
         name::String
@@ -42,7 +45,21 @@ module AxisymmetricTokamakCylindrical
 
     AxisymmetricTokamakCylindricalEquilibrium(R₀::T=DEFAULT_R₀, B₀::T=DEFAULT_B₀, q₀::T=DEFAULT_q₀) where T <: Number = AxisymmetricTokamakCylindricalEquilibrium{T}(R₀, B₀, q₀)
 
-    AxisymmetricTokamakCylindricalEquilibriumITER() = AxisymmetricTokamakCylindricalEquilibrium(6.2, 5.3, √2)
+    function init(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, q₀=DEFAULT_q₀)
+        AxisymmetricTokamakCylindricalEquilibrium(R₀, B₀, q₀)
+    end
+
+    function ITER()
+        AxisymmetricTokamakCylindricalEquilibrium(ITER_R₀, ITER_B₀, ITER_q₀)
+    end
+
+    macro code(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, q₀=DEFAULT_q₀)
+        code(init(R₀, B₀, q₀); escape=true)
+    end
+
+    macro code_iter()
+        code(ITER(); escape=true)
+    end
 
     function Base.show(io::IO, equ::AxisymmetricTokamakCylindricalEquilibrium)
         print(io, "Axisymmetric Tokamak Equilibrium in (R,Z,ϕ) Coordinates with\n")
@@ -85,22 +102,6 @@ module AxisymmetricTokamakCylindrical
         p = zero(x)
         p[3] = 2π
         return p
-    end
-
-    macro axisymmetric_tokamak_cylindrical(R₀, B₀, q₀)
-        generate_equilibrium_code(AxisymmetricTokamakCylindricalEquilibrium(R₀, B₀, q₀); output=false)
-    end
-
-    function init(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, q₀=DEFAULT_q₀; perturbation=ZeroPerturbation())
-        equilibrium = AxisymmetricTokamakCylindricalEquilibrium(R₀, B₀, q₀)
-        load_equilibrium(equilibrium, perturbation; target_module=AxisymmetricTokamakCylindrical)
-        return equilibrium
-    end
-
-    function ITER(; perturbation=ZeroPerturbation())
-        equilibrium = AxisymmetricTokamakCylindricalEquilibriumITER()
-        load_equilibrium(equilibrium, perturbation; target_module=AxisymmetricTokamakCylindrical)
-        return equilibrium
     end
 
 

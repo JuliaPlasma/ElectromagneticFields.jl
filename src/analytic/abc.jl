@@ -13,8 +13,7 @@ module ABC
     using RecipesBase
 
     import ..ElectromagneticFields
-    import ..ElectromagneticFields: CartesianEquilibrium, ZeroPerturbation
-    import ..ElectromagneticFields: load_equilibrium, generate_equilibrium_code
+    import ..ElectromagneticFields: CartesianEquilibrium, code
     import ..AnalyticCartesianField: X, Y, Z
 
     export ABCEquilibrium
@@ -34,6 +33,13 @@ module ABC
 
     ABCEquilibrium(a::T=DEFAULT_A, b::T=DEFAULT_B, c::T=DEFAULT_C) where T <: Number = ABCEquilibrium{T}(a, b, c)
 
+    function init(a=DEFAULT_A, b=DEFAULT_B, c=DEFAULT_C)
+        ABCEquilibrium(a, b, c)
+    end
+
+    macro code(a=DEFAULT_A, b=DEFAULT_B, c=DEFAULT_C)
+        code(init(a, b, c); escape=true)
+    end
 
     function Base.show(io::IO, equ::ABCEquilibrium)
         print(io, "ABC Equilibrium with\n")
@@ -48,16 +54,6 @@ module ABC
     ElectromagneticFields.A₃(x::AbstractVector, equ::ABCEquilibrium) = equ.c₀ * sin(x[2]) + equ.b₀ * cos(x[1])
 
     ElectromagneticFields.get_functions(::ABCEquilibrium) = (X=X, Y=Y, Z=Z)
-
-    macro abc(a=DEFAULT_A, b=DEFAULT_B, c=DEFAULT_C)
-        generate_equilibrium_code(ABCEquilibrium(a, b, c); output=false)
-    end
-
-    function init(a=DEFAULT_A, b=DEFAULT_B, c=DEFAULT_C; perturbation=ZeroPerturbation())
-        equilibrium = ABCEquilibrium(a, b, c)
-        load_equilibrium(equilibrium, perturbation; target_module=ABC)
-        return equilibrium
-    end
 
 
     @recipe function f(equ::ABCEquilibrium; nx=99, ni=div(nx,2)+1, nl=12, size=(400,1200))

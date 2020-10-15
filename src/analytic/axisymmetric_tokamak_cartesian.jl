@@ -20,8 +20,7 @@ module AxisymmetricTokamakCartesian
     using RecipesBase
 
     import ..ElectromagneticFields
-    import ..ElectromagneticFields: CartesianEquilibrium, ZeroPerturbation
-    import ..ElectromagneticFields: load_equilibrium, generate_equilibrium_code
+    import ..ElectromagneticFields: CartesianEquilibrium, code
     import ..AnalyticCartesianField: X, Y, Z
 
     export  AxisymmetricTokamakCartesianEquilibrium
@@ -29,6 +28,10 @@ module AxisymmetricTokamakCartesian
     const DEFAULT_R₀ = 1.0
     const DEFAULT_B₀ = 1.0
     const DEFAULT_q₀ = 2.0
+
+    const ITER_R₀ = 6.2
+    const ITER_B₀ = 5.3
+    const ITER_q₀ = √2
 
     struct AxisymmetricTokamakCartesianEquilibrium{T <: Number} <: CartesianEquilibrium
         name::String
@@ -43,7 +46,21 @@ module AxisymmetricTokamakCartesian
 
     AxisymmetricTokamakCartesianEquilibrium(R₀::T=DEFAULT_R₀, B₀::T=DEFAULT_B₀, q₀::T=DEFAULT_q₀) where T <: Number = AxisymmetricTokamakCartesianEquilibrium{T}(R₀, B₀, q₀)
 
-    AxisymmetricTokamakCartesianEquilibriumITER() = AxisymmetricTokamakCartesianEquilibrium(6.2, 5.3, √2)
+    function init(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, q₀=DEFAULT_q₀)
+        AxisymmetricTokamakCartesianEquilibrium(R₀, B₀, q₀)
+    end
+
+    function ITER()
+        AxisymmetricTokamakCartesianEquilibrium(ITER_R₀, ITER_B₀, ITER_q₀)
+    end
+
+    macro code(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, q₀=DEFAULT_q₀)
+        code(init(R₀, B₀, q₀); escape=true)
+    end
+
+    macro code_iter()
+        code(ITER(); escape=true)
+    end
 
     function Base.show(io::IO, equ::AxisymmetricTokamakCartesianEquilibrium)
         print(io, "Axisymmetric Tokamak Equilibrium in (x,y,z) Coordinates with\n")
@@ -65,22 +82,6 @@ module AxisymmetricTokamakCartesian
     ElectromagneticFields.A₃(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = - equ.B₀ * equ.R₀ * log(R(x,equ) / equ.R₀) / 2
 
     ElectromagneticFields.get_functions(::AxisymmetricTokamakCartesianEquilibrium) = (X=X, Y=Y, Z=Z, R=R, r=r, θ=θ, ϕ=ϕ, R²=R², r²=r²)
-
-    macro axisymmetric_tokamak_cartesian(R₀, B₀, q₀)
-        generate_equilibrium_code(AxisymmetricTokamakCartesianEquilibrium(R₀, B₀, q₀); output=false)
-    end
-
-    function init(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, q₀=DEFAULT_q₀; perturbation=ZeroPerturbation())
-        equilibrium = AxisymmetricTokamakCartesianEquilibrium(R₀, B₀, q₀)
-        load_equilibrium(equilibrium, perturbation; target_module=AxisymmetricTokamakCartesian)
-        return equilibrium
-    end
-
-    function ITER(; perturbation=ZeroPerturbation())
-        equilibrium = AxisymmetricTokamakCartesianEquilibriumITER()
-        load_equilibrium(equilibrium, perturbation; target_module=AxisymmetricTokamakCartesian)
-        return equilibrium
-    end
 
 
     @recipe function f(equ::AxisymmetricTokamakCartesianEquilibrium;

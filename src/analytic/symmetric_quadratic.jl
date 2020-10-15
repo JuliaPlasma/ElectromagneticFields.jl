@@ -21,8 +21,7 @@ module SymmetricQuadratic
     using LaTeXStrings
 
     import ..ElectromagneticFields
-    import ..ElectromagneticFields: CartesianEquilibrium, ZeroPerturbation
-    import ..ElectromagneticFields: load_equilibrium, generate_equilibrium_code
+    import ..ElectromagneticFields: CartesianEquilibrium, code
     import ..AnalyticCartesianField: X, Y, Z
 
     export SymmetricQuadraticEquilibrium
@@ -36,6 +35,14 @@ module SymmetricQuadratic
     end
 
     SymmetricQuadraticEquilibrium(B₀::T=DEFAULT_B₀) where T <: Number = SymmetricQuadraticEquilibrium{T}(B₀)
+
+    function init(B₀=DEFAULT_B₀)
+        SymmetricQuadraticEquilibrium(B₀)
+    end
+
+    macro code(B₀=DEFAULT_B₀)
+        code(init(B₀); escape=true)
+    end
 
 
     function Base.show(io::IO, equ::SymmetricQuadraticEquilibrium)
@@ -54,16 +61,6 @@ module SymmetricQuadratic
     ElectromagneticFields.A₃(x::AbstractVector, equ::SymmetricQuadraticEquilibrium) = zero(eltype(x))
 
     ElectromagneticFields.get_functions(::SymmetricQuadraticEquilibrium) = (X=X, Y=Y, Z=Z, R=R, r=r, θ=θ, ϕ=ϕ, r²=r²)
-
-    macro symmetric_quadratic(B₀=DEFAULT_B₀)
-        generate_equilibrium_code(SymmetricQuadraticEquilibrium(B₀); output=false)
-    end
-
-    function init(B₀=DEFAULT_B₀; perturbation=ZeroPerturbation())
-        equilibrium = SymmetricQuadraticEquilibrium(B₀)
-        load_equilibrium(equilibrium, perturbation; target_module=SymmetricQuadratic)
-        return equilibrium
-    end
 
 
     @recipe function f(equ::SymmetricQuadraticEquilibrium;

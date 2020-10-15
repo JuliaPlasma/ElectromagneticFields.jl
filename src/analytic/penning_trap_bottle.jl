@@ -30,8 +30,7 @@ module PenningTrapBottle
     using RecipesBase
 
     import ..ElectromagneticFields
-    import ..ElectromagneticFields: CartesianEquilibrium, ZeroPerturbation
-    import ..ElectromagneticFields: load_equilibrium, generate_equilibrium_code
+    import ..ElectromagneticFields: CartesianEquilibrium, code
     import ..AnalyticCartesianField: X, Y, Z
 
     export  PenningTrapBottleEquilibrium
@@ -53,6 +52,14 @@ module PenningTrapBottle
 
     PenningTrapBottleEquilibrium(B₀::T=DEFAULT_B₀, Bₚ::T=DEFAULT_Bₚ, E₀::T=DEFAULT_E₀) where T <: Number = PenningTrapBottleEquilibrium{T}(B₀, Bₚ, E₀)
 
+    function init(B₀=DEFAULT_B₀, Bₚ=DEFAULT_Bₚ, E₀=DEFAULT_E₀)
+        PenningTrapBottleEquilibrium(B₀, E₀, Bₚ)
+    end
+
+    macro code(B₀=DEFAULT_B₀, Bₚ=DEFAULT_Bₚ, E₀=DEFAULT_E₀)
+        code(init(B₀, Bₚ, E₀); escape=true)
+    end
+
     function Base.show(io::IO, equ::PenningTrapBottleEquilibrium)
         print(io, "Penning trap with magnetic bottle in (x,y,z) coordinates with\n")
         print(io, "  B₀ = ", equ.B₀, "\n")
@@ -67,15 +74,5 @@ module PenningTrapBottle
     ElectromagneticFields.φ(x::AbstractVector, equ::PenningTrapBottleEquilibrium) = - equ.E₀ * (X(x,equ)^2 / 2 + Y(x,equ)^2 / 2 - Z(x,equ)^2)
 
     ElectromagneticFields.get_functions(::PenningTrapBottleEquilibrium) = (X=X, Y=Y, Z=Z)
-
-    macro penning_trap_uniform(B₀, Bₚ, E₀)
-        generate_equilibrium_code(PenningTrapBottleEquilibrium(B₀, Bₚ, E₀); output=false)
-    end
-
-    function init(B₀=DEFAULT_B₀, Bₚ=DEFAULT_Bₚ, E₀=DEFAULT_E₀; perturbation=ZeroPerturbation())
-        equilibrium = PenningTrapBottleEquilibrium(B₀, E₀, Bₚ)
-        load_equilibrium(equilibrium, perturbation; target_module=PenningTrapBottle)
-        return equilibrium
-    end
 
 end

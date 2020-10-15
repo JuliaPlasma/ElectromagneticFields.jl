@@ -30,8 +30,7 @@ module PenningTrapAsymmetric
     using RecipesBase
 
     import ..ElectromagneticFields
-    import ..ElectromagneticFields: CartesianEquilibrium, ZeroPerturbation
-    import ..ElectromagneticFields: load_equilibrium, generate_equilibrium_code
+    import ..ElectromagneticFields: CartesianEquilibrium, code
     import ..AnalyticCartesianField: X, Y, Z
 
     export  PenningTrapAsymmetricEquilibrium
@@ -53,6 +52,14 @@ module PenningTrapAsymmetric
 
     PenningTrapAsymmetricEquilibrium(B₀::T=DEFAULT_B₀, Bₚ::T=DEFAULT_Bₚ, E₀::T=DEFAULT_E₀) where T <: Number = PenningTrapAsymmetricEquilibrium{T}(B₀, Bₚ, E₀)
 
+    function init(B₀=DEFAULT_B₀, Bₚ=DEFAULT_Bₚ, E₀=DEFAULT_E₀)
+        PenningTrapAsymmetricEquilibrium(B₀, E₀, Bₚ)
+    end
+
+    macro code(B₀=DEFAULT_B₀, Bₚ=DEFAULT_Bₚ, E₀=DEFAULT_E₀)
+        code(init(B₀, Bₚ, E₀); escape=true)
+    end
+
     function Base.show(io::IO, equ::PenningTrapAsymmetricEquilibrium)
         print(io, "Penning trap with asymmetric magnetic field in (x,y,z) coordinates with\n")
         print(io, "  B₀ = ", equ.B₀, "\n")
@@ -67,15 +74,5 @@ module PenningTrapAsymmetric
     ElectromagneticFields.φ(x::AbstractVector, equ::PenningTrapAsymmetricEquilibrium) = - equ.E₀ * (X(x,equ)^2 / 2 + Y(x,equ)^2 / 2 - Z(x,equ)^2)
 
     ElectromagneticFields.get_functions(::PenningTrapAsymmetricEquilibrium) = (X=X, Y=Y, Z=Z)
-
-    macro penning_trap_uniform(B₀, Bₚ, E₀)
-        generate_equilibrium_code(PenningTrapAsymmetricEquilibrium(B₀, Bₚ, E₀); output=false)
-    end
-
-    function init(B₀=DEFAULT_B₀, Bₚ=DEFAULT_Bₚ, E₀=DEFAULT_E₀; perturbation=ZeroPerturbation())
-        equilibrium = PenningTrapAsymmetricEquilibrium(B₀, E₀, Bₚ)
-        load_equilibrium(equilibrium, perturbation; target_module=PenningTrapAsymmetric)
-        return equilibrium
-    end
 
 end

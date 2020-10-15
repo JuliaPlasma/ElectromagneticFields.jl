@@ -12,166 +12,177 @@ teststring(equ) = structname(string(equ))
 teststring(equ, pert) = structname(string(equ)) * " + " * structname(string(pert))
 
 
-function test_equilibrium(equ_mod, t, ξ)
-    @test equ_mod.X(t, ξ...) == equ_mod.X(t,ξ)
-    @test equ_mod.Y(t, ξ...) == equ_mod.Y(t,ξ)
-    @test equ_mod.Z(t, ξ...) == equ_mod.Z(t,ξ)
+macro test_equilibrium(equilibrium_module, equilibrium_periodicity)
+    module_name = string(equilibrium_module)
+    module_test = Symbol(module_name * "Test")
 
-    @test equ_mod.J(t, ξ...) == equ_mod.J(t,ξ)
-    @test equ_mod.B(t, ξ...) == equ_mod.B(t,ξ)
-    @test equ_mod.φ(t, ξ...) == equ_mod.φ(t,ξ)
+    quote
+        @eval module $module_test
+            using Test
+            using LinearAlgebra
 
-    @test equ_mod.A₁(t, ξ...) == equ_mod.A₁(t,ξ)
-    @test equ_mod.A₂(t, ξ...) == equ_mod.A₂(t,ξ)
-    @test equ_mod.A₃(t, ξ...) == equ_mod.A₃(t,ξ)
+            # testing parameters
+            t = 1.
+            ξ = [1.05, 0.5, 0.5]
 
-    @test equ_mod.B₁(t, ξ...) == equ_mod.B₁(t,ξ)
-    @test equ_mod.B₂(t, ξ...) == equ_mod.B₂(t,ξ)
-    @test equ_mod.B₃(t, ξ...) == equ_mod.B₃(t,ξ)
+            # import analytic field module
+            import ElectromagneticFields
+            import ElectromagneticFields.$equilibrium_module
 
-    @test equ_mod.b₁(t, ξ...) == equ_mod.b₁(t,ξ)
-    @test equ_mod.b₂(t, ξ...) == equ_mod.b₂(t,ξ)
-    @test equ_mod.b₃(t, ξ...) == equ_mod.b₃(t,ξ)
+            # inject code
+            $equilibrium_module.@code
 
-    @test equ_mod.E₁(t, ξ...) == equ_mod.E₁(t,ξ)
-    @test equ_mod.E₂(t, ξ...) == equ_mod.E₂(t,ξ)
-    @test equ_mod.E₃(t, ξ...) == equ_mod.E₃(t,ξ)
+            # run tests
+            @testset "$(rpad($module_name,60))" begin
 
-    @test equ_mod.A¹(t, ξ...) == equ_mod.A¹(t,ξ)
-    @test equ_mod.A²(t, ξ...) == equ_mod.A²(t,ξ)
-    @test equ_mod.A³(t, ξ...) == equ_mod.A³(t,ξ)
+                @test X(t, ξ...) == X(t,ξ)
+                @test Y(t, ξ...) == Y(t,ξ)
+                @test Z(t, ξ...) == Z(t,ξ)
 
-    @test equ_mod.B¹(t, ξ...) == equ_mod.B¹(t,ξ)
-    @test equ_mod.B²(t, ξ...) == equ_mod.B²(t,ξ)
-    @test equ_mod.B³(t, ξ...) == equ_mod.B³(t,ξ)
+                @test J(t, ξ...) == J(t,ξ)
+                @test B(t, ξ...) == B(t,ξ)
+                @test φ(t, ξ...) == φ(t,ξ)
 
-    @test equ_mod.b¹(t, ξ...) == equ_mod.b¹(t,ξ)
-    @test equ_mod.b²(t, ξ...) == equ_mod.b²(t,ξ)
-    @test equ_mod.b³(t, ξ...) == equ_mod.b³(t,ξ)
+                @test A₁(t, ξ...) == A₁(t,ξ)
+                @test A₂(t, ξ...) == A₂(t,ξ)
+                @test A₃(t, ξ...) == A₃(t,ξ)
 
-    @test equ_mod.E¹(t, ξ...) == equ_mod.E¹(t,ξ)
-    @test equ_mod.E²(t, ξ...) == equ_mod.E²(t,ξ)
-    @test equ_mod.E³(t, ξ...) == equ_mod.E³(t,ξ)
+                @test B₁(t, ξ...) == B₁(t,ξ)
+                @test B₂(t, ξ...) == B₂(t,ξ)
+                @test B₃(t, ξ...) == B₃(t,ξ)
 
-    @test equ_mod.dA₁dx₁(t, ξ...) == equ_mod.dA₁dx₁(t,ξ)
-    @test equ_mod.dA₁dx₂(t, ξ...) == equ_mod.dA₁dx₂(t,ξ)
-    @test equ_mod.dA₁dx₃(t, ξ...) == equ_mod.dA₁dx₃(t,ξ)
+                @test b₁(t, ξ...) == b₁(t,ξ)
+                @test b₂(t, ξ...) == b₂(t,ξ)
+                @test b₃(t, ξ...) == b₃(t,ξ)
 
-    @test equ_mod.dA₂dx₁(t, ξ...) == equ_mod.dA₂dx₁(t,ξ)
-    @test equ_mod.dA₂dx₂(t, ξ...) == equ_mod.dA₂dx₂(t,ξ)
-    @test equ_mod.dA₂dx₃(t, ξ...) == equ_mod.dA₂dx₃(t,ξ)
+                @test E₁(t, ξ...) == E₁(t,ξ)
+                @test E₂(t, ξ...) == E₂(t,ξ)
+                @test E₃(t, ξ...) == E₃(t,ξ)
 
-    @test equ_mod.dA₃dx₁(t, ξ...) == equ_mod.dA₃dx₁(t,ξ)
-    @test equ_mod.dA₃dx₂(t, ξ...) == equ_mod.dA₃dx₂(t,ξ)
-    @test equ_mod.dA₃dx₃(t, ξ...) == equ_mod.dA₃dx₃(t,ξ)
-    
-    @test equ_mod.ξ¹(t, ξ...) == equ_mod.ξ¹(t,ξ)
-    @test equ_mod.ξ²(t, ξ...) == equ_mod.ξ²(t,ξ)
-    @test equ_mod.ξ³(t, ξ...) == equ_mod.ξ³(t,ξ)
-    
-    @test equ_mod.ξ¹(t, ξ...) == equ_mod.ξ¹(t,ξ)
-    @test equ_mod.ξ²(t, ξ...) == equ_mod.ξ²(t,ξ)
-    @test equ_mod.ξ³(t, ξ...) == equ_mod.ξ³(t,ξ)
-    
-    # check internal consistency
+                @test A¹(t, ξ...) == A¹(t,ξ)
+                @test A²(t, ξ...) == A²(t,ξ)
+                @test A³(t, ξ...) == A³(t,ξ)
 
-    x = equ_mod.to_cartesian(t,ξ)
+                @test B¹(t, ξ...) == B¹(t,ξ)
+                @test B²(t, ξ...) == B²(t,ξ)
+                @test B³(t, ξ...) == B³(t,ξ)
 
-    @test equ_mod.from_cartesian(t, x) ≈ ξ  atol=1E-14
+                @test b¹(t, ξ...) == b¹(t,ξ)
+                @test b²(t, ξ...) == b²(t,ξ)
+                @test b³(t, ξ...) == b³(t,ξ)
 
-    g = equ_mod.g(t,ξ)
-    ḡ = equ_mod.ḡ(t,ξ)
-    DF = equ_mod.DF(t,ξ)
-    DF̄ = equ_mod.DF̄(t,x)
+                @test E¹(t, ξ...) == E¹(t,ξ)
+                @test E²(t, ξ...) == E²(t,ξ)
+                @test E³(t, ξ...) == E³(t,ξ)
 
-    b = equ_mod.b(t,ξ)
-    a⃗ = equ_mod.a⃗(t,ξ)
-    b⃗ = equ_mod.b⃗(t,ξ)
-    c⃗ = equ_mod.c⃗(t,ξ)
+                @test dA₁dx₁(t, ξ...) == dA₁dx₁(t,ξ)
+                @test dA₁dx₂(t, ξ...) == dA₁dx₂(t,ξ)
+                @test dA₁dx₃(t, ξ...) == dA₁dx₃(t,ξ)
+
+                @test dA₂dx₁(t, ξ...) == dA₂dx₁(t,ξ)
+                @test dA₂dx₂(t, ξ...) == dA₂dx₂(t,ξ)
+                @test dA₂dx₃(t, ξ...) == dA₂dx₃(t,ξ)
+
+                @test dA₃dx₁(t, ξ...) == dA₃dx₁(t,ξ)
+                @test dA₃dx₂(t, ξ...) == dA₃dx₂(t,ξ)
+                @test dA₃dx₃(t, ξ...) == dA₃dx₃(t,ξ)
+                
+                @test ξ¹(t, ξ...) == ξ¹(t,ξ)
+                @test ξ²(t, ξ...) == ξ²(t,ξ)
+                @test ξ³(t, ξ...) == ξ³(t,ξ)
+                
+                @test ξ¹(t, ξ...) == ξ¹(t,ξ)
+                @test ξ²(t, ξ...) == ξ²(t,ξ)
+                @test ξ³(t, ξ...) == ξ³(t,ξ)
+                
+                @test periodicity(t,ξ...) == $equilibrium_periodicity
+                @test periodicity(t,ξ)    == $equilibrium_periodicity
+                @test periodicity(ξ)      == $equilibrium_periodicity
+
+                # check internal consistency
+                x = to_cartesian(t,ξ)
+                @test from_cartesian(t, x) ≈ ξ  atol=1E-14
+
+                let g = g(t,ξ), ḡ = ḡ(t,ξ), DF = DF(t,ξ), DF̄ = DF̄(t,x),
+                    b = b(t,ξ), a⃗ = a⃗(t,ξ), b⃗ = b⃗(t,ξ), c⃗ = c⃗(t,ξ)
+
+                    @test J(t,ξ) ≈ sqrt(det(DF' * DF))  atol=1E-12
+                    @test ḡ         ≈ inv(g)          atol=1E-12
+                    @test DF' * DF  ≈ g               atol=1E-12
+                    @test DF  * DF̄  ≈ Array(I, 3, 3)  atol=1E-12
+                    @test DF̄  * DF̄' ≈ ḡ               atol=1E-12
 
 
-    @test equ_mod.J(t,ξ) ≈ sqrt(det(DF' * DF))  atol=1E-12
-    @test ḡ         ≈ inv(g)          atol=1E-12
-    @test DF' * DF  ≈ g               atol=1E-12
-    @test DF  * DF̄  ≈ Array(I, 3, 3)  atol=1E-12
-    @test DF̄  * DF̄' ≈ ḡ               atol=1E-12
+                    if $equilibrium_module != ElectromagneticFields.Singular
+                        @test b⃗' * b     ≈ 1  atol=1E-14
+                        @test b' * ḡ * b ≈ 1  atol=1E-14
+                        @test a⃗' * g * a⃗ ≈ 1  atol=1E-14
+                        @test b⃗' * g * b⃗ ≈ 1  atol=1E-14
+                        @test c⃗' * g * c⃗ ≈ 1  atol=1E-14
 
-
-    if equ_mod != Singular
-        @test b⃗' * b     ≈ 1  atol=1E-14
-        @test b' * ḡ * b ≈ 1  atol=1E-14
-        @test a⃗' * g * a⃗ ≈ 1  atol=1E-14
-        @test b⃗' * g * b⃗ ≈ 1  atol=1E-14
-        @test c⃗' * g * c⃗ ≈ 1  atol=1E-14
-
-        @test a⃗' * g * b⃗ ≈ 0  atol=1E-14
-        @test a⃗' * g * c⃗ ≈ 0  atol=1E-14
-        @test b⃗' * g * c⃗ ≈ 0  atol=1E-14
+                        @test a⃗' * g * b⃗ ≈ 0  atol=1E-14
+                        @test a⃗' * g * c⃗ ≈ 0  atol=1E-14
+                        @test b⃗' * g * c⃗ ≈ 0  atol=1E-14
+                    end
+                end
+            end
+        end
     end
-
 end
 
-
-# equilibrium list (equilibrium, parameters, periodicity, module)
-eqs = (
-    (AxisymmetricTokamakCartesian,               (2., 3., 2.),   [0., 0., 0.]),
-    (AxisymmetricTokamakCylindrical,             (2., 3., 2.),   [0., 0., 2π]),
-    (AxisymmetricTokamakToroidal,                (2., 3., 2.),   [0., 2π, 2π]),
-    (AxisymmetricTokamakToroidalRegularization,  (2., 3., 2.),   [0., 2π, 2π]),
-    (Singular,                                   (1.),           [0., 0., 0.]),
-    (SymmetricQuadratic,                         (1.),           [0., 0., 0.]),
-    (ThetaPinch,                                 (1.),           [0., 0., 0.]),
-    (ABC,                                        (1., 0.5, 0.5), [0., 0., 0.]),
-    (Solovev,                (6.2, 5.3, 0.32, 1.8, 0.45, -0.155),                  [0., 0., 2π]),
-    (Solovev,                (6.2, 5.3, 0.32, 1.8, 0.45, -0.155, 0.88, -0.60),     [0., 0., 2π]),
-    (Solovev,                (0.85, 0.3, 0.78, 2.0, 0.35, 0.0, 0.70, -1.71, true), [0., 0., 2π]),
-    (SolovevSymmetric,       (6.2, 5.3, 1., 1.),                                   [0., 0., 0.]),
-    (PenningTrapUniform,     (100., 10.),                                          [0., 0., 0.]),
-    (PenningTrapBottle,      (100., 200., 10.),                                    [0., 0., 0.]),
-    (PenningTrapAsymmetric,  (100., 200., 10.),                                    [0., 0., 0.]),
-)
 
 
 # perturbation list (equilibrium, parameters, perturbation, parameters, module)
 perts = (
-    (SymmetricQuadratic,    (1.),   EzCosZ,    (2.)),
-    (ThetaPinch,            (1.),   EzCosZ,    (2.)),
+    (SymmetricQuadratic,    EzCosZ,    (2.)),
+    (ThetaPinch,            EzCosZ,    (2.)),
 )
 
 
-# testing parameters
-t = 1.
-x = [1.05, 0.5, 0.5]
+
 
 # test equilibria
-@testset "$(rpad(teststring(equ[1]),60))" for equ in eqs begin
-        equ_obj = equ[1].init(equ[2]...)
-        test_equilibrium(equ[1], t, x)
-        @test periodicity(x, equ_obj) == equ[3]
-    end
-end
+
+@test_equilibrium ABC                                           [0., 0., 0.]
+@test_equilibrium AxisymmetricTokamakCartesian                  [0., 0., 0.]
+@test_equilibrium AxisymmetricTokamakCylindrical                [0., 0., 2π]
+@test_equilibrium AxisymmetricTokamakToroidal                   [0., 2π, 2π]
+@test_equilibrium AxisymmetricTokamakToroidalRegularization     [0., 2π, 2π]
+@test_equilibrium PenningTrapUniform                            [0., 0., 0.]
+@test_equilibrium PenningTrapBottle                             [0., 0., 0.]
+@test_equilibrium PenningTrapAsymmetric                         [0., 0., 0.]
+@test_equilibrium Singular                                      [0., 0., 0.]
+@test_equilibrium SymmetricQuadratic                            [0., 0., 0.]
+@test_equilibrium ThetaPinch                                    [0., 0., 0.]
+# @test_equilibrium SolovevFRC                                    [0., 0., 2π]
+@test_equilibrium SolovevITER                                   [0., 0., 2π]
+@test_equilibrium SolovevITERwXpoint                            [0., 0., 2π]
+@test_equilibrium SolovevNSTX                                   [0., 0., 2π]
+@test_equilibrium SolovevNSTXwXpoint                            [0., 0., 2π]
+@test_equilibrium SolovevNSTXwDoubleXpoint                      [0., 0., 2π]
+@test_equilibrium SolovevSymmetric                              [0., 0., 0.]
 println()
 
 
 # test perturbations
-@testset "$(rpad(teststring(equ[1], equ[3]),60))" for equ in perts begin
-        equ_obj = equ[1].init(equ[2]..., perturbation=equ[3].init(equ[4]...))
-        test_equilibrium(equ[1], t, x)
-    end
-end
-println()
+# @testset "$(rpad(teststring(equ[1], equ[3]),60))" for equ in perts begin
+#         equ_obj = equ[1].init(equ[2]..., perturbation=equ[3].init(equ[4]...))
+#         # test_equilibrium(equ[1], t, x)
+#     end
+# end
+# println()
 
 
 # test correctness of some of the magnetic fields
 
 function test_axisymmetric_tokamak_cartesian_equilibrium(equ_mod, t=0., x=[1.5, 0.0, 0.5])
-    @test equ_mod.B¹(t,x) == equ_mod.B₁(t,x)
-    @test equ_mod.B²(t,x) == equ_mod.B₂(t,x)
-    @test equ_mod.B³(t,x) == equ_mod.B₃(t,x)
+    @test equ_mod.B¹(t,x) ≈ equ_mod.B₁(t,x)   atol=1E-16
+    @test equ_mod.B²(t,x) ≈ equ_mod.B₂(t,x)   atol=1E-16
+    @test equ_mod.B³(t,x) ≈ equ_mod.B₃(t,x)   atol=1E-16
 
-    @test equ_mod.B₁(t,x) == - equ_mod.B₀ / equ_mod.q₀ * (equ_mod.q₀ * equ_mod.R₀ * equ_mod.Y(t,x) + equ_mod.X(t,x) * equ_mod.Z(t,x) ) / equ_mod.R(t,x)^2
-    @test equ_mod.B₂(t,x) == + equ_mod.B₀ / equ_mod.q₀ * (equ_mod.q₀ * equ_mod.R₀ * equ_mod.X(t,x) - equ_mod.Y(t,x) * equ_mod.Z(t,x) ) / equ_mod.R(t,x)^2
-    @test equ_mod.B₃(t,x) == + equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t,x) - equ_mod.R₀) / equ_mod.R(t,x)
+    @test equ_mod.B₁(t,x) ≈ - equ_mod.B₀ / equ_mod.q₀ * (equ_mod.q₀ * equ_mod.R₀ * equ_mod.Y(t,x) + equ_mod.X(t,x) * equ_mod.Z(t,x) ) / equ_mod.R(t,x)^2   atol=1E-16
+    @test equ_mod.B₂(t,x) ≈ + equ_mod.B₀ / equ_mod.q₀ * (equ_mod.q₀ * equ_mod.R₀ * equ_mod.X(t,x) - equ_mod.Y(t,x) * equ_mod.Z(t,x) ) / equ_mod.R(t,x)^2   atol=1E-16
+    @test equ_mod.B₃(t,x) ≈ + equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t,x) - equ_mod.R₀) / equ_mod.R(t,x)   atol=1E-16
 end
 
 function test_axisymmetric_tokamak_cylindrical_equilibrium(equ_mod, t=0., x=[1.5, 0.5, π/5])
@@ -280,17 +291,17 @@ function test_abc_equilibrium(equ_mod, t=0., x=[1.0, 0.5, 0.5])
 end
 
 @testset "$(rpad("Magnetic Fields",60))" begin
-    test_axisymmetric_tokamak_cartesian_equilibrium(AxisymmetricTokamakCartesian)
-    test_axisymmetric_tokamak_cylindrical_equilibrium(AxisymmetricTokamakCylindrical)
-    test_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidal)
-    test_symmetric_quadratic_equilibrium(SymmetricQuadratic)
-    test_theta_pinch_equilibrium(ThetaPinch)
-    test_abc_equilibrium(ABC)
+    test_axisymmetric_tokamak_cartesian_equilibrium(AxisymmetricTokamakCartesianTest)
+    test_axisymmetric_tokamak_cylindrical_equilibrium(AxisymmetricTokamakCylindricalTest)
+    test_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidalTest)
+    test_symmetric_quadratic_equilibrium(SymmetricQuadraticTest)
+    test_theta_pinch_equilibrium(ThetaPinchTest)
+    test_abc_equilibrium(ABCTest)
 end
 
 @testset "$(rpad("Consistency",60))" begin
-    test_consistency_axisymmetric_tokamak_cylindrical_equilibrium(AxisymmetricTokamakCylindrical, AxisymmetricTokamakCartesian)
-    test_consistency_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidal, AxisymmetricTokamakCartesian)
+    test_consistency_axisymmetric_tokamak_cylindrical_equilibrium(AxisymmetricTokamakCylindricalTest, AxisymmetricTokamakCartesianTest)
+    test_consistency_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidalTest, AxisymmetricTokamakCartesianTest)
 end
 
 println()
