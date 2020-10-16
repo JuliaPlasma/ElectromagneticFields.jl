@@ -564,37 +564,43 @@ end
 
 
 module SolovevFRC
-    import ..Solovev: @code_frc
-    export @code
+    import ..Solovev: @code_frc, FRC
+    export @code, init
     var"@code" = var"@code_frc"
+    init = FRC
 end
 
 module SolovevITER
-    import ..Solovev: @code_iter
-    export @code
+    import ..Solovev: @code_iter, ITER
+    export @code, init
     var"@code" = var"@code_iter"
+    init = ITER
 end
 
 module SolovevITERwXpoint
-    import ..Solovev: @code_iter_xpoint
-    export @code
+    import ..Solovev: @code_iter_xpoint, ITER
+    export @code, init
     var"@code" = var"@code_iter_xpoint"
+    init() = ITER(xpoint=true)
 end
 
 module SolovevNSTX
-    import ..Solovev: @code_nstx
-    export @code
+    import ..Solovev: @code_nstx, NSTX
+    export @code, init
     var"@code" = var"@code_nstx"
+    init = NSTX
 end
 
 module SolovevNSTXwXpoint
-    import ..Solovev: @code_nstx_xpoint
-    export @code
+    import ..Solovev: @code_nstx_xpoint, NSTX
+    export @code, init
     var"@code" = var"@code_nstx_xpoint"
+    init() = NSTX(xpoint=true)
 end
 
 module SolovevNSTXwDoubleXpoint
-    import ..Solovev: @code_nstx_double_xpoint
-    export @code
+    import ..Solovev: @code_nstx_double_xpoint, NSTXdoubleX
+    export @code, init
     var"@code" = var"@code_nstx_double_xpoint"
+    init = NSTXdoubleX
 end
