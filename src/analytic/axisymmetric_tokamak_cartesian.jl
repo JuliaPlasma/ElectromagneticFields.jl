@@ -91,7 +91,7 @@ module AxisymmetricTokamakCartesian
 
         xgrid = LinRange(xlims[1], xlims[2], nx)
         zgrid = LinRange(ylims[1], ylims[2], ny)
-        pot   = [A₂(0, xgrid[i], 0.0, zgrid[j]) for i in eachindex(xgrid), j in eachindex(zgrid)]
+        pot   = [ElectromagneticFields.A₂([xgrid[i], 0.0, zgrid[j]], equ) for i in eachindex(xgrid), j in eachindex(zgrid)]
 
         seriestype   := :contour
         aspect_ratio := :equal

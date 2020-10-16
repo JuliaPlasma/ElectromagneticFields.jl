@@ -72,8 +72,8 @@ module ThetaPinch
 
         xgrid = LinRange(xlims[1], xlims[2], nx)
         ygrid = LinRange(ylims[1], ylims[2], ny)
-        pot1  = [A₁(0, xgrid[i], ygrid[j], 0.0) for i in eachindex(xgrid), j in eachindex(ygrid)]
-        pot2  = [A₂(0, xgrid[i], ygrid[j], 0.0) for i in eachindex(xgrid), j in eachindex(ygrid)]
+        pot1  = [ElectromagneticFields.A₁([xgrid[i], ygrid[j], 0.0], equ) for i in eachindex(xgrid), j in eachindex(ygrid)]
+        pot2  = [ElectromagneticFields.A₂([xgrid[i], ygrid[j], 0.0], equ) for i in eachindex(xgrid), j in eachindex(ygrid)]
 
         seriestype   := :contour
         aspect_ratio := :equal

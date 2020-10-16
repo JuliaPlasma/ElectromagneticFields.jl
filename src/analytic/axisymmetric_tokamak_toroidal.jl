@@ -108,9 +108,9 @@ module AxisymmetricTokamakToroidal
 
         xgrid = LinRange(xlims[1], xlims[2], nx)
         zgrid = LinRange(ylims[1], ylims[2], ny)
-        rgrid = [ξ¹(0, xgrid[i], 0.0, zgrid[j]) for i in eachindex(xgrid), j in eachindex(zgrid)]
-        θgrid = [ξ²(0, xgrid[i], 0.0, zgrid[j]) for i in eachindex(xgrid), j in eachindex(zgrid)]
-        pot   = [A₃(0, rgrid[i,j], θgrid[i,j], 0.0) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
+        rgrid = [ElectromagneticFields.ξ¹([xgrid[i], 0.0, zgrid[j]], equ) for i in eachindex(xgrid), j in eachindex(zgrid)]
+        θgrid = [ElectromagneticFields.ξ²([xgrid[i], 0.0, zgrid[j]], equ) for i in eachindex(xgrid), j in eachindex(zgrid)]
+        pot   = [ElectromagneticFields.A₃([rgrid[i,j], θgrid[i,j], 0.0], equ) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
 
         seriestype   := :contour
         aspect_ratio := :equal

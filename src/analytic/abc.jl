@@ -57,6 +57,8 @@ module ABC
 
 
     @recipe function f(equ::ABCEquilibrium; nx=99, ni=div(nx,2)+1, nl=12, size=(400,1200))
+        @eval $(code(equ)) # this causes world age problems
+
         xmin = 0
         xmax = 2π
         grid = LinRange(xmin, xmax, nx)

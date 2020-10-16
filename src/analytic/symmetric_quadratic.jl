@@ -68,10 +68,12 @@ module SymmetricQuadratic
                        xlims = (-1., +1.),
                        ylims = (-1., +1.))
 
-        xgrid = LinRange(xlims[1], xlims[2], nx)
-        ygrid = LinRange(ylims[1], ylims[2], ny)
-        pot1  = [A₁(0, xgrid[i], ygrid[j], 0.0) for i in eachindex(xgrid), j in eachindex(ygrid)]
-        pot2  = [A₂(0, xgrid[i], ygrid[j], 0.0) for i in eachindex(xgrid), j in eachindex(ygrid)]
+        @eval $(code(equ)) # this causes world age problems
+
+        xgrid  = LinRange(xlims[1], xlims[2], nx)
+        ygrid  = LinRange(ylims[1], ylims[2], ny)
+        pot1   = [A₁(0, xgrid[i], ygrid[j], 0.0) for i in eachindex(xgrid), j in eachindex(ygrid)]
+        pot2   = [A₂(0, xgrid[i], ygrid[j], 0.0) for i in eachindex(xgrid), j in eachindex(ygrid)]
         Bfield = [B₃(0, xgrid[i], ygrid[j], 0.0) for i in eachindex(xgrid), j in eachindex(ygrid)]
 
         seriestype   := :contour

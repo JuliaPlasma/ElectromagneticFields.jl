@@ -513,7 +513,7 @@ module Solovev
 
         xgrid = LinRange(xlims[1], xlims[2], nx)
         zgrid = LinRange(ylims[1], ylims[2], ny)
-        pot   = [A₃(0, xgrid[i], zgrid[j], 0.0) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
+        pot   = [ElectromagneticFields.A₃([xgrid[i], zgrid[j], 0.0], equ) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
 
         τ = LinRange(0, 2π, nτ)
         boundary_X = 1 .+ equ.ϵ .* cos.(τ .+ asin(equ.δ) .* sin.(τ) )
@@ -547,7 +547,7 @@ module Solovev
 
         xgrid = LinRange(xlims[1], xlims[2], nx)
         zgrid = LinRange(ylims[1], ylims[2], ny)
-        pot   = [A₃(0, xgrid[i], zgrid[j], 0.0) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
+        pot   = [ElectromagneticFields.A₃([xgrid[i], zgrid[j], 0.0], equ) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
 
         seriestype := :contour
         aspect_ratio := :equal
