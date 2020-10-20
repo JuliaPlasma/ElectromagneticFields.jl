@@ -100,29 +100,65 @@ macro test_equilibrium(equilibrium_module, equilibrium_periodicity)
                 @test periodicity(ξ)      == $equilibrium_periodicity
 
                 # check internal consistency
-                x = to_cartesian(t,ξ)
-                @test from_cartesian(t, x) ≈ ξ  atol=1E-14
+                @test from_cartesian(t, to_cartesian(t,ξ)) ≈ ξ  atol=1E-14
 
-                let g = g(t,ξ), ḡ = ḡ(t,ξ), DF = DF(t,ξ), DF̄ = DF̄(t,x),
-                    b = b(t,ξ), a⃗ = a⃗(t,ξ), b⃗ = b⃗(t,ξ), c⃗ = c⃗(t,ξ)
+                let g = g(t,ξ), ḡ = ḡ(t,ξ), DF = DF(t,ξ), DF̄ = DF̄(t,ξ),
+                    a = a(t,ξ), b = b(t,ξ), c = c(t,ξ),
+                    a⃗ = a⃗(t,ξ), b⃗ = b⃗(t,ξ), c⃗ = c⃗(t,ξ),
+                    â = aₚ(t,ξ), b̂ = bₚ(t,ξ), ĉ = cₚ(t,ξ)
 
                     @test J(t,ξ) ≈ sqrt(det(DF' * DF))  atol=1E-12
                     @test ḡ         ≈ inv(g)          atol=1E-12
+                    @test DF̄        ≈ inv(DF)         atol=1E-12
                     @test DF' * DF  ≈ g               atol=1E-12
                     @test DF  * DF̄  ≈ Array(I, 3, 3)  atol=1E-12
                     @test DF̄  * DF̄' ≈ ḡ               atol=1E-12
 
 
                     if $equilibrium_module != ElectromagneticFields.Singular
-                        @test b⃗' * b     ≈ 1  atol=1E-14
+                        @test g * a⃗ ≈ a  atol=1E-14
+                        @test g * b⃗ ≈ b  atol=1E-14
+                        @test g * c⃗ ≈ c  atol=1E-14
+
+                        @test ḡ * a ≈ a⃗  atol=1E-14
+                        @test ḡ * b ≈ b⃗  atol=1E-14
+                        @test ḡ * c ≈ c⃗  atol=1E-14
+
+                        @test â ≈ DF * a⃗  atol=1E-14
+                        @test b̂ ≈ DF * b⃗  atol=1E-14
+                        @test ĉ ≈ DF * c⃗  atol=1E-14
+
+                        @test â ≈ DF̄' * a  atol=1E-14
+                        @test b̂ ≈ DF̄' * b  atol=1E-14
+                        @test ĉ ≈ DF̄' * c  atol=1E-14
+
+                        @test a⃗' * a ≈ 1  atol=1E-14
+                        @test b⃗' * b ≈ 1  atol=1E-14
+                        @test c⃗' * c ≈ 1  atol=1E-14
+
+                        @test â' * â ≈ 1  atol=1E-14
+                        @test b̂' * b̂ ≈ 1  atol=1E-14
+                        @test ĉ' * ĉ ≈ 1  atol=1E-14
+
+                        @test â' * b̂ ≈ 0  atol=1E-14
+                        @test b̂' * ĉ ≈ 0  atol=1E-14
+                        @test ĉ' * â ≈ 0  atol=1E-14
+
+                        @test a' * ḡ * a ≈ 1  atol=1E-14
                         @test b' * ḡ * b ≈ 1  atol=1E-14
+                        @test c' * ḡ * c ≈ 1  atol=1E-14
+
+                        @test a' * ḡ * b ≈ 0  atol=1E-14
+                        @test b' * ḡ * c ≈ 0  atol=1E-14
+                        @test c' * ḡ * a ≈ 0  atol=1E-14
+
                         @test a⃗' * g * a⃗ ≈ 1  atol=1E-14
                         @test b⃗' * g * b⃗ ≈ 1  atol=1E-14
                         @test c⃗' * g * c⃗ ≈ 1  atol=1E-14
 
                         @test a⃗' * g * b⃗ ≈ 0  atol=1E-14
-                        @test a⃗' * g * c⃗ ≈ 0  atol=1E-14
                         @test b⃗' * g * c⃗ ≈ 0  atol=1E-14
+                        @test c⃗' * g * a⃗ ≈ 0  atol=1E-14
                     end
                 end
             end
@@ -206,9 +242,9 @@ function test_axisymmetric_tokamak_toroidal_equilibrium(equ_mod, t=0., x=[0.5, �
 end
 
 function test_consistency_axisymmetric_tokamak_cylindrical_equilibrium(equ_cyl, equ_car, t=0., ξ=[1.5, 0.5, π/5])
-    x = equ_cyl.to_cartesian(t,ξ)
-
+    x  = equ_cyl.to_cartesian(t,ξ)
     DF = equ_cyl.DF(t,ξ)
+    DF̄ = equ_cyl.DF̄(t,ξ)
 
     B_cyl = [equ_cyl.B¹(t,ξ), equ_cyl.B²(t,ξ), equ_cyl.B³(t,ξ)]
     B_car = [equ_car.B¹(t,x), equ_car.B²(t,x), equ_car.B³(t,x)]
@@ -216,14 +252,15 @@ function test_consistency_axisymmetric_tokamak_cylindrical_equilibrium(equ_cyl, 
     B̂_cyl = [equ_cyl.B₁(t,ξ), equ_cyl.B₂(t,ξ), equ_cyl.B₃(t,ξ)]
     B̂_car = [equ_car.B₁(t,x), equ_car.B₂(t,x), equ_car.B₃(t,x)]
 
-    @test B_cyl' * B̂_cyl ≈ B_car' * B̂_car atol=1E-12
-    # @test DF * B_cyl == B_car
-    # @test DF * B̂_cyl == B̂_car
+    @test B_cyl' * B̂_cyl ≈ B_car' * B̂_car  atol=1E-12
+    @test DF  * B_cyl ≈ - B_car  atol=1E-12
+    @test DF̄' * B̂_cyl ≈ - B̂_car  atol=1E-12
 end
 
 function test_consistency_axisymmetric_tokamak_toroidal_equilibrium(equ_tor, equ_car, t=0., ξ=[0.5, π/10, π/5])
     x  = equ_tor.to_cartesian(t,ξ)
     DF = equ_tor.DF(t,ξ)
+    DF̄ = equ_tor.DF̄(t,ξ)
 
     B_tor = [equ_tor.B¹(t,ξ), equ_tor.B²(t,ξ), equ_tor.B³(t,ξ)]
     B_car = [equ_car.B¹(t,x), equ_car.B²(t,x), equ_car.B³(t,x)]
@@ -231,9 +268,9 @@ function test_consistency_axisymmetric_tokamak_toroidal_equilibrium(equ_tor, equ
     B̂_tor = [equ_tor.B₁(t,ξ), equ_tor.B₂(t,ξ), equ_tor.B₃(t,ξ)]
     B̂_car = [equ_car.B₁(t,x), equ_car.B₂(t,x), equ_car.B₃(t,x)]
 
-    @test B_tor' * B̂_tor ≈ B_car' * B̂_car atol=1E-12
-    # @test DF * B_tor == B_car
-    # @test DF * B̂_tor == B̂_car
+    @test B_tor' * B̂_tor ≈ B_car' * B̂_car  atol=1E-12
+    @test DF  * B_tor ≈ - B_car  atol=1E-12
+    @test DF̄' * B̂_tor ≈ - B̂_car  atol=1E-12
 end
 
 function test_symmetric_quadratic_equilibrium(equ_mod, t=0., x=[1.0, 0.5, 0.5])

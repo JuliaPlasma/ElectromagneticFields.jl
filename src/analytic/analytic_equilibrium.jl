@@ -245,6 +245,10 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     B¹ = [hodge²¹(B², ginv, Jdet, i) for i in 1:3]
     symprint("B¹", B¹, output, 2)
 
+    # compute magnetic field in physical coordinates
+    Bphys = [covariant_to_physical(B¹, DF̄, i) for i in 1:3]
+    symprint("B̂", Bphys, output, 2)
+
     # compute magnetic field in contravariant coordinates
     Bvec = [covariant_to_contravariant(B¹, ginv, i) for i in 1:3]
     symprint("B⃗", Bvec, output, 2)
@@ -257,9 +261,13 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     b¹ = [B¹[i] / Babs for i in 1:3]
     symprint("b¹", b¹, output, 2)
 
+    # compute unit magnetic field in physical coordinates
+    bphys = [Bphys[i] / Babs for i in 1:3]
+    symprint("b̂", bphys, output, 2)
+
     # compute unit magnetic field in contravariant coordinates
     bvec = [Bvec[i] / Babs for i in 1:3]
-    symprint("bvec", bvec, output, 2)
+    symprint("b⃗", bvec, output, 2)
 
     # compute Jacobian of magnetic field B
     DB = [diff(B¹[i], x[j]) for i in 1:3, j in 1:3]
@@ -319,6 +327,18 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     end
     cvec = normalize([crossproduct(bvec, avec, ginv, Jdet, i) for i in 1:3], gmat)
 
+    # compute components of magnetic unit vectors in physical coordinates
+    aphys = DF * avec
+    cphys = DF * cvec
+    # aphys = [contravariant_to_physical(avec, DF, i) for i in 1:3]
+    # cphys = [contravariant_to_physical(cvec, DF, i) for i in 1:3]
+
+    # compute components of magnetic unit vectors in covariant coordinates
+    a¹ = gmat * avec
+    c¹ = gmat * cvec
+    # a¹ = [contravariant_to_covariant(avec, gmat, i) for i in 1:3]
+    # c¹ = [contravariant_to_covariant(cvec, gmat, i) for i in 1:3]
+
     # obtain scalar potential
     φ⁰ = φ(x, equ) .+ φ(x, pert)
 
@@ -336,6 +356,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     functions = Dict{String,Any}()
     indices   = ["₁", "₂", "₃"]
     indicesup = ["¹", "²", "³"]
+    indicesph = ["₍₁₎", "₍₂₎", "₍₃₎"]
 
     try
         for f in pairs(get_functions(equ))
@@ -367,8 +388,15 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     for i in 1:3
         functions["A" * indices[i]] = A¹[i]
         functions["B" * indices[i]] = B¹[i]
+        functions["a" * indices[i]] = a¹[i]
         functions["b" * indices[i]] = b¹[i]
+        functions["c" * indices[i]] = c¹[i]
         functions["E" * indices[i]] = E¹[i]
+
+        functions["B" * indicesph[i]] = Bphys[i]
+        functions["a" * indicesph[i]] = aphys[i]
+        functions["b" * indicesph[i]] = bphys[i]
+        functions["c" * indicesph[i]] = cphys[i]
 
         functions["A" * indicesup[i]] = Avec[i]
         functions["B" * indicesup[i]] = Bvec[i]
@@ -475,10 +503,40 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
     end
 
     # add wrapper functions
+    functions["a"] = quote
+       [$(fnesc(:a₁, escape))(t, x₁, x₂, x₃),
+        $(fnesc(:a₂, escape))(t, x₁, x₂, x₃),
+        $(fnesc(:a₃, escape))(t, x₁, x₂, x₃)] 
+    end
+
     functions["b"] = quote
        [$(fnesc(:b₁, escape))(t, x₁, x₂, x₃),
         $(fnesc(:b₂, escape))(t, x₁, x₂, x₃),
         $(fnesc(:b₃, escape))(t, x₁, x₂, x₃)] 
+    end
+
+    functions["c"] = quote
+       [$(fnesc(:c₁, escape))(t, x₁, x₂, x₃),
+        $(fnesc(:c₂, escape))(t, x₁, x₂, x₃),
+        $(fnesc(:c₃, escape))(t, x₁, x₂, x₃)] 
+    end
+
+    functions["aₚ"] = quote
+       [$(fnesc(:a₍₁₎, escape))(t, x₁, x₂, x₃),
+        $(fnesc(:a₍₂₎, escape))(t, x₁, x₂, x₃),
+        $(fnesc(:a₍₃₎, escape))(t, x₁, x₂, x₃)] 
+    end
+
+    functions["bₚ"] = quote
+       [$(fnesc(:b₍₁₎, escape))(t, x₁, x₂, x₃),
+        $(fnesc(:b₍₂₎, escape))(t, x₁, x₂, x₃),
+        $(fnesc(:b₍₃₎, escape))(t, x₁, x₂, x₃)] 
+    end
+
+    functions["cₚ"] = quote
+       [$(fnesc(:c₍₁₎, escape))(t, x₁, x₂, x₃),
+        $(fnesc(:c₍₂₎, escape))(t, x₁, x₂, x₃),
+        $(fnesc(:c₍₃₎, escape))(t, x₁, x₂, x₃)] 
     end
 
     functions["a⃗"] = quote
