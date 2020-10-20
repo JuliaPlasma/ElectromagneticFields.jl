@@ -300,12 +300,11 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     db¹ = [hodge²¹(db², ginv, Jdet, i) for i in 1:3]
     dbvec = [covariant_to_contravariant(db¹, ginv, i) for i in 1:3]
     Avec = [crossproduct(dbvec, bvec, ginv, Jdet, i) for i in 1:3]
-
     # Avec = [connection(bvec, bvec, x, gmat, ginv, i) for i in 1:3]
 
     Amag = magnitude(Avec, gmat)
     if Amag != 0
-        avec = Avec ./ Amag
+        avec = normalize(Avec, gmat)
     else
         if bvec[1] == 0
             avec = [Basic(1), Basic(0), Basic(0)]
