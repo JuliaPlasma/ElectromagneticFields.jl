@@ -6,7 +6,8 @@ abstract type AnalyticField <: ElectromagneticField end
 abstract type AnalyticEquilibrium <: AnalyticField end
 abstract type AnalyticPerturbation <: AnalyticField end
 
-get_functions(::AnalyticField) = NamedTuple()
+function get_functions end
+function get_parameters end
 
 x¹(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("x¹() not implemented for ", ET)
 x²(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("x²() not implemented for ", ET)
@@ -326,8 +327,11 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     indices   = ["₁", "₂", "₃"]
     indicesup = ["¹", "²", "³"]
 
-    for f in pairs(get_functions(equ))
-        functions[string(f[1])] = f[2](x, equ)
+    try
+        for f in pairs(get_functions(equ))
+            functions[string(f[1])] = f[2](x, equ)
+        end
+    catch
     end
 
     # cartesian coordinates
@@ -433,13 +437,18 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
         println()
     end
 
-    parameters = fieldnames(typeof(equ))
     t, x, functions = generate_equilibrium_functions(equ, pert; output=output)
 
     equ_code = quote end
 
     # generate Julia code and export parameters
     if export_parameters
+        try 
+            global parameters = get_parameters(equ)
+        catch
+            global parameters = fieldnames(typeof(equ))
+        end
+
         for param in parameters
             if param != :name
                 value = getfield(equ, param)
