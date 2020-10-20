@@ -183,7 +183,8 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     DF = [diff(x̂[i], x[j]) for i in 1:3, j in 1:3]
     symprint("DF", DF, output, 2)
 
-    DF̄ = [diff(ξ̂[i], x[j]) for i in 1:3, j in 1:3]
+    DF̄ = [subs(subs(diff(ξ̂[i], x[j]), x₁=>x¹(ξ, equ), x₂=>x²(ξ, equ), x₃=>x³(ξ, equ)),
+               ξ₁=>x₁, ξ₂=>x₂, ξ₃=>x₃) for i in 1:3, j in 1:3]
     symprint("DF̄", DF̄, output, 2)
 
     # obtain metric
