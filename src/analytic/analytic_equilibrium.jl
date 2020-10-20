@@ -62,13 +62,23 @@ A₃(::AbstractVector{T}, ::AnalyticPerturbation) where {T} = zero(T)
 
 
 "Returns the i-th component of the vector corresponding to the one-form α"
-function get_vector_component(α, g̅, i)
+function covariant_to_contravariant(α, g̅, i)
     g̅[i,1] * α[1] + g̅[i,2] * α[2] + g̅[i,3] * α[3]
 end
 
 "Returns the i-th component of the one-form corresponding to the vector v"
-function get_oneform_component(v, g, i)
+function contravariant_to_covariant(v, g, i)
     g[i,1] * v[1] + g[i,2] * v[2] + g[i,3] * v[3]
+end
+
+"Returns the i-th component of the physical coordinate representation of the one-form α"
+function covariant_to_physical(α, DF̄, i)
+    DF̄[1,i] * α[1] + DF̄[2,i] * α[2] + DF̄[3,i] * α[3]
+end
+
+"Returns the i-th component of the physical coordinate representation of the one-form α"
+function contravariant_to_physical(v, DF, i)
+    DF[i,1] * v[1] + DF[i,2] * v[2] + DF[i,3] * v[3]
 end
 
 "Returns the m-th component of the one-form corresponding to the two-form β"
@@ -201,7 +211,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("A¹", A¹, output, 2)
 
     # compute vector potential in contravariant coordinates
-    Avec = [get_vector_component(A¹, ginv, i) for i in 1:3]
+    Avec = [covariant_to_contravariant(A¹, ginv, i) for i in 1:3]
     symprint("Avec", Avec, output, 2)
 
     # compute Jacobian of vector potential A
@@ -235,8 +245,8 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("B¹", B¹, output, 2)
 
     # compute magnetic field in contravariant coordinates
-    Bvec = [get_vector_component(B¹, ginv, i) for i in 1:3]
-    symprint("Bvec", Bvec, output, 2)
+    Bvec = [covariant_to_contravariant(B¹, ginv, i) for i in 1:3]
+    symprint("B⃗", Bvec, output, 2)
 
     # compute absolute value |B| of B
     Babs = sqrt(transpose(Bvec) * B¹)
@@ -288,7 +298,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
             -dbᶜ[3]   0          +dbᶜ[1];
             +dbᶜ[2]   -dbᶜ[1]    0    ] .* Rational(1,2)
     db¹ = [hodge²¹(db², ginv, Jdet, i) for i in 1:3]
-    dbvec = [get_vector_component(db¹, ginv, i) for i in 1:3]
+    dbvec = [covariant_to_contravariant(db¹, ginv, i) for i in 1:3]
     Avec = [crossproduct(dbvec, bvec, ginv, Jdet, i) for i in 1:3]
 
     # Avec = [connection(bvec, bvec, x, gmat, ginv, i) for i in 1:3]
@@ -319,7 +329,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("E¹", E¹, output, 2)
 
     # compute electric field in contravariant coordinates
-    Evec = [get_vector_component(E¹, ginv, i) for i in 1:3]
+    Evec = [covariant_to_contravariant(E¹, ginv, i) for i in 1:3]
     symprint("Evec", Evec, output, 2)
 
     # collect all functions to generate code for
