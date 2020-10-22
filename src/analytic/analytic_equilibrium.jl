@@ -607,10 +607,10 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
 
         f_code = quote
             export $f_symb
-            function $f_symb(t, x₁, x₂, x₃)
+            function $f_symb(t::Real, x₁::Real, x₂::Real, x₃::Real)
                 $f_body
             end
-            function $f_symb(t::Number, x::AbstractVector)
+            function $f_symb(t::Real, x::AbstractVector{<:Real})
                 $f_symb(t,x[1],x[2],x[3])
             end
         end
@@ -621,10 +621,10 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
 
     # generate Julia code and export wrapper functions
     f_code = quote
-        $(fnesc(:periodicity, escape))(x) = $(fnesc(:periodicity, escape))(0, x)
+        $(fnesc(:periodicity, escape))(x::AbstractVector{<:Real}) = $(fnesc(:periodicity, escape))(0, x)
     end
 
-    # # append f_code to equ_code
+    # append f_code to equ_code
     append!(equ_code.args, f_code.args)
 
     output ≥ 1 ? println() : nothing
