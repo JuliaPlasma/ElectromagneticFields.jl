@@ -106,7 +106,7 @@ function Γ(g, g̅, x, j, k, l)
         γ += g̅[l,r] * diff(g[r,k], x[j])
         γ -= g̅[l,r] * diff(g[j,k], x[r])
     end
-    return γ / 2
+    return 1 // 2 * γ
 end
 
 
@@ -220,25 +220,19 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("DA", DA, output, 3)
 
     # compute second derivative of vector potential A
-    DDA1 = [diff(diff(A¹[1], x[i]), x[j]) for i in 1:3, j in 1:3]
-    symprint("DDA1", DDA1, output, 3)
-
-    DDA2 = [diff(diff(A¹[2], x[i]), x[j]) for i in 1:3, j in 1:3]
-    symprint("DDA2", DDA2, output, 3)
-
-    DDA3 = [diff(diff(A¹[3], x[i]), x[j]) for i in 1:3, j in 1:3]
-    symprint("DDA3", DDA3, output, 3)
+    DDA = [diff(DA[i,j], x[k]) for i in 1:3, j in 1:3, k in 1:3]
+    symprint("DDA", DDA, output, 3)
 
     # compute components of magnetic field B
-    Bᶜ = [diff(A¹[3], x[2]) - diff(A¹[2], x[3]),
-          diff(A¹[1], x[3]) - diff(A¹[3], x[1]),
-          diff(A¹[2], x[1]) - diff(A¹[1], x[2])]
+    Bᶜ = [DA[3,2] - DA[2,3],
+          DA[1,3] - DA[3,1],
+          DA[2,1] - DA[1,2]]
     symprint("Bᶜ", Bᶜ, output, 2)
 
     # compute magnetic field two-form B²
     B² = [ 0      +Bᶜ[3]    -Bᶜ[2];
           -Bᶜ[3]   0        +Bᶜ[1];
-          +Bᶜ[2]   -Bᶜ[1]    0    ] .* Rational(1,2)
+          +Bᶜ[2]   -Bᶜ[1]    0    ] .* 1//2
     symprint("B²", B², output, 2)
 
     # compute magnetic field one-form B¹ = ⋆B²
@@ -282,14 +276,8 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("Db⃗", Db⃗, output, 3)
 
     # compute second derivative of magnetic unit vector b
-    DDb1 = [diff(diff(b¹[1], x[i]), x[j]) for i in 1:3, j in 1:3]
-    symprint("DDb1", DDb1, output, 3)
-
-    DDb2 = [diff(diff(b¹[2], x[i]), x[j]) for i in 1:3, j in 1:3]
-    symprint("DDb2", DDb2, output, 3)
-
-    DDb3 = [diff(diff(b¹[3], x[i]), x[j]) for i in 1:3, j in 1:3]
-    symprint("DDb3", DDb3, output, 3)
+    DDb = [diff(diff(b¹[i], x[j]), x[k]) for i in 1:3, j in 1:3, k in 1:3]
+    symprint("DDb", DDb, output, 3)
 
     # compute first derivatives of absolute value of magnetic field
     DBabs = [diff(Babs, x[j]) for j in 1:3]
@@ -305,7 +293,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
            diff(b¹[2], x[1]) - diff(b¹[1], x[2])]
     db² = [ 0         +dbᶜ[3]    -dbᶜ[2];
             -dbᶜ[3]   0          +dbᶜ[1];
-            +dbᶜ[2]   -dbᶜ[1]    0    ] .* Rational(1,2)
+            +dbᶜ[2]   -dbᶜ[1]    0    ] .* 1//2
     db¹ = [hodge²¹(db², ginv, Jdet, i) for i in 1:3]
     dbvec = [covariant_to_contravariant(db¹, ginv, i) for i in 1:3]
     Avec = [crossproduct(dbvec, bvec, ginv, Jdet, i) for i in 1:3]
@@ -423,12 +411,6 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
             functions["db" * indices[i]   * "dx" * indices[j]] = Db[i,j]
             functions["db⃗" * indicesup[i] * "dx" * indices[j]] = Db⃗[i,j]
 
-            functions["d²A₁" * "dx" * indices[i] * "dx" * indices[j]] = DDA1[i,j]
-            functions["d²A₂" * "dx" * indices[i] * "dx" * indices[j]] = DDA2[i,j]
-            functions["d²A₃" * "dx" * indices[i] * "dx" * indices[j]] = DDA3[i,j]
-            functions["d²b₁" * "dx" * indices[i] * "dx" * indices[j]] = DDb1[i,j]
-            functions["d²b₂" * "dx" * indices[i] * "dx" * indices[j]] = DDb2[i,j]
-            functions["d²b₃" * "dx" * indices[i] * "dx" * indices[j]] = DDb3[i,j]
             functions["d²B"  * "dx" * indices[i] * "dx" * indices[j]] = DDBabs[i,j]
         end
     end
@@ -436,6 +418,8 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     for i in 1:3
         for j in 1:3
             for k in 1:3
+                functions["d²A" * indices[i] * "dx" * indices[j] * "dx" * indices[k]] = DDA[i,j,k]
+                functions["d²b" * indices[i] * "dx" * indices[j] * "dx" * indices[k]] = DDb[i,j,k]
                 functions["dg" * indices[i] * indices[j] * "dx" * indices[k]] = Dg[i,j,k]
             end
         end
