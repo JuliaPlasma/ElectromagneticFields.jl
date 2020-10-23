@@ -153,6 +153,11 @@ end
 function normalize(v, g)
     return v ./ magnitude(v, g)
 end
+
+"Normalises the vector v in the metric g"
+function normalize!(v, g)
+    v ./= magnitude(v, g)
+end
     
 
 """
@@ -288,44 +293,27 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("DD|B|", DDBabs, output, 3)
 
     # compute unit vectors perpendicular to magnetic field
-    dbᶜ = [diff(b¹[3], x[2]) - diff(b¹[2], x[3]),
-           diff(b¹[1], x[3]) - diff(b¹[3], x[1]),
-           diff(b¹[2], x[1]) - diff(b¹[1], x[2])]
-    db² = [ 0         +dbᶜ[3]    -dbᶜ[2];
-            -dbᶜ[3]   0          +dbᶜ[1];
-            +dbᶜ[2]   -dbᶜ[1]    0    ] .* 1//2
-    db¹ = [hodge²¹(db², ginv, Jdet, i) for i in 1:3]
-    dbvec = [covariant_to_contravariant(db¹, ginv, i) for i in 1:3]
-    Avec = [crossproduct(dbvec, bvec, ginv, Jdet, i) for i in 1:3]
-    # Avec = [connection(bvec, bvec, x, gmat, ginv, i) for i in 1:3]
-
-    Amag = magnitude(Avec, gmat)
-    if Amag != 0
-        avec = normalize(Avec, gmat)
-    else
-        if bvec[1] == 0
-            avec = [Basic(1), Basic(0), Basic(0)]
-        elseif bvec[2] == 0
-            avec = [Basic(0), Basic(1), Basic(0)]
-        elseif bvec[3] == 0
-            avec = [Basic(0), Basic(0), Basic(1)]
-        else
-            avec = normalize([crossproduct(bvec, [1, 0, 0], ginv, Jdet, i) for i in 1:3], gmat)
+    avec = [Basic(0), Basic(0), Basic(0)]
+    for tvec ∈ ([Basic(0), Basic(0), Basic(1)],
+                [Basic(1), Basic(0), Basic(0)],
+                [Basic(0), Basic(1), Basic(0)])
+        avec .= [crossproduct(tvec, bvec, ginv, Jdet, i) for i in 1:3]
+        if avec != [Basic(0), Basic(0), Basic(0)]
+            break
         end
     end
-    cvec = normalize([crossproduct(bvec, avec, ginv, Jdet, i) for i in 1:3], gmat)
+    cvec = [crossproduct(bvec, avec, ginv, Jdet, i) for i in 1:3]
+
+    normalize!(avec, gmat)
+    normalize!(cvec, gmat)
 
     # compute components of magnetic unit vectors in physical coordinates
     aphys = DF * avec
     cphys = DF * cvec
-    # aphys = [contravariant_to_physical(avec, DF, i) for i in 1:3]
-    # cphys = [contravariant_to_physical(cvec, DF, i) for i in 1:3]
 
     # compute components of magnetic unit vectors in covariant coordinates
     a¹ = gmat * avec
     c¹ = gmat * cvec
-    # a¹ = [contravariant_to_covariant(avec, gmat, i) for i in 1:3]
-    # c¹ = [contravariant_to_covariant(cvec, gmat, i) for i in 1:3]
 
     # obtain scalar potential
     φ⁰ = φ(x, equ) .+ φ(x, pert)
