@@ -12,6 +12,11 @@ teststring(equ) = structname(string(equ))
 teststring(equ, pert) = structname(string(equ)) * " + " * structname(string(pert))
 
 
+# testing parameters
+const t = 1.
+const ξ = [1.05, 0.5, 0.5]
+
+
 macro test_equilibrium(equilibrium_module, equilibrium_periodicity)
     module_name = string(equilibrium_module)
     module_test = Symbol(module_name * "Test")
@@ -21,10 +26,6 @@ macro test_equilibrium(equilibrium_module, equilibrium_periodicity)
             using Test
             using LinearAlgebra
 
-            # testing parameters
-            t = 1.
-            ξ = [1.05, 0.5, 0.5]
-
             # import analytic field module
             import ElectromagneticFields
             import ElectromagneticFields.$equilibrium_module
@@ -32,9 +33,7 @@ macro test_equilibrium(equilibrium_module, equilibrium_periodicity)
             # inject code
             $equilibrium_module.@code
 
-            # run tests
-            @testset "$(rpad($module_name,60))" begin
-
+            function test_equilibrium(t, ξ)
                 @test X(t, ξ...) == X(t,ξ)
                 @test Y(t, ξ...) == Y(t,ξ)
                 @test Z(t, ξ...) == Z(t,ξ)
@@ -162,6 +161,12 @@ macro test_equilibrium(equilibrium_module, equilibrium_periodicity)
                     end
                 end
             end
+        end
+
+        # run tests
+        @testset "$(rpad($module_name,60))" begin
+            import .$module_test
+            $module_test.test_equilibrium(t, ξ)
         end
     end
 end
