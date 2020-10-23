@@ -25,9 +25,9 @@ module AxisymmetricTokamakCartesian
 
     export  AxisymmetricTokamakCartesianEquilibrium
 
-    const DEFAULT_R₀ = 1.0
-    const DEFAULT_B₀ = 1.0
-    const DEFAULT_q₀ = 2.0
+    const DEFAULT_R₀ = 1
+    const DEFAULT_B₀ = 1
+    const DEFAULT_q₀ = 2
 
     const ITER_R₀ = 6.2
     const ITER_B₀ = 5.3

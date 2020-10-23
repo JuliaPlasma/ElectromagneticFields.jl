@@ -18,9 +18,9 @@ module ABC
 
     export ABCEquilibrium
 
-    const DEFAULT_A = 1.0
-    const DEFAULT_B = 1.0
-    const DEFAULT_C = 1.0
+    const DEFAULT_A = 1
+    const DEFAULT_B = 1
+    const DEFAULT_C = 1
 
     struct ABCEquilibrium{T <: Number} <: CartesianEquilibrium
         name::String
