@@ -319,9 +319,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     φ⁰ = φ(x, equ) .+ φ(x, pert)
 
     # compute components of electric field E
-    E¹ = [diff(-φ⁰, x[1]),
-          diff(-φ⁰, x[2]),
-          diff(-φ⁰, x[3])]
+    E¹ = [diff(-φ⁰, x[i]) for i in 1:3]
     symprint("E¹", E¹, output, 2)
 
     # compute electric field in contravariant coordinates
