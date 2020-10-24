@@ -34,6 +34,14 @@ macro test_equilibrium(equilibrium_module, equilibrium_periodicity)
             $equilibrium_module.@code
 
             function test_equilibrium(t, ξ)
+                @test ξ¹(t, ξ...) == ξ¹(t,ξ)
+                @test ξ²(t, ξ...) == ξ²(t,ξ)
+                @test ξ³(t, ξ...) == ξ³(t,ξ)
+                
+                @test x¹(t, ξ...) == x¹(t,ξ)
+                @test x²(t, ξ...) == x²(t,ξ)
+                @test x³(t, ξ...) == x³(t,ξ)
+
                 @test X(t, ξ...) == X(t,ξ)
                 @test Y(t, ξ...) == Y(t,ξ)
                 @test Z(t, ξ...) == Z(t,ξ)
@@ -86,13 +94,7 @@ macro test_equilibrium(equilibrium_module, equilibrium_periodicity)
                 @test dA₃dx₂(t, ξ...) == dA₃dx₂(t,ξ)
                 @test dA₃dx₃(t, ξ...) == dA₃dx₃(t,ξ)
                 
-                @test ξ¹(t, ξ...) == ξ¹(t,ξ)
-                @test ξ²(t, ξ...) == ξ²(t,ξ)
-                @test ξ³(t, ξ...) == ξ³(t,ξ)
                 
-                @test ξ¹(t, ξ...) == ξ¹(t,ξ)
-                @test ξ²(t, ξ...) == ξ²(t,ξ)
-                @test ξ³(t, ξ...) == ξ³(t,ξ)
                 
                 @test periodicity(t,ξ...) == $equilibrium_periodicity
                 @test periodicity(t,ξ)    == $equilibrium_periodicity
