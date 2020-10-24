@@ -203,6 +203,9 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     Dg = [diff(gmat[i,j], ξ[k]) for i in 1:3, j in 1:3, k in 1:3]
     symprint("Dg", Dg, output, 3)
 
+    Dḡ = [diff(ginv[i,j], ξ[k]) for i in 1:3, j in 1:3, k in 1:3]
+    symprint("Dḡ", Dḡ, output, 3)
+
     # compute Jacobian determinant
     # Jdet² = expand(det(gmat))
     # symprint("J²", Jdet², output, 2)
@@ -401,7 +404,8 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
             for k in 1:3
                 functions["d²A" * indices[i] * "dx" * indices[j] * "dx" * indices[k]] = DDA[i,j,k]
                 functions["d²b" * indices[i] * "dx" * indices[j] * "dx" * indices[k]] = DDb[i,j,k]
-                functions["dg" * indices[i] * indices[j] * "dx" * indices[k]] = Dg[i,j,k]
+                functions["dg" * indices[i]   * indices[j]   * "dx" * indices[k]] = Dg[i,j,k]
+                functions["dg" * indicesup[i] * indicesup[j] * "dx" * indices[k]] = Dḡ[i,j,k]
             end
         end
     end
