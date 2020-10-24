@@ -231,7 +231,7 @@ eq_sol_nstx = ElectromagneticFields.Solovev.NSTX(xpoint=true)
 plot_nstx = plot(eq_sol_nstx, title="NSTX", xlims=(0.05, 2.3), ylims=(-2.25, +2.25), levels=50)
 
 eq_sol_dblx = ElectromagneticFields.Solovev.NSTXdoubleX()
-plot_dblx = plot(eq_sol_nstx, title="NSTX", xlims=(0.05, 2.3), ylims=(-2.25, +2.25), levels=50)
+plot_dblx = plot(eq_sol_dblx, title="NSTX", xlims=(0.05, 2.3), ylims=(-2.25, +2.25), levels=50)
 
 plot(size=(800,400), layout=(1,3), plot_iter, plot_nstx, plot_dblx)
 savefig("solovev_xpoint.png")
