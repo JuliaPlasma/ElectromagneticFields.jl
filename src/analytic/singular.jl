@@ -23,6 +23,7 @@ module Singular
 
     import ..ElectromagneticFields
     import ..ElectromagneticFields: CartesianEquilibrium, code
+    import ..ElectromagneticFields: A₁, A₂, A₃
     import ..AnalyticCartesianField: X, Y, Z
 
     export SingularEquilibrium
@@ -60,6 +61,7 @@ module Singular
     ElectromagneticFields.A₁(x::AbstractVector, equ::SingularEquilibrium) = + equ.B₀ * x[2] / sqrt(x[1]^2 + x[2]^2)^3
     ElectromagneticFields.A₂(x::AbstractVector, equ::SingularEquilibrium) = - equ.B₀ * x[1] / sqrt(x[1]^2 + x[2]^2)^3
     ElectromagneticFields.A₃(x::AbstractVector, equ::SingularEquilibrium) = zero(eltype(x))
+    B(x::AbstractVector, equ::SingularEquilibrium) = equ.B₀ / sqrt(x[1]^2 + x[2]^2)^3
 
     ElectromagneticFields.get_functions(::SingularEquilibrium) = (X=X, Y=Y, Z=Z, R=R, r=r, θ=θ, ϕ=ϕ, r²=r²)
 
@@ -69,13 +71,11 @@ module Singular
                        xlims = (-1., +1.),
                        ylims = (-1., +1.))
 
-        @eval $(code(equ)) # this causes world age problems
-
         xgrid  = LinRange(xlims[1], xlims[2], nx)
         ygrid  = LinRange(ylims[1], ylims[2], ny)
-        pot1   = [A₁(0, xgrid[i], ygrid[j], 0.0) for i in eachindex(xgrid), j in eachindex(ygrid)]
-        pot2   = [A₂(0, xgrid[i], ygrid[j], 0.0) for i in eachindex(xgrid), j in eachindex(ygrid)]
-        Bfield = [B₃(0, xgrid[i], ygrid[j], 0.0) for i in eachindex(xgrid), j in eachindex(ygrid)]
+        pot1   = [A₁([xgrid[i], ygrid[j], 0], equ) for i in eachindex(xgrid), j in eachindex(ygrid)]
+        pot2   = [A₂([xgrid[i], ygrid[j], 0], equ) for i in eachindex(xgrid), j in eachindex(ygrid)]
+        Bfield = [B([xgrid[i], ygrid[j], 0], equ) for i in eachindex(xgrid), j in eachindex(ygrid)]
 
         seriestype   := :contour
         aspect_ratio := :equal

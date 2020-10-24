@@ -14,6 +14,7 @@ module ABC
 
     import ..ElectromagneticFields
     import ..ElectromagneticFields: CartesianEquilibrium, code
+    import ..ElectromagneticFields: A₁, A₂, A₃
     import ..AnalyticCartesianField: X, Y, Z
 
     export ABCEquilibrium
@@ -52,17 +53,16 @@ module ABC
     ElectromagneticFields.A₁(x::AbstractVector, equ::ABCEquilibrium) = equ.a₀ * sin(x[3]) + equ.c₀ * cos(x[2])
     ElectromagneticFields.A₂(x::AbstractVector, equ::ABCEquilibrium) = equ.b₀ * sin(x[1]) + equ.a₀ * cos(x[3])
     ElectromagneticFields.A₃(x::AbstractVector, equ::ABCEquilibrium) = equ.c₀ * sin(x[2]) + equ.b₀ * cos(x[1])
+    B(x::AbstractVector, equ::ABCEquilibrium) = A₁(x,equ)^2 + A₂(x,equ)^2 + A₃(x,equ)^2
 
     ElectromagneticFields.get_functions(::ABCEquilibrium) = (X=X, Y=Y, Z=Z)
 
 
     @recipe function f(equ::ABCEquilibrium; nx=99, ni=div(nx,2)+1, nl=12, size=(400,1200))
-        @eval $(code(equ)) # this causes world age problems
-
         xmin = 0
         xmax = 2π
         grid = LinRange(xmin, xmax, nx)
-        Bfield = [B(0, grid[i], grid[j], grid[k]) for i in eachindex(grid), j in eachindex(grid), k in eachindex(grid)]
+        Bfield = [B([grid[i], grid[j], grid[k]], equ) for i in eachindex(grid), j in eachindex(grid), k in eachindex(grid)]
 
         seriestype   := :contour
         aspect_ratio := :equal
