@@ -96,6 +96,7 @@ macro test_equilibrium(equilibrium_module, equilibrium_periodicity)
                 
                 @test periodicity(t,ξ...) == $equilibrium_periodicity
                 @test periodicity(t,ξ)    == $equilibrium_periodicity
+                @test periodicity(ξ...)   == $equilibrium_periodicity
                 @test periodicity(ξ)      == $equilibrium_periodicity
 
                 # check internal consistency

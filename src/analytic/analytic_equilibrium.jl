@@ -591,6 +591,7 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
     # generate Julia code and export wrapper functions
     f_code = quote
         $(fnesc(:periodicity, escape))(ξ) = $(fnesc(:periodicity, escape))(0, ξ)
+        $(fnesc(:periodicity, escape))(ξ₁, ξ₂, ξ₃) = $(fnesc(:periodicity, escape))(0, ξ₁, ξ₂, ξ₃)
     end
 
     # append f_code to equ_code
