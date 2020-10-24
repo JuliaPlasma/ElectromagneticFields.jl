@@ -278,10 +278,6 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     Db = [diff(b¹[i], ξ[j]) for i in 1:3, j in 1:3]
     symprint("Db", Db, output, 3)
 
-    # compute Jacobian of magnetic unit vector b
-    Db⃗ = [diff(bvec[i], ξ[j]) for i in 1:3, j in 1:3]
-    symprint("Db⃗", Db⃗, output, 3)
-
     # compute second derivative of magnetic unit vector b
     DDb = [diff(diff(b¹[i], ξ[j]), ξ[k]) for i in 1:3, j in 1:3, k in 1:3]
     symprint("DDb", DDb, output, 3)
@@ -393,7 +389,6 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
             functions["dA" * indices[i]   * "dx" * indices[j]] = DA[i,j]
             functions["dB" * indices[i]   * "dx" * indices[j]] = DB[i,j]
             functions["db" * indices[i]   * "dx" * indices[j]] = Db[i,j]
-            functions["db⃗" * indicesup[i] * "dx" * indices[j]] = Db⃗[i,j]
 
             functions["d²B"  * "dx" * indices[i] * "dx" * indices[j]] = DDBabs[i,j]
         end
