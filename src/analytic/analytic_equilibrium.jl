@@ -179,21 +179,20 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     end
 
     # cartesian coordinates
-    x̂ = [x¹(x, equ), x²(x, equ), x³(x, equ)]
+    x̂ = [x¹(ξ, equ), x²(ξ, equ), x³(ξ, equ)]
 
     # curvilinear coordinates
     ξ̂ = [ξ¹(x, equ), ξ²(x, equ), ξ³(x, equ)]
 
     # Jacobian
-    DF = [diff(x̂[i], x[j]) for i in 1:3, j in 1:3]
+    DF = [diff(x̂[i], ξ[j]) for i in 1:3, j in 1:3]
     symprint("DF", DF, output, 2)
 
-    DF̄ = [subs(subs(diff(ξ̂[i], x[j]), x₁=>x¹(ξ, equ), x₂=>x²(ξ, equ), x₃=>x³(ξ, equ)),
-               ξ₁=>x₁, ξ₂=>x₂, ξ₃=>x₃) for i in 1:3, j in 1:3]
+    DF̄ = [subs(diff(ξ̂[i], x[j]), x₁=>x¹(ξ, equ), x₂=>x²(ξ, equ), x₃=>x³(ξ, equ)) for i in 1:3, j in 1:3]
     symprint("DF̄", DF̄, output, 2)
 
     # obtain metric
-    gmat = g(x, equ)
+    gmat = g(ξ, equ)
     symprint("g", gmat, output, 2)
 
     # invert metric
@@ -201,7 +200,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("g⁻¹", ginv, output, 2)
 
     # derivatives of metric coefficients
-    Dg = [diff(gmat[i,j], x[k]) for i in 1:3, j in 1:3, k in 1:3]
+    Dg = [diff(gmat[i,j], ξ[k]) for i in 1:3, j in 1:3, k in 1:3]
     symprint("Dg", Dg, output, 3)
 
     # compute Jacobian determinant
@@ -209,11 +208,11 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     # symprint("J²", Jdet², output, 2)
 
     # Jdet = sqrt(Jdet²)
-    Jdet = J(x, equ)
+    Jdet = J(ξ, equ)
     symprint("J", Jdet, output, 2)
 
     # obtain vector potential
-    A¹ = A(x, equ) .+ A(x, pert)
+    A¹ = A(ξ, equ) .+ A(ξ, pert)
     symprint("A¹", A¹, output, 2)
 
     # compute vector potential in contravariant coordinates
@@ -221,11 +220,11 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("Avec", Avec, output, 2)
 
     # compute Jacobian of vector potential A
-    DA = [(diff(A¹[i], x[j])) for i in 1:3, j in 1:3]
+    DA = [(diff(A¹[i], ξ[j])) for i in 1:3, j in 1:3]
     symprint("DA", DA, output, 3)
 
     # compute second derivative of vector potential A
-    DDA = [diff(DA[i,j], x[k]) for i in 1:3, j in 1:3, k in 1:3]
+    DDA = [diff(DA[i,j], ξ[k]) for i in 1:3, j in 1:3, k in 1:3]
     symprint("DDA", DDA, output, 3)
 
     # compute components of magnetic field B
@@ -269,34 +268,34 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("b⃗", bvec, output, 2)
 
     # compute Jacobian of magnetic field B
-    DB = [diff(B¹[i], x[j]) for i in 1:3, j in 1:3]
+    DB = [diff(B¹[i], ξ[j]) for i in 1:3, j in 1:3]
     symprint("DB", DB, output, 3)
 
     # compute Jacobian of magnetic unit oneform b
-    Db = [diff(b¹[i], x[j]) for i in 1:3, j in 1:3]
+    Db = [diff(b¹[i], ξ[j]) for i in 1:3, j in 1:3]
     symprint("Db", Db, output, 3)
 
     # compute Jacobian of magnetic unit vector b
-    Db⃗ = [diff(bvec[i], x[j]) for i in 1:3, j in 1:3]
+    Db⃗ = [diff(bvec[i], ξ[j]) for i in 1:3, j in 1:3]
     symprint("Db⃗", Db⃗, output, 3)
 
     # compute second derivative of magnetic unit vector b
-    DDb = [diff(diff(b¹[i], x[j]), x[k]) for i in 1:3, j in 1:3, k in 1:3]
+    DDb = [diff(diff(b¹[i], ξ[j]), ξ[k]) for i in 1:3, j in 1:3, k in 1:3]
     symprint("DDb", DDb, output, 3)
 
     # compute first derivatives of absolute value of magnetic field
-    DBabs = [diff(Babs, x[j]) for j in 1:3]
+    DBabs = [diff(Babs, ξ[j]) for j in 1:3]
     symprint("D|B|", DBabs, output, 3)
 
     # compute second derivatives of absolute value of magnetic field
-    DDBabs = [diff(diff(Babs, x[i]), x[j]) for i in 1:3, j in 1:3]
+    DDBabs = [diff(diff(Babs, ξ[i]), ξ[j]) for i in 1:3, j in 1:3]
     symprint("DD|B|", DDBabs, output, 3)
 
     # compute unit vectors perpendicular to magnetic field
     avec = [Basic(0), Basic(0), Basic(0)]
-    for tvec ∈ ([Basic(0), Basic(0), Basic(1)],
-                [Basic(1), Basic(0), Basic(0)],
-                [Basic(0), Basic(1), Basic(0)])
+    for tvec ∈ ([Basic(1), Basic(0), Basic(0)],
+                [Basic(0), Basic(1), Basic(0)],
+                [Basic(0), Basic(0), Basic(1)])
         avec .= [crossproduct(tvec, bvec, ginv, Jdet, i) for i in 1:3]
         if avec != [Basic(0), Basic(0), Basic(0)]
             break
@@ -316,10 +315,10 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     c¹ = gmat * cvec
 
     # obtain scalar potential
-    φ⁰ = φ(x, equ) .+ φ(x, pert)
+    φ⁰ = φ(ξ, equ) .+ φ(ξ, pert)
 
     # compute components of electric field E
-    E¹ = [diff(-φ⁰, x[i]) for i in 1:3]
+    E¹ = [diff(-φ⁰, ξ[i]) for i in 1:3]
     symprint("E¹", E¹, output, 2)
 
     # compute electric field in contravariant coordinates
@@ -334,7 +333,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
 
     try
         for f in pairs(get_functions(equ))
-            functions[string(f[1])] = f[2](x, equ)
+            functions[string(f[1])] = f[2](ξ, equ)
         end
     catch
     end
@@ -344,17 +343,13 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     functions["x²"] = x̂[2]
     functions["x³"] = x̂[3]
 
-    # curvilinear coordinates
-    functions["ξ¹"] = ξ̂[1]
-    functions["ξ²"] = ξ̂[2]
-    functions["ξ³"] = ξ̂[3]
+    # curvilinear coordinates (replacing x with ξ is needed for the code generator)
+    functions["ξ¹"] = subs(ξ̂[1], x₁=>ξ₁, x₂=>ξ₂, x₃=>ξ₃)
+    functions["ξ²"] = subs(ξ̂[2], x₁=>ξ₁, x₂=>ξ₂, x₃=>ξ₃)
+    functions["ξ³"] = subs(ξ̂[3], x₁=>ξ₁, x₂=>ξ₂, x₃=>ξ₃)
 
-    functions["periodicity"] = periodicity([x₁, x₂, x₃], equ)
+    functions["periodicity"] = periodicity([ξ₁, ξ₂, ξ₃], equ)
     
-    # coordinate conversion functions
-    # functions["to_cartesian"] = to_cartesian(x, equ)
-    # functions["from_cartesian"] = from_cartesian(x, equ)
-
     functions["J"] = Jdet
     functions["B"] = Babs
     functions["φ"] = φ⁰
@@ -411,7 +406,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
         end
     end
 
-    t, (x₁, x₂, x₃), functions
+    functions
 end
 
 
@@ -445,7 +440,7 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
         println()
     end
 
-    t, x, functions = generate_equilibrium_functions(equ, pert; output=output)
+    functions = generate_equilibrium_functions(equ, pert; output=output)
 
     equ_code = quote end
 
@@ -474,93 +469,93 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
 
     # add wrapper functions
     functions["a"] = quote
-       [$(fnesc(:a₁, escape))(t, x₁, x₂, x₃),
-        $(fnesc(:a₂, escape))(t, x₁, x₂, x₃),
-        $(fnesc(:a₃, escape))(t, x₁, x₂, x₃)] 
+       [$(fnesc(:a₁, escape))(t, ξ₁, ξ₂, ξ₃),
+        $(fnesc(:a₂, escape))(t, ξ₁, ξ₂, ξ₃),
+        $(fnesc(:a₃, escape))(t, ξ₁, ξ₂, ξ₃)] 
     end
 
     functions["b"] = quote
-       [$(fnesc(:b₁, escape))(t, x₁, x₂, x₃),
-        $(fnesc(:b₂, escape))(t, x₁, x₂, x₃),
-        $(fnesc(:b₃, escape))(t, x₁, x₂, x₃)] 
+       [$(fnesc(:b₁, escape))(t, ξ₁, ξ₂, ξ₃),
+        $(fnesc(:b₂, escape))(t, ξ₁, ξ₂, ξ₃),
+        $(fnesc(:b₃, escape))(t, ξ₁, ξ₂, ξ₃)] 
     end
 
     functions["c"] = quote
-       [$(fnesc(:c₁, escape))(t, x₁, x₂, x₃),
-        $(fnesc(:c₂, escape))(t, x₁, x₂, x₃),
-        $(fnesc(:c₃, escape))(t, x₁, x₂, x₃)] 
+       [$(fnesc(:c₁, escape))(t, ξ₁, ξ₂, ξ₃),
+        $(fnesc(:c₂, escape))(t, ξ₁, ξ₂, ξ₃),
+        $(fnesc(:c₃, escape))(t, ξ₁, ξ₂, ξ₃)] 
     end
 
     functions["aₚ"] = quote
-       [$(fnesc(:a₍₁₎, escape))(t, x₁, x₂, x₃),
-        $(fnesc(:a₍₂₎, escape))(t, x₁, x₂, x₃),
-        $(fnesc(:a₍₃₎, escape))(t, x₁, x₂, x₃)] 
+       [$(fnesc(:a₍₁₎, escape))(t, ξ₁, ξ₂, ξ₃),
+        $(fnesc(:a₍₂₎, escape))(t, ξ₁, ξ₂, ξ₃),
+        $(fnesc(:a₍₃₎, escape))(t, ξ₁, ξ₂, ξ₃)] 
     end
 
     functions["bₚ"] = quote
-       [$(fnesc(:b₍₁₎, escape))(t, x₁, x₂, x₃),
-        $(fnesc(:b₍₂₎, escape))(t, x₁, x₂, x₃),
-        $(fnesc(:b₍₃₎, escape))(t, x₁, x₂, x₃)] 
+       [$(fnesc(:b₍₁₎, escape))(t, ξ₁, ξ₂, ξ₃),
+        $(fnesc(:b₍₂₎, escape))(t, ξ₁, ξ₂, ξ₃),
+        $(fnesc(:b₍₃₎, escape))(t, ξ₁, ξ₂, ξ₃)] 
     end
 
     functions["cₚ"] = quote
-       [$(fnesc(:c₍₁₎, escape))(t, x₁, x₂, x₃),
-        $(fnesc(:c₍₂₎, escape))(t, x₁, x₂, x₃),
-        $(fnesc(:c₍₃₎, escape))(t, x₁, x₂, x₃)] 
+       [$(fnesc(:c₍₁₎, escape))(t, ξ₁, ξ₂, ξ₃),
+        $(fnesc(:c₍₂₎, escape))(t, ξ₁, ξ₂, ξ₃),
+        $(fnesc(:c₍₃₎, escape))(t, ξ₁, ξ₂, ξ₃)] 
     end
 
     functions["a⃗"] = quote
-        [$(fnesc(:a¹, escape))(t, x₁, x₂, x₃),
-         $(fnesc(:a², escape))(t, x₁, x₂, x₃),
-         $(fnesc(:a³, escape))(t, x₁, x₂, x₃)]
+        [$(fnesc(:a¹, escape))(t, ξ₁, ξ₂, ξ₃),
+         $(fnesc(:a², escape))(t, ξ₁, ξ₂, ξ₃),
+         $(fnesc(:a³, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
     functions["b⃗"] = quote
-        [$(fnesc(:b¹, escape))(t, x₁, x₂, x₃),
-         $(fnesc(:b², escape))(t, x₁, x₂, x₃),
-         $(fnesc(:b³, escape))(t, x₁, x₂, x₃)]
+        [$(fnesc(:b¹, escape))(t, ξ₁, ξ₂, ξ₃),
+         $(fnesc(:b², escape))(t, ξ₁, ξ₂, ξ₃),
+         $(fnesc(:b³, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
     functions["c⃗"] = quote
-        [$(fnesc(:c¹, escape))(t, x₁, x₂, x₃),
-         $(fnesc(:c², escape))(t, x₁, x₂, x₃),
-         $(fnesc(:c³, escape))(t, x₁, x₂, x₃)]
+        [$(fnesc(:c¹, escape))(t, ξ₁, ξ₂, ξ₃),
+         $(fnesc(:c², escape))(t, ξ₁, ξ₂, ξ₃),
+         $(fnesc(:c³, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
     functions["from_cartesian"] = quote
-        [$(fnesc(:ξ¹, escape))(t, x₁, x₂, x₃),
-         $(fnesc(:ξ², escape))(t, x₁, x₂, x₃),
-         $(fnesc(:ξ³, escape))(t, x₁, x₂, x₃)]
+        [$(fnesc(:ξ¹, escape))(t, ξ₁, ξ₂, ξ₃),
+         $(fnesc(:ξ², escape))(t, ξ₁, ξ₂, ξ₃),
+         $(fnesc(:ξ³, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
     functions["to_cartesian"] = quote
-        [$(fnesc(:x¹, escape))(t, x₁, x₂, x₃),
-         $(fnesc(:x², escape))(t, x₁, x₂, x₃),
-         $(fnesc(:x³, escape))(t, x₁, x₂, x₃)]
+        [$(fnesc(:x¹, escape))(t, ξ₁, ξ₂, ξ₃),
+         $(fnesc(:x², escape))(t, ξ₁, ξ₂, ξ₃),
+         $(fnesc(:x³, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
     functions["DF"] = quote
-        [$(fnesc(:DF₁₁, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF₁₂, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF₁₃, escape))(t, x₁, x₂, x₃);
-         $(fnesc(:DF₂₁, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF₂₂, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF₂₃, escape))(t, x₁, x₂, x₃);
-         $(fnesc(:DF₃₁, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF₃₂, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF₃₃, escape))(t, x₁, x₂, x₃);]
+        [$(fnesc(:DF₁₁, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF₁₂, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF₁₃, escape))(t, ξ₁, ξ₂, ξ₃);
+         $(fnesc(:DF₂₁, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF₂₂, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF₂₃, escape))(t, ξ₁, ξ₂, ξ₃);
+         $(fnesc(:DF₃₁, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF₃₂, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF₃₃, escape))(t, ξ₁, ξ₂, ξ₃);]
     end
 
     functions["DF̄"] = quote
-        [$(fnesc(:DF̄₁₁, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF̄₁₂, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF̄₁₃, escape))(t, x₁, x₂, x₃);
-         $(fnesc(:DF̄₂₁, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF̄₂₂, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF̄₂₃, escape))(t, x₁, x₂, x₃);
-         $(fnesc(:DF̄₃₁, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF̄₃₂, escape))(t, x₁, x₂, x₃)  $(fnesc(:DF̄₃₃, escape))(t, x₁, x₂, x₃);]
+        [$(fnesc(:DF̄₁₁, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF̄₁₂, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF̄₁₃, escape))(t, ξ₁, ξ₂, ξ₃);
+         $(fnesc(:DF̄₂₁, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF̄₂₂, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF̄₂₃, escape))(t, ξ₁, ξ₂, ξ₃);
+         $(fnesc(:DF̄₃₁, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF̄₃₂, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF̄₃₃, escape))(t, ξ₁, ξ₂, ξ₃);]
     end
     
     functions["g"] = quote
-        [$(fnesc(:g₁₁, escape))(t, x₁, x₂, x₃)  $(fnesc(:g₁₂, escape))(t, x₁, x₂, x₃)  $(fnesc(:g₁₃, escape))(t, x₁, x₂, x₃);
-         $(fnesc(:g₂₁, escape))(t, x₁, x₂, x₃)  $(fnesc(:g₂₂, escape))(t, x₁, x₂, x₃)  $(fnesc(:g₂₃, escape))(t, x₁, x₂, x₃);
-         $(fnesc(:g₃₁, escape))(t, x₁, x₂, x₃)  $(fnesc(:g₃₂, escape))(t, x₁, x₂, x₃)  $(fnesc(:g₃₃, escape))(t, x₁, x₂, x₃);]
+        [$(fnesc(:g₁₁, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g₁₂, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g₁₃, escape))(t, ξ₁, ξ₂, ξ₃);
+         $(fnesc(:g₂₁, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g₂₂, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g₂₃, escape))(t, ξ₁, ξ₂, ξ₃);
+         $(fnesc(:g₃₁, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g₃₂, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g₃₃, escape))(t, ξ₁, ξ₂, ξ₃);]
     end
  
     functions["ḡ"] = quote
-        [$(fnesc(:g¹¹, escape))(t, x₁, x₂, x₃)  $(fnesc(:g¹², escape))(t, x₁, x₂, x₃)  $(fnesc(:g¹³, escape))(t, x₁, x₂, x₃);
-         $(fnesc(:g²¹, escape))(t, x₁, x₂, x₃)  $(fnesc(:g²², escape))(t, x₁, x₂, x₃)  $(fnesc(:g²³, escape))(t, x₁, x₂, x₃);
-         $(fnesc(:g³¹, escape))(t, x₁, x₂, x₃)  $(fnesc(:g³², escape))(t, x₁, x₂, x₃)  $(fnesc(:g³³, escape))(t, x₁, x₂, x₃);]
+        [$(fnesc(:g¹¹, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g¹², escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g¹³, escape))(t, ξ₁, ξ₂, ξ₃);
+         $(fnesc(:g²¹, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g²², escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g²³, escape))(t, ξ₁, ξ₂, ξ₃);
+         $(fnesc(:g³¹, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g³², escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g³³, escape))(t, ξ₁, ξ₂, ξ₃);]
     end        
 
 
@@ -577,11 +572,11 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
 
         f_code = quote
             export $f_symb
-            function $f_symb(t::Real, x₁::Real, x₂::Real, x₃::Real)
+            function $f_symb(t::Real, ξ₁::Real, ξ₂::Real, ξ₃::Real)
                 $f_body
             end
-            function $f_symb(t::Real, x::AbstractVector{<:Real})
-                $f_symb(t,x[1],x[2],x[3])
+            function $f_symb(t::Real, ξ::AbstractVector{<:Real})
+                $f_symb(t,ξ[1],ξ[2],ξ[3])
             end
         end
 
@@ -591,15 +586,13 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
 
     # generate Julia code and export wrapper functions
     f_code = quote
-        $(fnesc(:periodicity, escape))(x::AbstractVector{<:Real}) = $(fnesc(:periodicity, escape))(0, x)
+        $(fnesc(:periodicity, escape))(ξ::AbstractVector{<:Real}) = $(fnesc(:periodicity, escape))(0, ξ)
     end
 
     # append f_code to equ_code
     append!(equ_code.args, f_code.args)
 
     output ≥ 1 ? println() : nothing
-
-    # println(equ_code)
 
     return equ_code
 end
