@@ -12,5 +12,5 @@ makedocs(
 )
 
 deploydocs(
-    repo   = "github.com/DDMGNI/ElectromagneticFields.jl.git"
+    repo   = "github.com/DDMGNI/ElectromagneticFields.jl"
 )
