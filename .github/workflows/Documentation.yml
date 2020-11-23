@@ -15,11 +15,11 @@ jobs:
       - uses: julia-actions/setup-julia@latest
         with:
           version: 1.5
-      - name: set environment variables
+      - name: Set environment variables
         run: echo "PYTHON=''" >> $GITHUB_ENV
       - name: Install dependencies
-        run: julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
+        run: julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); Pkg.build(); Pkg.precompile();'
       - name: Build and deploy Documentation
+        run: julia --project=docs/ docs/make.jl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: julia --project=docs/ docs/make.jl
