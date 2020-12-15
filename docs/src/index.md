@@ -2,6 +2,12 @@
 
 *Common Interface for Electromagnetic Fields*
 
+[![PkgEval Status](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/E/ElectromagneticFields.svg)](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/E/ElectromagneticFields.html)
+![CI](https://github.com/JuliaPlasma/ElectromagneticFields.jl/workflows/CI/badge.svg)
+[![Build Status](https://travis-ci.org/JuliaPlasma/ElectromagneticFields.jl.svg?branch=master)](https://travis-ci.org/JuliaPlasma/ElectromagneticFields.jl)
+[![Coverage Status](https://coveralls.io/repos/github/JuliaPlasma/ElectromagneticFields.jl/badge.svg)](https://coveralls.io/github/JuliaPlasma/ElectromagneticFields.jl)
+[![codecov](https://codecov.io/gh/JuliaPlasma/ElectromagneticFields.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaPlasma/ElectromagneticFields.jl)
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.3662494.svg)](https://doi.org/10.5281/zenodo.3662494)
 
 ## References
 

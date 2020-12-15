@@ -1,7 +1,7 @@
 name = "ElectromagneticFields"
 uuid = "d6c1ba6f-ee03-53af-b876-68cefeb88ec8"
 authors = ["Michael Kraus <michael.kraus@ipp.mpg.de>"]
-version = "0.5.0"
+version = "0.5.1"
 
 [deps]
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
@@ -13,7 +13,7 @@ SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
 
 [compat]
 Combinatorics = "1"
-Documenter = "0.23, 0.24, 0.25"
+Documenter = "0.23, 0.24, 0.25, 0.26"
 LaTeXStrings = "1.0, 1.1, 1.2"
 RecipesBase = "1"
 SymEngine = "0.7, 0.8"
