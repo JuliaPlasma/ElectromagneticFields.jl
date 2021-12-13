@@ -1,5 +1,7 @@
 using Documenter, ElectromagneticFields
 
+ENV["GKSwstype"] = "100"
+
 makedocs(
     sitename = "ElectromagneticFields.jl",
     format = Documenter.HTML(
