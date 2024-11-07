@@ -1,25 +1,38 @@
 name: Documentation
-
 on:
   push:
     branches:
-      - master
+      - main
     tags: '*'
   pull_request:
-
-jobs:
+jobs:  
   build:
+    name: Documentation
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      statuses: write
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: julia-actions/setup-julia@latest
-        with:
-          version: 1.5
-      - name: Set environment variables
-        run: echo "PYTHON=''" >> $GITHUB_ENV
-      - name: Install dependencies
-        run: julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); Pkg.build(); Pkg.precompile();'
-      - name: Build and deploy Documentation
-        run: julia --project=docs/ docs/make.jl
+      - name: Configure doc environment
+        run: |
+          julia --project=docs/ -e '
+            using Pkg
+            Pkg.develop(PackageSpec(path=pwd()))
+            Pkg.instantiate()
+            Pkg.build()
+            Pkg.precompile()'
+      - uses: julia-actions/julia-buildpkg@v1
+      - uses: julia-actions/julia-docdeploy@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
+          GKSwstype: 100
+      - name: Doctests
+        run: |
+          julia --project=docs -e '
+            using Documenter: DocMeta, doctest
+            using ElectromagneticFields
+            DocMeta.setdocmeta!(ElectromagneticFields, :DocTestSetup, :(using ElectromagneticFields); recursive=true)
+            doctest(ElectromagneticFields)'
