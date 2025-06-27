@@ -9,15 +9,15 @@ abstract type AnalyticPerturbation <: AnalyticField end
 function get_functions end
 function get_parameters end
 
-x¹(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("x¹() not implemented for ", ET)
-x²(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("x²() not implemented for ", ET)
-x³(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("x³() not implemented for ", ET)
+x¹(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("x¹() not implemented for ", ET)
+x²(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("x²() not implemented for ", ET)
+x³(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("x³() not implemented for ", ET)
 
-ξ¹(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("ξ¹() not implemented for ", ET)
-ξ²(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("ξ²() not implemented for ", ET)
-ξ³(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("ξ³() not implemented for ", ET)
+ξ¹(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("ξ¹() not implemented for ", ET)
+ξ²(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("ξ²() not implemented for ", ET)
+ξ³(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("ξ³() not implemented for ", ET)
 
-J(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("J() not implemented for ", ET)
+J(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("J() not implemented for ", ET)
 
 g₁₁(::AbstractVector{T}, ::AnalyticField) where {T} = one(T)
 g₁₂(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
@@ -31,23 +31,23 @@ g₃₃(::AbstractVector{T}, ::AnalyticField) where {T} = one(T)
 
 periodicity(x::AbstractVector, ::AnalyticField) = zero(x)
 
-from_cartesian(x::AbstractVector, equ::AnalyticField) = [ξ¹(x,equ), ξ²(x,equ), ξ³(x,equ)]
-to_cartesian(ξ::AbstractVector, equ::AnalyticField) = [x¹(ξ,equ), x²(ξ,equ), x³(ξ,equ)]
+from_cartesian(x::AbstractVector, equ::AnalyticField) = [ξ¹(x, equ), ξ²(x, equ), ξ³(x, equ)]
+to_cartesian(ξ::AbstractVector, equ::AnalyticField) = [x¹(ξ, equ), x²(ξ, equ), x³(ξ, equ)]
 
-A₁(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("A₁() not implemented for ", ET)
-A₂(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("A₂() not implemented for ", ET)
-A₃(::AbstractVector, ::ET) where {ET <: AnalyticField} = error("A₃() not implemented for ", ET)
+A₁(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("A₁() not implemented for ", ET)
+A₂(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("A₂() not implemented for ", ET)
+A₃(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("A₃() not implemented for ", ET)
 
 φ(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
 
 function A(x, equ)
-    [A₁(x,equ), A₂(x,equ), A₃(x,equ)]
+    [A₁(x, equ), A₂(x, equ), A₃(x, equ)]
 end
 
 function g(x, equ)
-    [g₁₁(x,equ)  g₁₂(x,equ)  g₁₃(x,equ);
-     g₂₁(x,equ)  g₂₂(x,equ)  g₂₃(x,equ);
-     g₃₁(x,equ)  g₃₂(x,equ)  g₃₃(x,equ);]
+    [g₁₁(x, equ) g₁₂(x, equ) g₁₃(x, equ);
+        g₂₁(x, equ) g₂₂(x, equ) g₂₃(x, equ);
+        g₃₁(x, equ) g₃₂(x, equ) g₃₃(x, equ)]
 end
 
 
@@ -63,22 +63,22 @@ A₃(::AbstractVector{T}, ::AnalyticPerturbation) where {T} = zero(T)
 
 "Returns the i-th component of the vector corresponding to the one-form α"
 function covariant_to_contravariant(α, g̅, i)
-    g̅[i,1] * α[1] + g̅[i,2] * α[2] + g̅[i,3] * α[3]
+    g̅[i, 1] * α[1] + g̅[i, 2] * α[2] + g̅[i, 3] * α[3]
 end
 
 "Returns the i-th component of the one-form corresponding to the vector v"
 function contravariant_to_covariant(v, g, i)
-    g[i,1] * v[1] + g[i,2] * v[2] + g[i,3] * v[3]
+    g[i, 1] * v[1] + g[i, 2] * v[2] + g[i, 3] * v[3]
 end
 
 "Returns the i-th component of the physical coordinate representation of the one-form α"
 function covariant_to_physical(α, DF̄, i)
-    DF̄[1,i] * α[1] + DF̄[2,i] * α[2] + DF̄[3,i] * α[3]
+    DF̄[1, i] * α[1] + DF̄[2, i] * α[2] + DF̄[3, i] * α[3]
 end
 
 "Returns the i-th component of the physical coordinate representation of the one-form α"
 function contravariant_to_physical(v, DF, i)
-    DF[i,1] * v[1] + DF[i,2] * v[2] + DF[i,3] * v[3]
+    DF[i, 1] * v[1] + DF[i, 2] * v[2] + DF[i, 3] * v[3]
 end
 
 "Returns the m-th component of the one-form corresponding to the two-form β"
@@ -89,22 +89,22 @@ function hodge²¹(β, g̅, J, m)
         for j in 1:3
             for k in 1:3
                 for l in 1:3
-                    α += β[i,j] * g̅[i,k] * g̅[j,l] * levicivita([k,l,m])
+                    α += β[i, j] * g̅[i, k] * g̅[j, l] * levicivita([k, l, m])
                 end
             end
         end
     end
 
-    return J*α
+    return J * α
 end
 
 "Returns the Christoffel symbol Γⱼₖˡ"
 function Γ(g, g̅, x, j, k, l)
     γ = Basic(0)
     for r in 1:3
-        γ += g̅[l,r] * diff(g[r,j], x[k])
-        γ += g̅[l,r] * diff(g[r,k], x[j])
-        γ -= g̅[l,r] * diff(g[j,k], x[r])
+        γ += g̅[l, r] * diff(g[r, j], x[k])
+        γ += g̅[l, r] * diff(g[r, k], x[j])
+        γ -= g̅[l, r] * diff(g[j, k], x[r])
     end
     return 1 // 2 * γ
 end
@@ -115,7 +115,7 @@ function connection(u, v, x, g, g̅, l)
     w = Basic(0)
     for j in 1:3
         for k in 1:3
-            w += u[j] * ( diff(v[l], x[j]) + v[k] * Γ(g, g̅, x, j, k, l) )
+            w += u[j] * (diff(v[l], x[j]) + v[k] * Γ(g, g̅, x, j, k, l))
         end
     end
     return w
@@ -128,12 +128,12 @@ function crossproduct(v, w, g̅, J, l)
     for i in 1:3
         for j in 1:3
             for k in 1:3
-                u += v[i] * w[j] * g̅[k,l] * levicivita([i,j,k])
+                u += v[i] * w[j] * g̅[k, l] * levicivita([i, j, k])
             end
         end
     end
 
-    return J*u
+    return J * u
 end
 
 "Returns the length of the vector v"
@@ -142,7 +142,7 @@ function magnitude(v, g)
 
     for i in 1:3
         for j in 1:3
-            l += v[i] * g[i,j] * v[j]
+            l += v[i] * g[i, j] * v[j]
         end
     end
 
@@ -158,7 +158,7 @@ end
 function normalize!(v, g)
     v ./= magnitude(v, g)
 end
-    
+
 
 """
 Generate functions for evaluating analytic equilibria.
@@ -174,8 +174,8 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
 
     # check for compatible metric
     if typeof(pert) != ZeroPerturbation
-        @assert J(x,equ) == J(x,pert)
-        @assert g(x,equ) == g(x,pert)
+        @assert J(x, equ) == J(x, pert)
+        @assert g(x, equ) == g(x, pert)
     end
 
     # cartesian coordinates
@@ -188,7 +188,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     DF = [diff(x̂[i], ξ[j]) for i in 1:3, j in 1:3]
     symprint("DF", DF, output, 2)
 
-    DF̄ = [subs(diff(ξ̂[i], x[j]), x₁=>x¹(ξ, equ), x₂=>x²(ξ, equ), x₃=>x³(ξ, equ)) for i in 1:3, j in 1:3]
+    DF̄ = [subs(diff(ξ̂[i], x[j]), x₁ => x¹(ξ, equ), x₂ => x²(ξ, equ), x₃ => x³(ξ, equ)) for i in 1:3, j in 1:3]
     symprint("DF̄", DF̄, output, 2)
 
     # obtain metric
@@ -200,10 +200,10 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("g⁻¹", ginv, output, 2)
 
     # derivatives of metric coefficients
-    Dg = [diff(gmat[i,j], ξ[k]) for i in 1:3, j in 1:3, k in 1:3]
+    Dg = [diff(gmat[i, j], ξ[k]) for i in 1:3, j in 1:3, k in 1:3]
     symprint("Dg", Dg, output, 3)
 
-    Dḡ = [diff(ginv[i,j], ξ[k]) for i in 1:3, j in 1:3, k in 1:3]
+    Dḡ = [diff(ginv[i, j], ξ[k]) for i in 1:3, j in 1:3, k in 1:3]
     symprint("Dḡ", Dḡ, output, 3)
 
     # compute Jacobian determinant
@@ -227,19 +227,19 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("DA", DA, output, 3)
 
     # compute second derivative of vector potential A
-    DDA = [diff(DA[i,j], ξ[k]) for i in 1:3, j in 1:3, k in 1:3]
+    DDA = [diff(DA[i, j], ξ[k]) for i in 1:3, j in 1:3, k in 1:3]
     symprint("DDA", DDA, output, 3)
 
     # compute components of magnetic field B
-    Bᶜ = [DA[3,2] - DA[2,3],
-          DA[1,3] - DA[3,1],
-          DA[2,1] - DA[1,2]]
+    Bᶜ = [DA[3, 2] - DA[2, 3],
+        DA[1, 3] - DA[3, 1],
+        DA[2, 1] - DA[1, 2]]
     symprint("Bᶜ", Bᶜ, output, 2)
 
     # compute magnetic field two-form B²
-    B² = [ 0      +Bᶜ[3]    -Bᶜ[2];
-          -Bᶜ[3]   0        +Bᶜ[1];
-          +Bᶜ[2]   -Bᶜ[1]    0    ] .* 1//2
+    B² = [0 +Bᶜ[3] -Bᶜ[2];
+        -Bᶜ[3] 0 +Bᶜ[1];
+        +Bᶜ[2] -Bᶜ[1] 0] .* 1 // 2
     symprint("B²", B², output, 2)
 
     # compute magnetic field one-form B¹ = ⋆B²
@@ -278,6 +278,10 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     Db = [diff(b¹[i], ξ[j]) for i in 1:3, j in 1:3]
     symprint("Db", Db, output, 3)
 
+    # compute Jacobian of unit magnetic field in physical coordinates
+    Dbphys = [diff(bphys[i], ξ[j]) for i in 1:3, j in 1:3]
+    symprint("Db̂", Dbphys, output, 3)
+
     # compute second derivative of magnetic unit vector b
     DDb = [diff(diff(b¹[i], ξ[j]), ξ[k]) for i in 1:3, j in 1:3, k in 1:3]
     symprint("DDb", DDb, output, 3)
@@ -293,8 +297,8 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     # compute unit vectors perpendicular to magnetic field
     avec = [Basic(0), Basic(0), Basic(0)]
     for tvec ∈ ([Basic(1), Basic(0), Basic(0)],
-                [Basic(0), Basic(1), Basic(0)],
-                [Basic(0), Basic(0), Basic(1)])
+        [Basic(0), Basic(1), Basic(0)],
+        [Basic(0), Basic(0), Basic(1)])
         avec .= [crossproduct(tvec, bvec, ginv, Jdet, i) for i in 1:3]
         if avec != [Basic(0), Basic(0), Basic(0)]
             break
@@ -326,7 +330,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
 
     # collect all functions to generate code for
     functions = Dict{String,Any}()
-    indices   = ["₁", "₂", "₃"]
+    indices = ["₁", "₂", "₃"]
     indicesup = ["¹", "²", "³"]
     indicesph = ["₍₁₎", "₍₂₎", "₍₃₎"]
 
@@ -343,64 +347,65 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     functions["x³"] = x̂[3]
 
     # curvilinear coordinates (replacing x with ξ is needed for the code generator)
-    functions["ξ¹"] = subs(ξ̂[1], x₁=>ξ₁, x₂=>ξ₂, x₃=>ξ₃)
-    functions["ξ²"] = subs(ξ̂[2], x₁=>ξ₁, x₂=>ξ₂, x₃=>ξ₃)
-    functions["ξ³"] = subs(ξ̂[3], x₁=>ξ₁, x₂=>ξ₂, x₃=>ξ₃)
+    functions["ξ¹"] = subs(ξ̂[1], x₁ => ξ₁, x₂ => ξ₂, x₃ => ξ₃)
+    functions["ξ²"] = subs(ξ̂[2], x₁ => ξ₁, x₂ => ξ₂, x₃ => ξ₃)
+    functions["ξ³"] = subs(ξ̂[3], x₁ => ξ₁, x₂ => ξ₂, x₃ => ξ₃)
 
     functions["periodicity"] = periodicity([ξ₁, ξ₂, ξ₃], equ)
-    
+
     functions["J"] = Jdet
     functions["B"] = Babs
     functions["φ"] = φ⁰
 
     for i in 1:3
-        functions["A" * indices[i]] = A¹[i]
-        functions["B" * indices[i]] = B¹[i]
-        functions["a" * indices[i]] = a¹[i]
-        functions["b" * indices[i]] = b¹[i]
-        functions["c" * indices[i]] = c¹[i]
-        functions["E" * indices[i]] = E¹[i]
+        functions["A"*indices[i]] = A¹[i]
+        functions["B"*indices[i]] = B¹[i]
+        functions["a"*indices[i]] = a¹[i]
+        functions["b"*indices[i]] = b¹[i]
+        functions["c"*indices[i]] = c¹[i]
+        functions["E"*indices[i]] = E¹[i]
 
-        functions["B" * indicesph[i]] = Bphys[i]
-        functions["a" * indicesph[i]] = aphys[i]
-        functions["b" * indicesph[i]] = bphys[i]
-        functions["c" * indicesph[i]] = cphys[i]
+        functions["B"*indicesph[i]] = Bphys[i]
+        functions["a"*indicesph[i]] = aphys[i]
+        functions["b"*indicesph[i]] = bphys[i]
+        functions["c"*indicesph[i]] = cphys[i]
 
-        functions["A" * indicesup[i]] = Avec[i]
-        functions["B" * indicesup[i]] = Bvec[i]
-        functions["a" * indicesup[i]] = avec[i]
-        functions["b" * indicesup[i]] = bvec[i]
-        functions["c" * indicesup[i]] = cvec[i]
-        functions["E" * indicesup[i]] = Evec[i]
+        functions["A"*indicesup[i]] = Avec[i]
+        functions["B"*indicesup[i]] = Bvec[i]
+        functions["a"*indicesup[i]] = avec[i]
+        functions["b"*indicesup[i]] = bvec[i]
+        functions["c"*indicesup[i]] = cvec[i]
+        functions["E"*indicesup[i]] = Evec[i]
 
-        functions["dBdx" * indices[i]] = DBabs[i]
+        functions["dBdx"*indices[i]] = DBabs[i]
     end
 
     for i in 1:3
         for j in 1:3
-            functions["g"  * indices[i]   * indices[j]]   = gmat[i,j]
-            functions["g"  * indicesup[i] * indicesup[j]] = ginv[i,j]
+            functions["g"*indices[i]*indices[j]] = gmat[i, j]
+            functions["g"*indicesup[i]*indicesup[j]] = ginv[i, j]
 
-            functions["DF" * indices[i]   * indices[j]]   = DF[i,j]
-            functions["DF̄" * indices[i]   * indices[j]]   = DF̄[i,j]
+            functions["DF"*indices[i]*indices[j]] = DF[i, j]
+            functions["DF̄"*indices[i]*indices[j]] = DF̄[i, j]
 
-            functions["B"  * indices[i]   * indices[j]]   = B²[i,j]
+            functions["B"*indices[i]*indices[j]] = B²[i, j]
 
-            functions["dA" * indices[i]   * "dx" * indices[j]] = DA[i,j]
-            functions["dB" * indices[i]   * "dx" * indices[j]] = DB[i,j]
-            functions["db" * indices[i]   * "dx" * indices[j]] = Db[i,j]
+            functions["dA"*indices[i]*"dx"*indices[j]] = DA[i, j]
+            functions["dB"*indices[i]*"dx"*indices[j]] = DB[i, j]
+            functions["db"*indices[i]*"dx"*indices[j]] = Db[i, j]
+            functions["db"*indicesph[i]*"dx"*indices[j]] = Dbphys[i, j]
 
-            functions["d²B"  * "dx" * indices[i] * "dx" * indices[j]] = DDBabs[i,j]
+            functions["d²B"*"dx"*indices[i]*"dx"*indices[j]] = DDBabs[i, j]
         end
     end
 
     for i in 1:3
         for j in 1:3
             for k in 1:3
-                functions["d²A" * indices[i] * "dx" * indices[j] * "dx" * indices[k]] = DDA[i,j,k]
-                functions["d²b" * indices[i] * "dx" * indices[j] * "dx" * indices[k]] = DDb[i,j,k]
-                functions["dg" * indices[i]   * indices[j]   * "dx" * indices[k]] = Dg[i,j,k]
-                functions["dg" * indicesup[i] * indicesup[j] * "dx" * indices[k]] = Dḡ[i,j,k]
+                functions["d²A"*indices[i]*"dx"*indices[j]*"dx"*indices[k]] = DDA[i, j, k]
+                functions["d²b"*indices[i]*"dx"*indices[j]*"dx"*indices[k]] = DDb[i, j, k]
+                functions["dg"*indices[i]*indices[j]*"dx"*indices[k]] = Dg[i, j, k]
+                functions["dg"*indicesup[i]*indicesup[j]*"dx"*indices[k]] = Dḡ[i, j, k]
             end
         end
     end
@@ -410,8 +415,8 @@ end
 
 
 function replace_expr!(e, old, new)
-    for (i,a) in enumerate(e.args)
-        if a==old
+    for (i, a) in enumerate(e.args)
+        if a == old
             e.args[i] = new
         elseif a isa Expr
             replace_expr!(a, old, new)
@@ -445,7 +450,7 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
 
     # generate Julia code and export parameters
     if export_parameters
-        try 
+        try
             global parameters = get_parameters(equ)
         catch
             global parameters = fieldnames(typeof(equ))
@@ -468,94 +473,94 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
 
     # add wrapper functions
     functions["a"] = quote
-       [$(fnesc(:a₁, escape))(t, ξ₁, ξ₂, ξ₃),
-        $(fnesc(:a₂, escape))(t, ξ₁, ξ₂, ξ₃),
-        $(fnesc(:a₃, escape))(t, ξ₁, ξ₂, ξ₃)] 
+        [$(fnesc(:a₁, escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:a₂, escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:a₃, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
     functions["b"] = quote
-       [$(fnesc(:b₁, escape))(t, ξ₁, ξ₂, ξ₃),
-        $(fnesc(:b₂, escape))(t, ξ₁, ξ₂, ξ₃),
-        $(fnesc(:b₃, escape))(t, ξ₁, ξ₂, ξ₃)] 
+        [$(fnesc(:b₁, escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:b₂, escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:b₃, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
     functions["c"] = quote
-       [$(fnesc(:c₁, escape))(t, ξ₁, ξ₂, ξ₃),
-        $(fnesc(:c₂, escape))(t, ξ₁, ξ₂, ξ₃),
-        $(fnesc(:c₃, escape))(t, ξ₁, ξ₂, ξ₃)] 
+        [$(fnesc(:c₁, escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:c₂, escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:c₃, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
     functions["aₚ"] = quote
-       [$(fnesc(:a₍₁₎, escape))(t, ξ₁, ξ₂, ξ₃),
-        $(fnesc(:a₍₂₎, escape))(t, ξ₁, ξ₂, ξ₃),
-        $(fnesc(:a₍₃₎, escape))(t, ξ₁, ξ₂, ξ₃)] 
+        [$(fnesc(:a₍₁₎, escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:a₍₂₎, escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:a₍₃₎, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
     functions["bₚ"] = quote
-       [$(fnesc(:b₍₁₎, escape))(t, ξ₁, ξ₂, ξ₃),
-        $(fnesc(:b₍₂₎, escape))(t, ξ₁, ξ₂, ξ₃),
-        $(fnesc(:b₍₃₎, escape))(t, ξ₁, ξ₂, ξ₃)] 
+        [$(fnesc(:b₍₁₎, escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:b₍₂₎, escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:b₍₃₎, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
     functions["cₚ"] = quote
-       [$(fnesc(:c₍₁₎, escape))(t, ξ₁, ξ₂, ξ₃),
-        $(fnesc(:c₍₂₎, escape))(t, ξ₁, ξ₂, ξ₃),
-        $(fnesc(:c₍₃₎, escape))(t, ξ₁, ξ₂, ξ₃)] 
+        [$(fnesc(:c₍₁₎, escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:c₍₂₎, escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:c₍₃₎, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
     functions["a⃗"] = quote
         [$(fnesc(:a¹, escape))(t, ξ₁, ξ₂, ξ₃),
-         $(fnesc(:a², escape))(t, ξ₁, ξ₂, ξ₃),
-         $(fnesc(:a³, escape))(t, ξ₁, ξ₂, ξ₃)]
+            $(fnesc(:a², escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:a³, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
     functions["b⃗"] = quote
         [$(fnesc(:b¹, escape))(t, ξ₁, ξ₂, ξ₃),
-         $(fnesc(:b², escape))(t, ξ₁, ξ₂, ξ₃),
-         $(fnesc(:b³, escape))(t, ξ₁, ξ₂, ξ₃)]
+            $(fnesc(:b², escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:b³, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
     functions["c⃗"] = quote
         [$(fnesc(:c¹, escape))(t, ξ₁, ξ₂, ξ₃),
-         $(fnesc(:c², escape))(t, ξ₁, ξ₂, ξ₃),
-         $(fnesc(:c³, escape))(t, ξ₁, ξ₂, ξ₃)]
+            $(fnesc(:c², escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:c³, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
     functions["from_cartesian"] = quote
         [$(fnesc(:ξ¹, escape))(t, ξ₁, ξ₂, ξ₃),
-         $(fnesc(:ξ², escape))(t, ξ₁, ξ₂, ξ₃),
-         $(fnesc(:ξ³, escape))(t, ξ₁, ξ₂, ξ₃)]
+            $(fnesc(:ξ², escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:ξ³, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
     functions["to_cartesian"] = quote
         [$(fnesc(:x¹, escape))(t, ξ₁, ξ₂, ξ₃),
-         $(fnesc(:x², escape))(t, ξ₁, ξ₂, ξ₃),
-         $(fnesc(:x³, escape))(t, ξ₁, ξ₂, ξ₃)]
+            $(fnesc(:x², escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:x³, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
     functions["DF"] = quote
-        [$(fnesc(:DF₁₁, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF₁₂, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF₁₃, escape))(t, ξ₁, ξ₂, ξ₃);
-         $(fnesc(:DF₂₁, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF₂₂, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF₂₃, escape))(t, ξ₁, ξ₂, ξ₃);
-         $(fnesc(:DF₃₁, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF₃₂, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF₃₃, escape))(t, ξ₁, ξ₂, ξ₃);]
+        [$(fnesc(:DF₁₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF₁₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF₁₃, escape))(t, ξ₁, ξ₂, ξ₃);
+            $(fnesc(:DF₂₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF₂₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF₂₃, escape))(t, ξ₁, ξ₂, ξ₃);
+            $(fnesc(:DF₃₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF₃₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF₃₃, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
     functions["DF̄"] = quote
-        [$(fnesc(:DF̄₁₁, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF̄₁₂, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF̄₁₃, escape))(t, ξ₁, ξ₂, ξ₃);
-         $(fnesc(:DF̄₂₁, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF̄₂₂, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF̄₂₃, escape))(t, ξ₁, ξ₂, ξ₃);
-         $(fnesc(:DF̄₃₁, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF̄₃₂, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:DF̄₃₃, escape))(t, ξ₁, ξ₂, ξ₃);]
+        [$(fnesc(:DF̄₁₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF̄₁₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF̄₁₃, escape))(t, ξ₁, ξ₂, ξ₃);
+            $(fnesc(:DF̄₂₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF̄₂₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF̄₂₃, escape))(t, ξ₁, ξ₂, ξ₃);
+            $(fnesc(:DF̄₃₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF̄₃₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF̄₃₃, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
-    
+
     functions["g"] = quote
-        [$(fnesc(:g₁₁, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g₁₂, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g₁₃, escape))(t, ξ₁, ξ₂, ξ₃);
-         $(fnesc(:g₂₁, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g₂₂, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g₂₃, escape))(t, ξ₁, ξ₂, ξ₃);
-         $(fnesc(:g₃₁, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g₃₂, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g₃₃, escape))(t, ξ₁, ξ₂, ξ₃);]
+        [$(fnesc(:g₁₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g₁₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g₁₃, escape))(t, ξ₁, ξ₂, ξ₃);
+            $(fnesc(:g₂₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g₂₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g₂₃, escape))(t, ξ₁, ξ₂, ξ₃);
+            $(fnesc(:g₃₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g₃₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g₃₃, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
- 
+
     functions["ḡ"] = quote
-        [$(fnesc(:g¹¹, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g¹², escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g¹³, escape))(t, ξ₁, ξ₂, ξ₃);
-         $(fnesc(:g²¹, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g²², escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g²³, escape))(t, ξ₁, ξ₂, ξ₃);
-         $(fnesc(:g³¹, escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g³², escape))(t, ξ₁, ξ₂, ξ₃)  $(fnesc(:g³³, escape))(t, ξ₁, ξ₂, ξ₃);]
-    end        
+        [$(fnesc(:g¹¹, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g¹², escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g¹³, escape))(t, ξ₁, ξ₂, ξ₃);
+            $(fnesc(:g²¹, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g²², escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g²³, escape))(t, ξ₁, ξ₂, ξ₃);
+            $(fnesc(:g³¹, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g³², escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g³³, escape))(t, ξ₁, ξ₂, ξ₃)]
+    end
 
 
     # generate Julia code and export functions
@@ -575,7 +580,7 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
                 $f_body
             end
             function $f_symb(t, ξ)
-                $f_symb(t,ξ[1],ξ[2],ξ[3])
+                $f_symb(t, ξ[1], ξ[2], ξ[3])
             end
         end
 

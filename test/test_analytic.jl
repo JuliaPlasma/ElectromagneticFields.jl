@@ -37,7 +37,7 @@ macro test_equilibrium(equilibrium_module, equilibrium_periodicity)
                 @test ξ¹(t, ξ...) == ξ¹(t,ξ)
                 @test ξ²(t, ξ...) == ξ²(t,ξ)
                 @test ξ³(t, ξ...) == ξ³(t,ξ)
-                
+
                 @test x¹(t, ξ...) == x¹(t,ξ)
                 @test x²(t, ξ...) == x²(t,ξ)
                 @test x³(t, ξ...) == x³(t,ξ)
@@ -91,7 +91,7 @@ macro test_equilibrium(equilibrium_module, equilibrium_periodicity)
                 @test dg₃₁dx₁(t, ξ...) == dg₃₁dx₁(t, ξ)
                 @test dg₃₂dx₁(t, ξ...) == dg₃₂dx₁(t, ξ)
                 @test dg₃₃dx₁(t, ξ...) == dg₃₃dx₁(t, ξ)
-                
+
                 @test dg₁₁dx₂(t, ξ...) == dg₁₁dx₂(t, ξ)
                 @test dg₁₂dx₂(t, ξ...) == dg₁₂dx₂(t, ξ)
                 @test dg₁₃dx₂(t, ξ...) == dg₁₃dx₂(t, ξ)
@@ -101,7 +101,7 @@ macro test_equilibrium(equilibrium_module, equilibrium_periodicity)
                 @test dg₃₁dx₂(t, ξ...) == dg₃₁dx₂(t, ξ)
                 @test dg₃₂dx₂(t, ξ...) == dg₃₂dx₂(t, ξ)
                 @test dg₃₃dx₂(t, ξ...) == dg₃₃dx₂(t, ξ)
-                
+
                 @test dg₁₁dx₃(t, ξ...) == dg₁₁dx₃(t, ξ)
                 @test dg₁₂dx₃(t, ξ...) == dg₁₂dx₃(t, ξ)
                 @test dg₁₃dx₃(t, ξ...) == dg₁₃dx₃(t, ξ)
@@ -111,7 +111,7 @@ macro test_equilibrium(equilibrium_module, equilibrium_periodicity)
                 @test dg₃₁dx₃(t, ξ...) == dg₃₁dx₃(t, ξ)
                 @test dg₃₂dx₃(t, ξ...) == dg₃₂dx₃(t, ξ)
                 @test dg₃₃dx₃(t, ξ...) == dg₃₃dx₃(t, ξ)
-                
+
                 @test dg¹¹dx₁(t, ξ...) == dg¹¹dx₁(t,ξ)
                 @test dg¹²dx₁(t, ξ...) == dg¹²dx₁(t,ξ)
                 @test dg¹³dx₁(t, ξ...) == dg¹³dx₁(t,ξ)
@@ -253,15 +253,15 @@ macro test_equilibrium(equilibrium_module, equilibrium_periodicity)
                 @test dBdx₁(t, ξ...) == dBdx₁(t,ξ)
                 @test dBdx₂(t, ξ...) == dBdx₂(t,ξ)
                 @test dBdx₃(t, ξ...) == dBdx₃(t,ξ)
-                
+
                 @test d²A₁dx₁dx₁(t, ξ...) == d²A₁dx₁dx₁(t,ξ)
                 @test d²A₁dx₁dx₂(t, ξ...) == d²A₁dx₁dx₂(t,ξ)
                 @test d²A₁dx₁dx₃(t, ξ...) == d²A₁dx₁dx₃(t,ξ)
-                
+
                 @test d²A₁dx₂dx₁(t, ξ...) == d²A₁dx₂dx₁(t,ξ)
                 @test d²A₁dx₂dx₂(t, ξ...) == d²A₁dx₂dx₂(t,ξ)
                 @test d²A₁dx₂dx₃(t, ξ...) == d²A₁dx₂dx₃(t,ξ)
-                
+
                 @test d²A₁dx₃dx₁(t, ξ...) == d²A₁dx₃dx₁(t,ξ)
                 @test d²A₁dx₃dx₂(t, ξ...) == d²A₁dx₃dx₂(t,ξ)
                 @test d²A₁dx₃dx₃(t, ξ...) == d²A₁dx₃dx₃(t,ξ)
@@ -269,23 +269,23 @@ macro test_equilibrium(equilibrium_module, equilibrium_periodicity)
                 @test d²A₂dx₁dx₁(t, ξ...) == d²A₂dx₁dx₁(t,ξ)
                 @test d²A₂dx₁dx₂(t, ξ...) == d²A₂dx₁dx₂(t,ξ)
                 @test d²A₂dx₁dx₃(t, ξ...) == d²A₂dx₁dx₃(t,ξ)
-                
+
                 @test d²A₂dx₂dx₁(t, ξ...) == d²A₂dx₂dx₁(t,ξ)
                 @test d²A₂dx₂dx₂(t, ξ...) == d²A₂dx₂dx₂(t,ξ)
                 @test d²A₂dx₂dx₃(t, ξ...) == d²A₂dx₂dx₃(t,ξ)
-                
+
                 @test d²A₂dx₃dx₁(t, ξ...) == d²A₂dx₃dx₁(t,ξ)
                 @test d²A₂dx₃dx₂(t, ξ...) == d²A₂dx₃dx₂(t,ξ)
                 @test d²A₂dx₃dx₃(t, ξ...) == d²A₂dx₃dx₃(t,ξ)
-                
+
                 @test d²A₃dx₁dx₁(t, ξ...) == d²A₃dx₁dx₁(t,ξ)
                 @test d²A₃dx₁dx₂(t, ξ...) == d²A₃dx₁dx₂(t,ξ)
                 @test d²A₃dx₁dx₃(t, ξ...) == d²A₃dx₁dx₃(t,ξ)
-                
+
                 @test d²A₃dx₂dx₁(t, ξ...) == d²A₃dx₂dx₁(t,ξ)
                 @test d²A₃dx₂dx₂(t, ξ...) == d²A₃dx₂dx₂(t,ξ)
                 @test d²A₃dx₂dx₃(t, ξ...) == d²A₃dx₂dx₃(t,ξ)
-                
+
                 @test d²A₃dx₃dx₁(t, ξ...) == d²A₃dx₃dx₁(t,ξ)
                 @test d²A₃dx₃dx₂(t, ξ...) == d²A₃dx₃dx₂(t,ξ)
                 @test d²A₃dx₃dx₃(t, ξ...) == d²A₃dx₃dx₃(t,ξ)
@@ -293,11 +293,11 @@ macro test_equilibrium(equilibrium_module, equilibrium_periodicity)
                 @test d²b₁dx₁dx₁(t, ξ...) == d²b₁dx₁dx₁(t,ξ)
                 @test d²b₁dx₁dx₂(t, ξ...) == d²b₁dx₁dx₂(t,ξ)
                 @test d²b₁dx₁dx₃(t, ξ...) == d²b₁dx₁dx₃(t,ξ)
-                
+
                 @test d²b₁dx₂dx₁(t, ξ...) == d²b₁dx₂dx₁(t,ξ)
                 @test d²b₁dx₂dx₂(t, ξ...) == d²b₁dx₂dx₂(t,ξ)
                 @test d²b₁dx₂dx₃(t, ξ...) == d²b₁dx₂dx₃(t,ξ)
-                
+
                 @test d²b₁dx₃dx₁(t, ξ...) == d²b₁dx₃dx₁(t,ξ)
                 @test d²b₁dx₃dx₂(t, ξ...) == d²b₁dx₃dx₂(t,ξ)
                 @test d²b₁dx₃dx₃(t, ξ...) == d²b₁dx₃dx₃(t,ξ)
@@ -305,39 +305,39 @@ macro test_equilibrium(equilibrium_module, equilibrium_periodicity)
                 @test d²b₂dx₁dx₁(t, ξ...) == d²b₂dx₁dx₁(t,ξ)
                 @test d²b₂dx₁dx₂(t, ξ...) == d²b₂dx₁dx₂(t,ξ)
                 @test d²b₂dx₁dx₃(t, ξ...) == d²b₂dx₁dx₃(t,ξ)
-                
+
                 @test d²b₂dx₂dx₁(t, ξ...) == d²b₂dx₂dx₁(t,ξ)
                 @test d²b₂dx₂dx₂(t, ξ...) == d²b₂dx₂dx₂(t,ξ)
                 @test d²b₂dx₂dx₃(t, ξ...) == d²b₂dx₂dx₃(t,ξ)
-                
+
                 @test d²b₂dx₃dx₁(t, ξ...) == d²b₂dx₃dx₁(t,ξ)
                 @test d²b₂dx₃dx₂(t, ξ...) == d²b₂dx₃dx₂(t,ξ)
                 @test d²b₂dx₃dx₃(t, ξ...) == d²b₂dx₃dx₃(t,ξ)
-                
+
                 @test d²b₃dx₁dx₁(t, ξ...) == d²b₃dx₁dx₁(t,ξ)
                 @test d²b₃dx₁dx₂(t, ξ...) == d²b₃dx₁dx₂(t,ξ)
                 @test d²b₃dx₁dx₃(t, ξ...) == d²b₃dx₁dx₃(t,ξ)
-                
+
                 @test d²b₃dx₂dx₁(t, ξ...) == d²b₃dx₂dx₁(t,ξ)
                 @test d²b₃dx₂dx₂(t, ξ...) == d²b₃dx₂dx₂(t,ξ)
                 @test d²b₃dx₂dx₃(t, ξ...) == d²b₃dx₂dx₃(t,ξ)
-                
+
                 @test d²b₃dx₃dx₁(t, ξ...) == d²b₃dx₃dx₁(t,ξ)
                 @test d²b₃dx₃dx₂(t, ξ...) == d²b₃dx₃dx₂(t,ξ)
                 @test d²b₃dx₃dx₃(t, ξ...) == d²b₃dx₃dx₃(t,ξ)
-                
+
                 @test d²Bdx₁dx₁(t, ξ...) == d²Bdx₁dx₁(t,ξ)
                 @test d²Bdx₁dx₂(t, ξ...) == d²Bdx₁dx₂(t,ξ)
                 @test d²Bdx₁dx₃(t, ξ...) == d²Bdx₁dx₃(t,ξ)
-                
+
                 @test d²Bdx₂dx₁(t, ξ...) == d²Bdx₂dx₁(t,ξ)
                 @test d²Bdx₂dx₂(t, ξ...) == d²Bdx₂dx₂(t,ξ)
                 @test d²Bdx₂dx₃(t, ξ...) == d²Bdx₂dx₃(t,ξ)
-                
+
                 @test d²Bdx₃dx₁(t, ξ...) == d²Bdx₃dx₁(t,ξ)
                 @test d²Bdx₃dx₂(t, ξ...) == d²Bdx₃dx₂(t,ξ)
                 @test d²Bdx₃dx₃(t, ξ...) == d²Bdx₃dx₃(t,ξ)
-                
+
                 @test periodicity(t,ξ...) == $equilibrium_periodicity
                 @test periodicity(t,ξ)    == $equilibrium_periodicity
                 @test periodicity(ξ...)   == $equilibrium_periodicity
@@ -437,6 +437,7 @@ perts = (
 @test_equilibrium PenningTrapUniform                            [0., 0., 0.]
 @test_equilibrium PenningTrapBottle                             [0., 0., 0.]
 @test_equilibrium PenningTrapAsymmetric                         [0., 0., 0.]
+@test_equilibrium QuadraticPotentials                           [0., 0., 0.]
 @test_equilibrium Singular                                      [0., 0., 0.]
 @test_equilibrium SymmetricQuadratic                            [0., 0., 0.]
 @test_equilibrium ThetaPinch                                    [0., 0., 0.]

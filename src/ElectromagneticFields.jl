@@ -16,14 +16,15 @@ module ElectromagneticFields
 
     using .AnalyticCartesianField
 
-    export ABC, EzCosZ, 
+    export ABC, EzCosZ,
            AxisymmetricTokamakCartesian,
            AxisymmetricTokamakCylindrical,
            AxisymmetricTokamakToroidal,
            AxisymmetricTokamakToroidalRegularization,
            Solovev, SolovevXpoint, SolovevSymmetric,
            Singular, SymmetricQuadratic, ThetaPinch,
-           PenningTrapUniform, PenningTrapBottle, PenningTrapAsymmetric
+           PenningTrapUniform, PenningTrapBottle, PenningTrapAsymmetric,
+           QuadraticPotentials
 
     include("analytic/abc.jl")
     include("analytic/axisymmetric_tokamak_cartesian.jl")
@@ -34,6 +35,7 @@ module ElectromagneticFields
     include("analytic/penning_trap_asymmetric.jl")
     include("analytic/penning_trap_bottle.jl")
     include("analytic/penning_trap_uniform.jl")
+    include("analytic/quadratic_potentials.jl")
     include("analytic/solovev_abstract.jl")
     include("analytic/solovev.jl")
     include("analytic/solovev_symmetric.jl")

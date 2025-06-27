@@ -114,6 +114,27 @@ PenningTrapAsymmetric
 
 
 
+## Quadratic Potentials
+```@docs
+QuadraticPotentials
+```
+```@eval
+using Plots
+using ElectromagneticFields
+
+eq_toy = ElectromagneticFields.QuadraticPotentials.init()
+plot(eq_toy)
+savefig("quadratic-potentials.png")
+
+nothing
+```
+
+Vector potential components:
+
+![](quadratic-potentials.png)
+
+
+
 ## Singular Magnetic Field
 
 ```@docs
@@ -264,5 +285,3 @@ nothing
 Vector potential components:
 
 ![](theta_pinch.png)
-
-
