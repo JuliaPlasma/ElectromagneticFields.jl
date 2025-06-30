@@ -90,6 +90,27 @@ Vector potential in y direction:
 
 
 
+## Dipole
+```@docs
+Dipole
+```
+```@eval
+using Plots
+using ElectromagneticFields
+
+eq_dipole = ElectromagneticFields.Dipole.init()
+plot(eq_dipole)
+savefig("dipole.png")
+
+nothing
+```
+
+Vector potential components:
+
+![](dipole.png)
+
+
+
 ## Penning Trap with Uniform Magnetic Field
 
 ```@docs
@@ -122,8 +143,8 @@ QuadraticPotentials
 using Plots
 using ElectromagneticFields
 
-eq_toy = ElectromagneticFields.QuadraticPotentials.init()
-plot(eq_toy)
+eq_quadratic = ElectromagneticFields.QuadraticPotentials.init()
+plot(eq_quadratic)
 savefig("quadratic-potentials.png")
 
 nothing
