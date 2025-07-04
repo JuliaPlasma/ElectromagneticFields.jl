@@ -9,7 +9,7 @@ A (x,y,z) = \frac{B₀}{r^3} \big( y , \, -x , \, 0 \big)^T ,
 ```
 resulting in the magnetic field with covariant components
 ```math
-B (x,y,z) = - B₀ \bigg( \frac{3xz}{r^5}, \, \frac{3yz}{r^5}, \, \frac{2z^2 - x^2 - y^2}{r^5} \bigg)^T .
+B (x,y,z) = - \frac{B₀}{r^5} \big( 3xz, \, 3yz, \, 2z^2 - x^2 - y^2 \big)^T .
 ```
 """
 module Dipole
