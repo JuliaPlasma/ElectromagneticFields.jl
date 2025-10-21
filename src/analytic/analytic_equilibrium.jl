@@ -29,7 +29,16 @@ g₃₁(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
 g₃₂(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
 g₃₃(::AbstractVector{T}, ::AnalyticField) where {T} = one(T)
 
-periodicity(x::AbstractVector, ::AnalyticField) = zero(x)
+minx¹(ξ::AbstractVector{T}, equ::AnalyticField) where {T} = -T(Inf)
+minx²(ξ::AbstractVector{T}, equ::AnalyticField) where {T} = -T(Inf)
+minx³(ξ::AbstractVector{T}, equ::AnalyticField) where {T} = -T(Inf)
+
+maxx¹(ξ::AbstractVector{T}, equ::AnalyticField) where {T} = +T(Inf)
+maxx²(ξ::AbstractVector{T}, equ::AnalyticField) where {T} = +T(Inf)
+maxx³(ξ::AbstractVector{T}, equ::AnalyticField) where {T} = +T(Inf)
+
+
+periodicity(x::AbstractVector{T}, ::AnalyticField) where {T} = (-Inf * ones(T, 4), +Inf * ones(T, 4))
 
 from_cartesian(x::AbstractVector, equ::AnalyticField) = [ξ¹(x, equ), ξ²(x, equ), ξ³(x, equ)]
 to_cartesian(ξ::AbstractVector, equ::AnalyticField) = [x¹(ξ, equ), x²(ξ, equ), x³(ξ, equ)]
@@ -183,6 +192,10 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
 
     # curvilinear coordinates
     ξ̂ = [ξ¹(x, equ), ξ²(x, equ), ξ³(x, equ)]
+
+    # ranges
+    minx̂ = [minx¹(ξ, equ), minx²(ξ, equ), minx³(ξ, equ)]
+    maxx̂ = [maxx¹(ξ, equ), maxx²(ξ, equ), maxx³(ξ, equ)]
 
     # Jacobian
     DF = [diff(x̂[i], ξ[j]) for i in 1:3, j in 1:3]
@@ -351,7 +364,13 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     functions["ξ²"] = subs(ξ̂[2], x₁ => ξ₁, x₂ => ξ₂, x₃ => ξ₃)
     functions["ξ³"] = subs(ξ̂[3], x₁ => ξ₁, x₂ => ξ₂, x₃ => ξ₃)
 
-    functions["periodicity"] = periodicity([ξ₁, ξ₂, ξ₃], equ)
+    # ranges
+    functions["minx¹"] = minx̂[1]
+    functions["minx²"] = minx̂[2]
+    functions["minx³"] = minx̂[3]
+    functions["maxx¹"] = maxx̂[1]
+    functions["maxx²"] = maxx̂[2]
+    functions["maxx³"] = maxx̂[3]
 
     functions["J"] = Jdet
     functions["B"] = Babs
@@ -538,6 +557,18 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
             $(fnesc(:x³, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
+    functions["rangemin"] = quote
+        [$(fnesc(:minx¹, escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:minx², escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:minx³, escape))(t, ξ₁, ξ₂, ξ₃)]
+    end
+
+    functions["rangemax"] = quote
+        [$(fnesc(:maxx¹, escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:maxx², escape))(t, ξ₁, ξ₂, ξ₃),
+            $(fnesc(:maxx³, escape))(t, ξ₁, ξ₂, ξ₃)]
+    end
+
     functions["DF"] = quote
         [$(fnesc(:DF₁₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF₁₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF₁₃, escape))(t, ξ₁, ξ₂, ξ₃);
             $(fnesc(:DF₂₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF₂₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF₂₃, escape))(t, ξ₁, ξ₂, ξ₃);
@@ -590,8 +621,10 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
 
     # generate Julia code and export wrapper functions
     f_code = quote
-        $(fnesc(:periodicity, escape))(ξ) = $(fnesc(:periodicity, escape))(0, ξ)
-        $(fnesc(:periodicity, escape))(ξ₁, ξ₂, ξ₃) = $(fnesc(:periodicity, escape))(0, ξ₁, ξ₂, ξ₃)
+        $(fnesc(:rangemin, escape))(ξ) = $(fnesc(:rangemin, escape))(0, ξ)
+        $(fnesc(:rangemax, escape))(ξ) = $(fnesc(:rangemax, escape))(0, ξ)
+        $(fnesc(:rangemin, escape))(ξ₁, ξ₂, ξ₃) = $(fnesc(:rangemin, escape))(0, ξ₁, ξ₂, ξ₃)
+        $(fnesc(:rangemax, escape))(ξ₁, ξ₂, ξ₃) = $(fnesc(:rangemax, escape))(0, ξ₁, ξ₂, ξ₃)
     end
 
     # append f_code to equ_code

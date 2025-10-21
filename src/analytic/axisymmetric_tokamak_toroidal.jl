@@ -17,110 +17,108 @@ Parameters:
 """
 module AxisymmetricTokamakToroidal
 
-    using RecipesBase
+using RecipesBase
 
-    import ..ElectromagneticFields
-    import ..ElectromagneticFields: AnalyticEquilibrium, code
+import ..ElectromagneticFields
+import ..ElectromagneticFields: AnalyticEquilibrium, code
 
-    export  AxisymmetricTokamakToroidalEquilibrium
+export AxisymmetricTokamakToroidalEquilibrium
 
-    const DEFAULT_R₀ = 1.0
-    const DEFAULT_B₀ = 1.0
-    const DEFAULT_q₀ = 2.0
+const DEFAULT_R₀ = 1.0
+const DEFAULT_B₀ = 1.0
+const DEFAULT_q₀ = 2.0
 
-    struct AxisymmetricTokamakToroidalEquilibrium{T <: Number} <: AnalyticEquilibrium
-        name::String
-        R₀::T
-        B₀::T
-        q₀::T
+struct AxisymmetricTokamakToroidalEquilibrium{T<:Number} <: AnalyticEquilibrium
+    name::String
+    R₀::T
+    B₀::T
+    q₀::T
 
-        function AxisymmetricTokamakToroidalEquilibrium{T}(R₀::T, B₀::T, q₀::T) where T <: Number
-            new("AxisymmetricTokamakEquilibriumToroidal", R₀, B₀, q₀)
-        end
+    function AxisymmetricTokamakToroidalEquilibrium{T}(R₀::T, B₀::T, q₀::T) where {T<:Number}
+        new("AxisymmetricTokamakEquilibriumToroidal", R₀, B₀, q₀)
     end
+end
 
-    AxisymmetricTokamakToroidalEquilibrium(R₀::T=DEFAULT_R₀, B₀::T=DEFAULT_B₀, q₀::T=DEFAULT_q₀) where T <: Number = AxisymmetricTokamakToroidalEquilibrium{T}(R₀, B₀, q₀)
+AxisymmetricTokamakToroidalEquilibrium(R₀::T=DEFAULT_R₀, B₀::T=DEFAULT_B₀, q₀::T=DEFAULT_q₀) where {T<:Number} = AxisymmetricTokamakToroidalEquilibrium{T}(R₀, B₀, q₀)
 
-    function init(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, q₀=DEFAULT_q₀)
-        AxisymmetricTokamakToroidalEquilibrium(R₀, B₀, q₀)
-    end
+function init(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, q₀=DEFAULT_q₀)
+    AxisymmetricTokamakToroidalEquilibrium(R₀, B₀, q₀)
+end
 
-    function ITER()
-        AxisymmetricTokamakToroidalEquilibrium(ITER_R₀, ITER_B₀, ITER_q₀)
-    end
+function ITER()
+    AxisymmetricTokamakToroidalEquilibrium(ITER_R₀, ITER_B₀, ITER_q₀)
+end
 
-    macro code(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, q₀=DEFAULT_q₀)
-        code(init(R₀, B₀, q₀); escape=true)
-    end
+macro code(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, q₀=DEFAULT_q₀)
+    code(init(R₀, B₀, q₀); escape=true)
+end
 
-    macro code_iter()
-        code(ITER(); escape=true)
-    end
-    
-    function Base.show(io::IO, equ::AxisymmetricTokamakToroidalEquilibrium)
-        print(io, "Axisymmetric Tokamak Equilibrium in Toroidal Coordinates with\n")
-        print(io, "  R₀ = ", equ.R₀, "\n")
-        print(io, "  B₀ = ", equ.B₀, "\n")
-        print(io, "  q₀ = ", equ.q₀)
-    end
+macro code_iter()
+    code(ITER(); escape=true)
+end
 
-
-    r(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = x[1]
-    θ(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = x[2]
-    ϕ(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = x[3]
-    R(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = equ.R₀ + r(x,equ) * cos(θ(x,equ))
-    X(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = R(x,equ) * cos(ϕ(x,equ))
-    Y(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = R(x,equ) * sin(ϕ(x,equ))
-    Z(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = r(x,equ) * sin(θ(x,equ))
-
-    ElectromagneticFields.J(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = r(x,equ) * R(x,equ)
-    
-    ElectromagneticFields.A₁(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = + equ.B₀ * equ.R₀ * ( Z(x,equ) / R(x,equ) * cos(θ(x,equ)) - log(R(x,equ) / equ.R₀) * sin(θ(x,equ)) ) / 2
-    ElectromagneticFields.A₂(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = - equ.B₀ * equ.R₀ * ( Z(x,equ) / R(x,equ) * sin(θ(x,equ)) + log(R(x,equ) / equ.R₀) * cos(θ(x,equ)) ) * r(x,equ) / 2
-    ElectromagneticFields.A₃(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = + equ.B₀ * r(x,equ)^2 / equ.q₀ / 2
-
-    ElectromagneticFields.x¹(ξ::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = X(ξ,equ)
-    ElectromagneticFields.x²(ξ::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = Y(ξ,equ)
-    ElectromagneticFields.x³(ξ::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = Z(ξ,equ)
-
-    ElectromagneticFields.ξ¹(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = sqrt((sqrt(x[1]^2 + x[2]^2)-equ.R₀)^2 + x[3]^2)
-    ElectromagneticFields.ξ²(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = atan(x[3], sqrt(x[1]^2 + x[2]^2)-equ.R₀)
-    ElectromagneticFields.ξ³(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = atan(x[2], x[1])
-
-    ElectromagneticFields.g₁₁(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = one(eltype(x))
-    ElectromagneticFields.g₂₂(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = r(x, equ)^2
-    ElectromagneticFields.g₃₃(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = R(x, equ)^2
-
-    ElectromagneticFields.get_functions(::AxisymmetricTokamakToroidalEquilibrium) = (X=X, Y=Y, Z=Z, R=R, r=r, θ=θ, ϕ=ϕ)
-
-    function ElectromagneticFields.periodicity(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium)
-        p = zero(x)
-        p[2] = 2π
-        p[3] = 2π
-        return p
-    end
+function Base.show(io::IO, equ::AxisymmetricTokamakToroidalEquilibrium)
+    print(io, "Axisymmetric Tokamak Equilibrium in Toroidal Coordinates with\n")
+    print(io, "  R₀ = ", equ.R₀, "\n")
+    print(io, "  B₀ = ", equ.B₀, "\n")
+    print(io, "  q₀ = ", equ.q₀)
+end
 
 
-    @recipe function f(equ::AxisymmetricTokamakToroidalEquilibrium;
-                       nx = 100, ny = 120, levels = 50, size = (400,400),
-                       xlims = (  0.5 * equ.R₀,   1.5 * equ.R₀),
-                       ylims = (- 0.5 * equ.R₀, + 0.5 * equ.R₀))
+r(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = x[1]
+θ(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = x[2]
+ϕ(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = x[3]
+R(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = equ.R₀ + r(x, equ) * cos(θ(x, equ))
+X(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = R(x, equ) * cos(ϕ(x, equ))
+Y(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = R(x, equ) * sin(ϕ(x, equ))
+Z(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = r(x, equ) * sin(θ(x, equ))
 
-        xgrid = LinRange(xlims[1], xlims[2], nx)
-        zgrid = LinRange(ylims[1], ylims[2], ny)
-        rgrid = [ElectromagneticFields.ξ¹([xgrid[i], 0.0, zgrid[j]], equ) for i in eachindex(xgrid), j in eachindex(zgrid)]
-        θgrid = [ElectromagneticFields.ξ²([xgrid[i], 0.0, zgrid[j]], equ) for i in eachindex(xgrid), j in eachindex(zgrid)]
-        pot   = [ElectromagneticFields.A₃([rgrid[i,j], θgrid[i,j], 0.0], equ) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
+ElectromagneticFields.J(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = r(x, equ) * R(x, equ)
 
-        seriestype   := :contour
-        aspect_ratio := :equal
-        size   := size
-        xlims  := xlims
-        ylims  := ylims
-        levels := levels
-        legend := :none
+ElectromagneticFields.A₁(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = +equ.B₀ * equ.R₀ * (Z(x, equ) / R(x, equ) * cos(θ(x, equ)) - log(R(x, equ) / equ.R₀) * sin(θ(x, equ))) / 2
+ElectromagneticFields.A₂(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = -equ.B₀ * equ.R₀ * (Z(x, equ) / R(x, equ) * sin(θ(x, equ)) + log(R(x, equ) / equ.R₀) * cos(θ(x, equ))) * r(x, equ) / 2
+ElectromagneticFields.A₃(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = +equ.B₀ * r(x, equ)^2 / equ.q₀ / 2
 
-        (xgrid, zgrid, pot')
-    end
-    
+ElectromagneticFields.x¹(ξ::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = X(ξ, equ)
+ElectromagneticFields.x²(ξ::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = Y(ξ, equ)
+ElectromagneticFields.x³(ξ::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = Z(ξ, equ)
+
+ElectromagneticFields.ξ¹(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = sqrt((sqrt(x[1]^2 + x[2]^2) - equ.R₀)^2 + x[3]^2)
+ElectromagneticFields.ξ²(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = atan(x[3], sqrt(x[1]^2 + x[2]^2) - equ.R₀)
+ElectromagneticFields.ξ³(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = atan(x[2], x[1])
+
+ElectromagneticFields.g₁₁(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = one(eltype(x))
+ElectromagneticFields.g₂₂(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = r(x, equ)^2
+ElectromagneticFields.g₃₃(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = R(x, equ)^2
+
+ElectromagneticFields.get_functions(::AxisymmetricTokamakToroidalEquilibrium) = (X=X, Y=Y, Z=Z, R=R, r=r, θ=θ, ϕ=ϕ)
+
+ElectromagneticFields.minx²(ξ::AbstractVector{T}, equ::AxisymmetricTokamakToroidalEquilibrium) where {T} = T(0)
+ElectromagneticFields.minx³(ξ::AbstractVector{T}, equ::AxisymmetricTokamakToroidalEquilibrium) where {T} = T(0)
+ElectromagneticFields.maxx²(ξ::AbstractVector{T}, equ::AxisymmetricTokamakToroidalEquilibrium) where {T} = T(2π)
+ElectromagneticFields.maxx³(ξ::AbstractVector{T}, equ::AxisymmetricTokamakToroidalEquilibrium) where {T} = T(2π)
+
+
+@recipe function f(equ::AxisymmetricTokamakToroidalEquilibrium;
+    nx=100, ny=120, levels=50, size=(400, 400),
+    xlims=(0.5 * equ.R₀, 1.5 * equ.R₀),
+    ylims=(-0.5 * equ.R₀, +0.5 * equ.R₀))
+
+    xgrid = LinRange(xlims[1], xlims[2], nx)
+    zgrid = LinRange(ylims[1], ylims[2], ny)
+    rgrid = [ElectromagneticFields.ξ¹([xgrid[i], 0.0, zgrid[j]], equ) for i in eachindex(xgrid), j in eachindex(zgrid)]
+    θgrid = [ElectromagneticFields.ξ²([xgrid[i], 0.0, zgrid[j]], equ) for i in eachindex(xgrid), j in eachindex(zgrid)]
+    pot = [ElectromagneticFields.A₃([rgrid[i, j], θgrid[i, j], 0.0], equ) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
+
+    seriestype := :contour
+    aspect_ratio := :equal
+    size := size
+    xlims := xlims
+    ylims := ylims
+    levels := levels
+    legend := :none
+
+    (xgrid, zgrid, pot')
+end
+
 end

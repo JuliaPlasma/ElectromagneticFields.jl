@@ -17,7 +17,7 @@ const t = 1.0
 const ξ = [1.05, 0.5, 0.5]
 
 
-macro test_equilibrium(equilibrium_module, equilibrium_periodicity)
+macro test_equilibrium(equilibrium_module, equilibrium_rangemin, equilibrium_rangemax)
     module_name = string(equilibrium_module)
     module_test = Symbol(module_name * "Test")
 
@@ -338,10 +338,15 @@ macro test_equilibrium(equilibrium_module, equilibrium_periodicity)
             @test d²Bdx₃dx₂(t, ξ...) == d²Bdx₃dx₂(t, ξ)
             @test d²Bdx₃dx₃(t, ξ...) == d²Bdx₃dx₃(t, ξ)
 
-            @test periodicity(t, ξ...) == $equilibrium_periodicity
-            @test periodicity(t, ξ) == $equilibrium_periodicity
-            @test periodicity(ξ...) == $equilibrium_periodicity
-            @test periodicity(ξ) == $equilibrium_periodicity
+            @test rangemin(t, ξ...) == $equilibrium_rangemin
+            @test rangemin(t, ξ) == $equilibrium_rangemin
+            @test rangemin(ξ...) == $equilibrium_rangemin
+            @test rangemin(ξ) == $equilibrium_rangemin
+
+            @test rangemax(t, ξ...) == $equilibrium_rangemax
+            @test rangemax(t, ξ) == $equilibrium_rangemax
+            @test rangemax(ξ...) == $equilibrium_rangemax
+            @test rangemax(ξ) == $equilibrium_rangemax
 
             # check internal consistency
             @test from_cartesian(t, to_cartesian(t, ξ)) ≈ ξ atol = 1E-14
@@ -429,26 +434,26 @@ perts = (
 
 # test equilibria
 
-@test_equilibrium ABC [0.0, 0.0, 0.0]
-@test_equilibrium AxisymmetricTokamakCartesian [0.0, 0.0, 0.0]
-@test_equilibrium AxisymmetricTokamakCylindrical [0.0, 0.0, 2π]
-@test_equilibrium AxisymmetricTokamakToroidal [0.0, 2π, 2π]
-@test_equilibrium AxisymmetricTokamakToroidalRegularization [0.0, 2π, 2π]
-@test_equilibrium Dipole [0.0, 0.0, 0.0]
-@test_equilibrium PenningTrapUniform [0.0, 0.0, 0.0]
-@test_equilibrium PenningTrapBottle [0.0, 0.0, 0.0]
-@test_equilibrium PenningTrapAsymmetric [0.0, 0.0, 0.0]
-@test_equilibrium QuadraticPotentials [0.0, 0.0, 0.0]
-@test_equilibrium Singular [0.0, 0.0, 0.0]
-@test_equilibrium SymmetricQuadratic [0.0, 0.0, 0.0]
-@test_equilibrium ThetaPinch [0.0, 0.0, 0.0]
+@test_equilibrium ABC [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
+@test_equilibrium AxisymmetricTokamakCartesian [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
+@test_equilibrium AxisymmetricTokamakCylindrical [-Inf, -Inf, 0.0] [+Inf, +Inf, 2π]
+@test_equilibrium AxisymmetricTokamakToroidal [-Inf, 0.0, 0.0] [+Inf, 2π, 2π]
+@test_equilibrium AxisymmetricTokamakToroidalRegularization [-Inf, 0.0, 0.0] [+Inf, 2π, 2π]
+@test_equilibrium Dipole [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
+@test_equilibrium PenningTrapUniform [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
+@test_equilibrium PenningTrapBottle [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
+@test_equilibrium PenningTrapAsymmetric [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
+@test_equilibrium QuadraticPotentials [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
+@test_equilibrium Singular [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
+@test_equilibrium SymmetricQuadratic [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
+@test_equilibrium ThetaPinch [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
 # @test_equilibrium SolovevFRC                                    [0., 0., 2π]
-@test_equilibrium SolovevITER [0.0, 0.0, 2π]
-@test_equilibrium SolovevITERwXpoint [0.0, 0.0, 2π]
-@test_equilibrium SolovevNSTX [0.0, 0.0, 2π]
-@test_equilibrium SolovevNSTXwXpoint [0.0, 0.0, 2π]
-@test_equilibrium SolovevNSTXwDoubleXpoint [0.0, 0.0, 2π]
-@test_equilibrium SolovevSymmetric [0.0, 0.0, 0.0]
+@test_equilibrium SolovevITER [-Inf, -Inf, 0.0] [+Inf, +Inf, 2π]
+@test_equilibrium SolovevITERwXpoint [-Inf, -Inf, 0.0] [+Inf, +Inf, 2π]
+@test_equilibrium SolovevNSTX [-Inf, -Inf, 0.0] [+Inf, +Inf, 2π]
+@test_equilibrium SolovevNSTXwXpoint [-Inf, -Inf, 0.0] [+Inf, +Inf, 2π]
+@test_equilibrium SolovevNSTXwDoubleXpoint [-Inf, -Inf, 0.0] [+Inf, +Inf, 2π]
+@test_equilibrium SolovevSymmetric [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
 println()
 
 
