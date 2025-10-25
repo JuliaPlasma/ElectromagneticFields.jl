@@ -219,6 +219,12 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     Dḡ = [diff(ginv[i, j], ξ[k]) for i in 1:3, j in 1:3, k in 1:3]
     symprint("Dḡ", Dḡ, output, 3)
 
+    DDg = [diff(diff(gmat[i, j], ξ[k]), ξ[l]) for i in 1:3, j in 1:3, k in 1:3, l in 1:3]
+    symprint("DDg", DDg, output, 3)
+
+    DDḡ = [diff(diff(ginv[i, j], ξ[k]), ξ[l]) for i in 1:3, j in 1:3, k in 1:3, l in 1:3]
+    symprint("DDḡ", DDḡ, output, 3)
+
     # compute Jacobian determinant
     # Jdet² = expand(det(gmat))
     # symprint("J²", Jdet², output, 2)
@@ -337,6 +343,10 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     E¹ = [diff(-φ⁰, ξ[i]) for i in 1:3]
     symprint("E¹", E¹, output, 2)
 
+    # compute Jacobian of electric field E
+    DE = [(diff(E¹[i], ξ[j])) for i in 1:3, j in 1:3]
+    symprint("DE", DE, output, 3)
+
     # compute electric field in contravariant coordinates
     Evec = [covariant_to_contravariant(E¹, ginv, i) for i in 1:3]
     symprint("Evec", Evec, output, 2)
@@ -413,6 +423,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
             functions["dB"*indices[i]*"dx"*indices[j]] = DB[i, j]
             functions["db"*indices[i]*"dx"*indices[j]] = Db[i, j]
             functions["db"*indicesph[i]*"dx"*indices[j]] = Dbphys[i, j]
+            functions["dE"*indices[i]*"dx"*indices[j]] = DE[i, j]
 
             functions["d²B"*"dx"*indices[i]*"dx"*indices[j]] = DDBabs[i, j]
         end
@@ -425,6 +436,10 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
                 functions["d²b"*indices[i]*"dx"*indices[j]*"dx"*indices[k]] = DDb[i, j, k]
                 functions["dg"*indices[i]*indices[j]*"dx"*indices[k]] = Dg[i, j, k]
                 functions["dg"*indicesup[i]*indicesup[j]*"dx"*indices[k]] = Dḡ[i, j, k]
+                for l in 1:3
+                    functions["d²g"*indices[i]*indices[j]*"dx"*indices[k]*"dx"*indices[l]] = DDg[i, j, k, l]
+                    functions["d²g"*indicesup[i]*indicesup[j]*"dx"*indices[k]*"dx"*indices[l]] = DDḡ[i, j, k, l]
+                end
             end
         end
     end
