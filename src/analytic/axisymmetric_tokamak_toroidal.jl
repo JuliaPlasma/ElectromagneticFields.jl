@@ -19,6 +19,8 @@ module AxisymmetricTokamakToroidal
 
 using RecipesBase
 
+import NaNMath: log
+
 import ..ElectromagneticFields
 import ..ElectromagneticFields: AnalyticEquilibrium, code
 

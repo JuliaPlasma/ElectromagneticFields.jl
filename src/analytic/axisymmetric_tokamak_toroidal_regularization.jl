@@ -17,6 +17,8 @@ Parameters:
 """
 module AxisymmetricTokamakToroidalRegularization
 
+import NaNMath: log
+
 import ..ElectromagneticFields
 import ..ElectromagneticFields: AnalyticEquilibrium, code
 

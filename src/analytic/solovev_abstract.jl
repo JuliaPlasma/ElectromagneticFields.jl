@@ -1,5 +1,7 @@
 module SolovevAbstract
 
+import NaNMath: log
+
 import ..ElectromagneticFields
 import ..ElectromagneticFields: AnalyticEquilibrium, AnalyticPerturbation
 
