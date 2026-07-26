@@ -598,4 +598,97 @@ end
     test_consistency_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidalTest, AxisymmetricTokamakCartesianTest)
 end
 
+
+# `code` runs every SymEngine-derived body through `eliminate_common_subexpressions`, which is only
+# safe because it names subexpressions rather than rewriting them. That claim is what is checked
+# here — that the eliminated block still denotes the very same expression — for every generated
+# function of every equilibrium.
+#
+# Structurally rather than numerically, because the numeric alternative does not scale. Comparing
+# values means compiling both versions of all ~440 functions per equilibrium, and `d²b₁dx₁dx₁` alone
+# is 6231 statements before elimination; a numeric sweep over the Solov'ev equilibria does not
+# finish. The structural identity is also the stronger statement — it holds at every point at once,
+# rather than at whichever sample points the test happened to choose.
+#
+# The comparison never materialises the expansion. Both expressions are interned into one table keyed
+# by structure — a call by its head and the ids of its arguments, a leaf by its type and value — with
+# each temporary resolving to the id its right-hand side was given. Two expressions land on the same
+# id exactly when they are structurally identical, so the block denotes the body iff its last
+# statement interns to the body's root id, and that is linear in the size of the expression.
+#
+# Substituting the temporaries back and comparing trees is the obvious alternative, and is quadratic:
+# each definition would hold the full expansion of its own subtree, so the work is the sum of all of
+# them. It does not finish on the Solov'ev second derivatives.
+function same_expression(body::Expr, block::Expr)
+    ids = Dict{Any,Int}()
+    next_id = Ref(0)
+
+    intern(key) = get!(() -> (next_id[] += 1), ids, key)
+
+    visit(e, env) =
+        e isa Symbol && haskey(env, e) ? env[e] :
+        e isa Expr && e.head === :call ?
+        intern(Any[e.args[1]; Int[visit(a, env) for a in @view e.args[2:end]]]) :
+        intern((typeof(e), e))
+
+    root = visit(body, Dict{Symbol,Int}())
+
+    environment = Dict{Symbol,Int}()
+    value = 0
+
+    for statement in block.args
+        if statement isa Expr && statement.head === :(=)
+            environment[statement.args[1]] = visit(statement.args[2], environment)
+        else
+            value = visit(statement, environment)
+        end
+    end
+
+    value == root
+end
+
+# The same equilibria `@test_equilibrium` covers above, and for the same reason in the one case it
+# skips: `SolovevFRC` is `SolovevEquilibrium(0.0, 0.0, 0.99, 10.0, 0.7, 0.0)`, and with `R₀ = 0` the
+# flux function degenerates and `generate_equilibrium_functions` does not return.
+const cse_equilibria = (
+    ("ABC", ElectromagneticFields.ABC.init()),
+    ("AxisymmetricTokamakCartesian", ElectromagneticFields.AxisymmetricTokamakCartesian.init()),
+    ("AxisymmetricTokamakCylindrical", ElectromagneticFields.AxisymmetricTokamakCylindrical.init()),
+    ("AxisymmetricTokamakToroidal", ElectromagneticFields.AxisymmetricTokamakToroidal.init()),
+    ("AxisymmetricTokamakToroidalRegularization", ElectromagneticFields.AxisymmetricTokamakToroidalRegularization.init()),
+    ("Dipole", ElectromagneticFields.Dipole.init()),
+    ("PenningTrapUniform", ElectromagneticFields.PenningTrapUniform.init()),
+    ("PenningTrapBottle", ElectromagneticFields.PenningTrapBottle.init()),
+    ("PenningTrapAsymmetric", ElectromagneticFields.PenningTrapAsymmetric.init()),
+    ("QuadraticPotentials", ElectromagneticFields.QuadraticPotentials.init()),
+    ("Singular", ElectromagneticFields.Singular.init()),
+    ("SolovevITER", ElectromagneticFields.Solovev.ITER()),
+    ("SolovevITERwXpoint", ElectromagneticFields.Solovev.ITER(xpoint=true)),
+    ("SolovevNSTX", ElectromagneticFields.Solovev.NSTX()),
+    ("SolovevNSTXwXpoint", ElectromagneticFields.Solovev.NSTX(xpoint=true)),
+    ("SolovevNSTXwDoubleXpoint", ElectromagneticFields.Solovev.NSTXdoubleX()),
+    ("SolovevSymmetric", ElectromagneticFields.SolovevSymmetric.init()),
+    ("SymmetricQuadratic", ElectromagneticFields.SymmetricQuadratic.init()),
+    ("ThetaPinch", ElectromagneticFields.ThetaPinch.init()),
+)
+
+@testset "$(rpad("Common subexpression elimination preserves every value",60))" begin
+    for (name, equ) in cse_equilibria
+        @testset "$(rpad(name,56))" begin
+            functions = ElectromagneticFields.generate_equilibrium_functions(equ, ZeroPerturbation())
+
+            for (key, expression) in functions
+                expression isa ElectromagneticFields.SymEngine.Basic || continue
+
+                body = convert(Expr, expression)
+                ElectromagneticFields.replace_expr!(body, :atan2, :atan)
+                body isa Expr || continue
+
+                @test same_expression(body,
+                    ElectromagneticFields.eliminate_common_subexpressions(body))
+            end
+        end
+    end
+end
+
 println()
