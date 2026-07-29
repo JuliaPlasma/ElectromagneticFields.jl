@@ -13,7 +13,7 @@ Parameters: `E₀`
 module EzCosZ
 
     import ..ElectromagneticFields
-    import ..ElectromagneticFields: CartesianPerturbation, code
+    import ..ElectromagneticFields: CartesianPerturbation, code, code_arguments
     import ..AnalyticCartesianField: X, Y, Z
 
     export EzCosZPerturbation
@@ -32,8 +32,9 @@ module EzCosZ
         EzCosZPerturbation(E₀)
     end
 
-    macro code(E₀=DEFAULT_E₀)
-        code(init(E₀); escape=true)
+    macro code(args...)
+        parameters, options = code_arguments(args)
+        code(init(parameters...); escape=true, options...)
     end
 
     function Base.show(io::IO, equ::EzCosZPerturbation)

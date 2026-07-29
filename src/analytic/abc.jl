@@ -13,7 +13,7 @@ module ABC
     using RecipesBase
 
     import ..ElectromagneticFields
-    import ..ElectromagneticFields: CartesianEquilibrium, code
+    import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
     import ..ElectromagneticFields: A₁, A₂, A₃
     import ..AnalyticCartesianField: X, Y, Z
 
@@ -38,8 +38,9 @@ module ABC
         ABCEquilibrium(a, b, c)
     end
 
-    macro code(a=DEFAULT_A, b=DEFAULT_B, c=DEFAULT_C)
-        code(init(a, b, c); escape=true)
+    macro code(args...)
+        parameters, options = code_arguments(args)
+        code(init(parameters...); escape=true, options...)
     end
 
     function Base.show(io::IO, equ::ABCEquilibrium)

@@ -18,7 +18,7 @@ using RecipesBase
 using LaTeXStrings
 
 import ..ElectromagneticFields
-import ..ElectromagneticFields: CartesianEquilibrium, code
+import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
 import ..AnalyticCartesianField: X, Y, Z
 
 export DipoleField
@@ -41,7 +41,8 @@ function init(args...)
 end
 
 macro code(args...)
-    code(init(args...); escape=true)
+    parameters, options = code_arguments(args)
+    code(init(parameters...); escape=true, options...)
 end
 
 function Base.show(io::IO, equ::DipoleField)

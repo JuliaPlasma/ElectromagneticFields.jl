@@ -29,7 +29,7 @@ module PenningTrapUniform
     using RecipesBase
 
     import ..ElectromagneticFields
-    import ..ElectromagneticFields: CartesianEquilibrium, code
+    import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
     import ..AnalyticCartesianField: X, Y, Z
 
     export  PenningTrapUniformEquilibrium
@@ -53,8 +53,9 @@ module PenningTrapUniform
         PenningTrapUniformEquilibrium(B₀, E₀)
     end
     
-    macro code(B₀=DEFAULT_B₀, E₀=DEFAULT_E₀)
-        code(init(B₀, E₀); escape=true)
+    macro code(args...)
+        parameters, options = code_arguments(args)
+        code(init(parameters...); escape=true, options...)
     end
 
     function Base.show(io::IO, equ::PenningTrapUniformEquilibrium)

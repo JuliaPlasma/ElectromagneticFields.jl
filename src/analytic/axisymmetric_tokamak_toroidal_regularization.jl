@@ -20,7 +20,7 @@ module AxisymmetricTokamakToroidalRegularization
 import NaNMath: log
 
 import ..ElectromagneticFields
-import ..ElectromagneticFields: AnalyticEquilibrium, code
+import ..ElectromagneticFields: AnalyticEquilibrium, code, code_arguments
 
 export AxisymmetricTokamakToroidalRegularizationEquilibrium
 
@@ -45,8 +45,9 @@ function init(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, q₀=DEFAULT_q₀)
     AxisymmetricTokamakToroidalRegularizationEquilibrium(R₀, B₀, q₀)
 end
 
-macro code(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, q₀=DEFAULT_q₀)
-    code(init(R₀, B₀, q₀); escape=true)
+macro code(args...)
+    parameters, options = code_arguments(args)
+    code(init(parameters...); escape=true, options...)
 end
 
 function Base.show(io::IO, equ::AxisymmetricTokamakToroidalRegularizationEquilibrium)

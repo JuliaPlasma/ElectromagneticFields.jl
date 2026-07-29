@@ -12,7 +12,7 @@ using SymEngine: N, symbols, diff, expand, subs
 import NaNMath: log
 
 import ..ElectromagneticFields
-import ..ElectromagneticFields: code
+import ..ElectromagneticFields: code, code_arguments
 import ..SolovevAbstract: AbstractSolovevEquilibrium, X, Y, Z, R, r, θ, ϕ, r²
 
 export SolovevEquilibrium, SolovevXpointEquilibrium
@@ -199,8 +199,9 @@ function init(R₀, B₀, ϵ, κ, δ, α)
     SolovevEquilibrium(R₀, B₀, ϵ, κ, δ, α)
 end
 
-macro code(R₀, B₀, ϵ, κ, δ, α)
-    code(init(R₀, B₀, ϵ, κ, δ, α); escape=true)
+macro code(args...)
+    parameters, options = code_arguments(args)
+    code(init(parameters...); escape=true, options...)
 end
 
 
@@ -414,8 +415,9 @@ function init(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, doublex=false)
     end
 end
 
-macro code_xpoint(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, doublex=false)
-    code(SolovevXpointEquilibrium(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, doublex); escape=true)
+macro code_xpoint(args...)
+    parameters, options = code_arguments(args)
+    code(init(parameters...); escape=true, options...)
 end
 
 
@@ -478,33 +480,39 @@ function FRC()
 end
 
 
-macro code_iter(xpoint=false)
-    code(ITER(xpoint=xpoint); escape=true)
+macro code_iter(args...)
+    parameters, options = code_arguments(args)
+    code(ITER(xpoint=get(parameters, 1, false)); escape=true, options...)
 end
 
-macro code_iter_xpoint()
-    code(ITER(xpoint=true); escape=true)
+macro code_iter_xpoint(args...)
+    _, options = code_arguments(args)
+    code(ITER(xpoint=true); escape=true, options...)
 end
 
-macro code_nstx(xpoint=false)
-    code(NSTX(xpoint=xpoint); escape=true)
+macro code_nstx(args...)
+    parameters, options = code_arguments(args)
+    code(NSTX(xpoint=get(parameters, 1, false)); escape=true, options...)
 end
 
-macro code_nstx_xpoint(doublex=false)
-    if doublex
+macro code_nstx_xpoint(args...)
+    parameters, options = code_arguments(args)
+    if get(parameters, 1, false)
         equilibrium = NSTXdoubleX()
     else
         equilibrium = NSTX(xpoint=true)
     end
-    code(equilibrium; escape=true)
+    code(equilibrium; escape=true, options...)
 end
 
-macro code_nstx_double_xpoint()
-    code(NSTXdoubleX(); escape=true)
+macro code_nstx_double_xpoint(args...)
+    _, options = code_arguments(args)
+    code(NSTXdoubleX(); escape=true, options...)
 end
 
-macro code_frc()
-    code(FRC(); escape=true)
+macro code_frc(args...)
+    _, options = code_arguments(args)
+    code(FRC(); escape=true, options...)
 end
 
 

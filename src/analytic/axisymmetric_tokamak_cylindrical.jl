@@ -22,7 +22,7 @@ using RecipesBase
 import NaNMath: log
 
 import ..ElectromagneticFields
-import ..ElectromagneticFields: AnalyticEquilibrium, code
+import ..ElectromagneticFields: AnalyticEquilibrium, code, code_arguments
 
 export AxisymmetricTokamakCylindricalEquilibrium
 
@@ -55,12 +55,14 @@ function ITER()
     AxisymmetricTokamakCylindricalEquilibrium(ITER_R₀, ITER_B₀, ITER_q₀)
 end
 
-macro code(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, q₀=DEFAULT_q₀)
-    code(init(R₀, B₀, q₀); escape=true)
+macro code(args...)
+    parameters, options = code_arguments(args)
+    code(init(parameters...); escape=true, options...)
 end
 
-macro code_iter()
-    code(ITER(); escape=true)
+macro code_iter(args...)
+    parameters, options = code_arguments(args)
+    code(ITER(parameters...); escape=true, options...)
 end
 
 function Base.show(io::IO, equ::AxisymmetricTokamakCylindricalEquilibrium)

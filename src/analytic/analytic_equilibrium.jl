@@ -564,6 +564,36 @@ fnesc(name, escape) = escape ? esc(name) : name
 
 
 """
+    code_arguments(args)
+
+Split the arguments a `@code` macro was called with into the equilibrium's parameters and the options
+destined for [`code`](@ref), returned as `(parameters, options)`.
+
+Macros cannot take keyword arguments, so an option is written as `key = value` among the arguments —
+`@code cse = false` or `@code(R₀, B₀, q₀, cse = false)`. A `; key = value` tail is accepted too.
+"""
+function code_arguments(args)
+    parameters = Any[]
+    options = Pair{Symbol,Any}[]
+
+    for arg in args
+        if arg isa Expr && arg.head === :parameters
+            # a `; key = value` tail, which the parser hands over as the first argument
+            for kw in arg.args
+                push!(options, kw.args[1] => kw.args[2])
+            end
+        elseif arg isa Expr && arg.head === :(=) && arg.args[1] isa Symbol
+            push!(options, arg.args[1] => arg.args[2])
+        else
+            push!(parameters, arg)
+        end
+    end
+
+    (parameters, options)
+end
+
+
+"""
     code(equ, pert = ZeroPerturbation(); export_parameters = true, escape = false, output = 0, cse = true)
 
 Generate code for evaluating analytic equilibria: an `Expr` defining the field functions of `equ`,
@@ -576,7 +606,10 @@ which `@code` splices into the calling module and [`load_equilibrium`](@ref) eva
   This is on by default and is value-preserving to the last bit — subexpressions are named, never
   rewritten — but the generated code is easier to read against a paper with it off. It matters:
   SymEngine shares nothing, so `db₁dx₁` of the ITER Solov'ev equilibrium with an X-point contains
-  108 separate evaluations of `log(x₁)` without it, and is 6.8 times slower.
+  108 separate evaluations of `log(ξ₁)` without it, and is 6.8 times slower.
+
+The `@code` macros take these as `key = value` arguments, after the equilibrium's parameters:
+`ThetaPinch.@code(B₀, cse = false)`, or just `ThetaPinch.@code cse = false` for the defaults.
 """
 function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false, output=0, cse=true)
 
@@ -772,7 +805,13 @@ end
 
 
 """
-Evaluate functions for evaluating analytic equilibria.
+    load_equilibrium(equ, pert = ZeroPerturbation(); target_module = Main, output = 0, cse = true)
+
+Evaluate functions for evaluating analytic equilibria: generate the field functions of `equ` with
+[`code`](@ref) and evaluate them into `target_module`.
+
+`output` and `cse` are passed on to [`code`](@ref) — in particular `cse = false` emits every repeated
+subexpression in full, which is slower but easier to read against a paper.
 """
 function load_equilibrium(equ, pert=ZeroPerturbation(); target_module=Main, output=0, cse=true)
     equ_code = code(equ, pert; output=output, cse=cse)
