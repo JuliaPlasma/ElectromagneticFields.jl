@@ -21,7 +21,7 @@ module SymmetricQuadratic
     using LaTeXStrings
 
     import ..ElectromagneticFields
-    import ..ElectromagneticFields: CartesianEquilibrium, code
+    import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
     import ..ElectromagneticFields: A₁, A₂, A₃
     import ..AnalyticCartesianField: X, Y, Z
 
@@ -41,8 +41,9 @@ module SymmetricQuadratic
         SymmetricQuadraticEquilibrium(B₀)
     end
 
-    macro code(B₀=DEFAULT_B₀)
-        code(init(B₀); escape=true)
+    macro code(args...)
+        parameters, options = code_arguments(args)
+        code(init(parameters...); escape=true, options...)
     end
 
 

@@ -17,7 +17,7 @@ module SolovevSymmetric
     using RecipesBase
 
     import ..ElectromagneticFields
-    import ..ElectromagneticFields: CartesianEquilibrium, code
+    import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
     import ..AnalyticCartesianField: X, Y, Z
 
     export  SolovevSymmetricEquilibrium
@@ -47,8 +47,9 @@ module SolovevSymmetric
         SolovevSymmetricEquilibrium(R₀, B₀, α, β)
     end
 
-    macro code(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, α=DEFAULT_α, β=DEFAULT_β)
-        code(init(R₀, B₀, α, β); escape=true)
+    macro code(args...)
+        parameters, options = code_arguments(args)
+        code(init(parameters...); escape=true, options...)
     end
 
     function Base.show(io::IO, equ::SolovevSymmetricEquilibrium)

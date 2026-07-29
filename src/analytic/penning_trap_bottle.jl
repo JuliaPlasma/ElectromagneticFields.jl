@@ -30,7 +30,7 @@ module PenningTrapBottle
     using RecipesBase
 
     import ..ElectromagneticFields
-    import ..ElectromagneticFields: CartesianEquilibrium, code
+    import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
     import ..AnalyticCartesianField: X, Y, Z
 
     export  PenningTrapBottleEquilibrium
@@ -53,11 +53,12 @@ module PenningTrapBottle
     PenningTrapBottleEquilibrium(B₀::T=DEFAULT_B₀, Bₚ::T=DEFAULT_Bₚ, E₀::T=DEFAULT_E₀) where T <: Number = PenningTrapBottleEquilibrium{T}(B₀, Bₚ, E₀)
 
     function init(B₀=DEFAULT_B₀, Bₚ=DEFAULT_Bₚ, E₀=DEFAULT_E₀)
-        PenningTrapBottleEquilibrium(B₀, E₀, Bₚ)
+        PenningTrapBottleEquilibrium(B₀, Bₚ, E₀)
     end
 
-    macro code(B₀=DEFAULT_B₀, Bₚ=DEFAULT_Bₚ, E₀=DEFAULT_E₀)
-        code(init(B₀, Bₚ, E₀); escape=true)
+    macro code(args...)
+        parameters, options = code_arguments(args)
+        code(init(parameters...); escape=true, options...)
     end
 
     function Base.show(io::IO, equ::PenningTrapBottleEquilibrium)

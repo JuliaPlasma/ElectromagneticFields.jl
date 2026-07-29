@@ -460,13 +460,158 @@ function replace_expr!(e, old, new)
 end
 
 
+#
+# Common subexpression elimination for the generated field code.
+#
+# `convert(Expr, ::Basic)` writes out SymEngine's expanded tree verbatim, and SymEngine shares
+# nothing: a subexpression common to fifty branches of `∂ⱼ(Bᵢ / sqrt(gᵏˡBₖBₗ))` is emitted fifty
+# times. On the ITER Solov'ev equilibrium with an X-point, whose flux function carries `x² log x`
+# terms, `db₁dx₁` comes out as 1905 statements containing 108 separate evaluations of `log(x₁)` and
+# 557 powers, and `d²b₁dx₁dx₁` as 6231 statements with 367 logs. Naming each distinct subexpression
+# once takes those to 83 ns and 137 ns from 566 ns and 1749 ns.
+#
+# This only *names* subexpressions. It never reassociates, never reorders an operand, never folds a
+# constant — so every generated function returns bit-for-bit what it returned before, which
+# `test/test_analytic.jl` asserts for every function of every equilibrium.
+#
+# Implemented by hash-consing rather than by hashing whole `Expr`s: a node is keyed by its head and
+# the integer ids of its arguments, so no subtree is ever hashed or printed as a whole and the pass
+# is linear in the size of the expression. The naive version — `Dict{Expr,Int}` keyed by the
+# subtrees themselves, sorted by printed length — is quadratic and does not finish on the Solov'ev
+# second derivatives.
+#
+# Ids are handed out in post-order, so a node's arguments always have smaller ids than the node.
+# Emitting the temporaries in increasing id order is therefore a topological order by construction,
+# and needs no sort.
+#
+
+function _hashcons(body)
+    ids = Dict{Any,Int}()
+    keys = Vector{Any}()
+    counts = Vector{Int}()
+
+    function visit(e)
+        key = if e isa Expr && e.head === :call
+            # The head, then one id per argument. A `Vector{Any}` rather than a tuple so that the
+            # arity is not part of the type and the dictionary stays concrete.
+            Any[e.args[1]; Int[visit(a) for a in @view e.args[2:end]]]
+        else
+            # Leaves — symbols and numeric literals — carry their type, because `isequal(1, 1.0)`
+            # is true and the two must not be conflated into one temporary.
+            (typeof(e), e)
+        end
+
+        id = get(ids, key, 0)
+
+        if id == 0
+            push!(keys, key)
+            push!(counts, 0)
+            id = length(keys)
+            ids[key] = id
+        end
+
+        counts[id] += 1
+        id
+    end
+
+    (keys, counts, visit(body))
+end
+
+"""
+    eliminate_common_subexpressions(body::Expr; prefix = "_cse")
+
+Rewrite a generated function body so that every repeated subexpression is evaluated once and read
+from a local afterwards. Returns a `begin ... end` block whose value is that of `body`, and whose
+locals are named `prefix * n`.
+
+Value-preserving to the last bit: subexpressions are named, not rewritten.
+"""
+function eliminate_common_subexpressions(body::Expr; prefix="_cse")
+    keys, counts, root = _hashcons(body)
+
+    name = Vector{Any}(undef, length(keys))
+    stmts = Any[]
+    n = 0
+
+    for id in eachindex(keys)
+        key = keys[id]
+
+        if !(key isa Vector{Any})
+            name[id] = key[2]                       # a leaf: use it directly
+        else
+            expr = Expr(:call, key[1], (name[arg] for arg in @view key[2:end])...)
+
+            if counts[id] > 1
+                # Used more than once, so it earns a name. Its arguments already have theirs.
+                n += 1
+                sym = Symbol(prefix, n)
+                push!(stmts, Expr(:(=), sym, expr))
+                name[id] = sym
+            else
+                # Used once: splice it in where it is used rather than spending a local on it.
+                name[id] = expr
+            end
+        end
+    end
+
+    push!(stmts, name[root])
+
+    Expr(:block, stmts...)
+end
+
+
 fnesc(name, escape) = escape ? esc(name) : name
 
 
 """
-Generate code for evaluating analytic equilibria.
+    code_arguments(args)
+
+Split the arguments a `@code` macro was called with into the equilibrium's parameters and the options
+destined for [`code`](@ref), returned as `(parameters, options)`.
+
+Macros cannot take keyword arguments, so an option is written as `key = value` among the arguments —
+`@code cse = false` or `@code(R₀, B₀, q₀, cse = false)`. A `; key = value` tail is accepted too.
 """
-function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false, output=0)
+function code_arguments(args)
+    parameters = Any[]
+    options = Pair{Symbol,Any}[]
+
+    for arg in args
+        if arg isa Expr && arg.head === :parameters
+            # a `; key = value` tail, which the parser hands over as the first argument
+            for kw in arg.args
+                push!(options, kw.args[1] => kw.args[2])
+            end
+        elseif arg isa Expr && arg.head === :(=) && arg.args[1] isa Symbol
+            push!(options, arg.args[1] => arg.args[2])
+        else
+            push!(parameters, arg)
+        end
+    end
+
+    (parameters, options)
+end
+
+
+"""
+    code(equ, pert = ZeroPerturbation(); export_parameters = true, escape = false, output = 0, cse = true)
+
+Generate code for evaluating analytic equilibria: an `Expr` defining the field functions of `equ`,
+which `@code` splices into the calling module and [`load_equilibrium`](@ref) evaluates into one.
+
+* `export_parameters` also emits the equilibrium's scalar parameters as constants.
+* `escape` escapes the generated names, which a macro splicing this into another module needs.
+* `output` is 0, 1 or 2: silent, one line per function, or the generated body as well.
+* `cse` names each repeated subexpression once instead of emitting it in full every time it occurs.
+  This is on by default and is value-preserving to the last bit — subexpressions are named, never
+  rewritten — but the generated code is easier to read against a paper with it off. It matters:
+  SymEngine shares nothing, so `db₁dx₁` of the ITER Solov'ev equilibrium with an X-point contains
+  108 separate evaluations of `log(ξ₁)` without it, and is 6.8 times slower.
+
+The `@code` macros take these as `key = value` arguments, after the equilibrium's parameters:
+`ThetaPinch.@code(B₀, cse = false)`, or just `ThetaPinch.@code cse = false` for the defaults.
+"""
+function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false, output=0, cse=true)
 
     if output ≥ 1
         println("Generating code for ")
@@ -618,6 +763,14 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
 
         f_body = convert(Expr, f_expr)
         replace_expr!(f_body, :atan2, :atan)
+
+        # Only the bodies that came out of SymEngine. The rest of `functions` holds hand-written
+        # `quote` blocks — the `a`/`b`/`c` triads, `g`, `ḡ`, `DF`, `to_cartesian`, `rangemin` — whose
+        # heads are not `:call` and which have nothing to share anyway.
+        if cse && f_expr isa Basic && f_body isa Expr
+            f_body = eliminate_common_subexpressions(f_body)
+        end
+
         output ≥ 2 ? println("   ", f_body) : nothing
 
         f_code = quote
@@ -652,10 +805,16 @@ end
 
 
 """
-Evaluate functions for evaluating analytic equilibria.
+    load_equilibrium(equ, pert = ZeroPerturbation(); target_module = Main, output = 0, cse = true)
+
+Evaluate functions for evaluating analytic equilibria: generate the field functions of `equ` with
+[`code`](@ref) and evaluate them into `target_module`.
+
+`output` and `cse` are passed on to [`code`](@ref) — in particular `cse = false` emits every repeated
+subexpression in full, which is slower but easier to read against a paper.
 """
-function load_equilibrium(equ, pert=ZeroPerturbation(); target_module=Main, output=0)
-    equ_code = code(equ, pert; output=output)
+function load_equilibrium(equ, pert=ZeroPerturbation(); target_module=Main, output=0, cse=true)
+    equ_code = code(equ, pert; output=output, cse=cse)
     Core.eval(target_module, equ_code)
 end
 

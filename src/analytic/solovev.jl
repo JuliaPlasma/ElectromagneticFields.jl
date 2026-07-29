@@ -12,7 +12,7 @@ using SymEngine: N, symbols, diff, expand, subs
 import NaNMath: log
 
 import ..ElectromagneticFields
-import ..ElectromagneticFields: code
+import ..ElectromagneticFields: code, code_arguments
 import ..SolovevAbstract: AbstractSolovevEquilibrium, X, Y, Z, R, r, θ, ϕ, r²
 
 export SolovevEquilibrium, SolovevXpointEquilibrium
@@ -199,8 +199,9 @@ function init(R₀, B₀, ϵ, κ, δ, α)
     SolovevEquilibrium(R₀, B₀, ϵ, κ, δ, α)
 end
 
-macro code(R₀, B₀, ϵ, κ, δ, α)
-    code(init(R₀, B₀, ϵ, κ, δ, α); escape=true)
+macro code(args...)
+    parameters, options = code_arguments(args)
+    code(init(parameters...); escape=true, options...)
 end
 
 
@@ -209,8 +210,16 @@ SolovevEquilibriumITER() = SolovevEquilibrium(6.2, 5.3, 0.32, 1.7, 0.33, -0.155)
 # SolovevEquilibriumJET()  = SolovevEquilibrium(3.0, 3.6, 0.333, 1.7, 0.25, )
 SolovevEquilibriumNSTX() = SolovevEquilibrium(0.85, 0.30, 0.78, 2.00, 0.35, 1.0)
 # SolovevEquilibriumMAST() = SolovevEquilibrium(0.85, 0.52, 0.77, 2.45, 0.50,  )
-SolovevEquilibriumFRC() = SolovevEquilibrium(0.0, 0.0, 0.99, 10.0, 0.7, 0.0)
-# SolovevEquilibriumFRC2() = SolovevEquilibrium(0.0, 0.0, 1.00, 10., 1.0, 0.0)
+# Cerfon & Freidberg, Sec. VIII: an FRC "is very elongated (i.e. κ ~ 10) and has zero toroidal field
+# (i.e. B₀ = 0) implying that A = 0", approximated by their first method with ϵ = 0.99 and δ = 0.7.
+# `B₀ = 0` is the physics — the toroidal field is absent and A₃ = ψ carries the poloidal field alone.
+# `R₀` is the major radius the paper normalises with (R = R₀x, Z = R₀y), so it cannot be zero: it
+# enters the metric as g₁₁ = g₂₂ = R₀². One is the natural choice in these normalised coordinates.
+SolovevEquilibriumFRC() = SolovevEquilibrium(1.0, 0.0, 0.99, 10.0, 0.7, 0.0)
+# Their second method, ϵ = 1 and δ = 1, needs the half-ellipse constraints of their Eqs. (23)–(25)
+# rather than the seven above — with ϵ = 1 the inner equatorial point falls on x₁ = 0 and log(x₁)
+# diverges — so it stays out until those are implemented.
+# SolovevEquilibriumFRC2() = SolovevEquilibrium(1.0, 0.0, 1.00, 10., 1.0, 0.0)
 
 
 function Base.show(io::IO, equ::SolovevEquilibrium)
@@ -414,8 +423,9 @@ function init(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, doublex=false)
     end
 end
 
-macro code_xpoint(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, doublex=false)
-    code(SolovevXpointEquilibrium(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, doublex); escape=true)
+macro code_xpoint(args...)
+    parameters, options = code_arguments(args)
+    code(init(parameters...); escape=true, options...)
 end
 
 
@@ -478,33 +488,39 @@ function FRC()
 end
 
 
-macro code_iter(xpoint=false)
-    code(ITER(xpoint=xpoint); escape=true)
+macro code_iter(args...)
+    parameters, options = code_arguments(args)
+    code(ITER(xpoint=get(parameters, 1, false)); escape=true, options...)
 end
 
-macro code_iter_xpoint()
-    code(ITER(xpoint=true); escape=true)
+macro code_iter_xpoint(args...)
+    _, options = code_arguments(args)
+    code(ITER(xpoint=true); escape=true, options...)
 end
 
-macro code_nstx(xpoint=false)
-    code(NSTX(xpoint=xpoint); escape=true)
+macro code_nstx(args...)
+    parameters, options = code_arguments(args)
+    code(NSTX(xpoint=get(parameters, 1, false)); escape=true, options...)
 end
 
-macro code_nstx_xpoint(doublex=false)
-    if doublex
+macro code_nstx_xpoint(args...)
+    parameters, options = code_arguments(args)
+    if get(parameters, 1, false)
         equilibrium = NSTXdoubleX()
     else
         equilibrium = NSTX(xpoint=true)
     end
-    code(equilibrium; escape=true)
+    code(equilibrium; escape=true, options...)
 end
 
-macro code_nstx_double_xpoint()
-    code(NSTXdoubleX(); escape=true)
+macro code_nstx_double_xpoint(args...)
+    _, options = code_arguments(args)
+    code(NSTXdoubleX(); escape=true, options...)
 end
 
-macro code_frc()
-    code(FRC(); escape=true)
+macro code_frc(args...)
+    _, options = code_arguments(args)
+    code(FRC(); escape=true, options...)
 end
 
 
