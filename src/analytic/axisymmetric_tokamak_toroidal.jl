@@ -30,6 +30,10 @@ const DEFAULT_R₀ = 1.0
 const DEFAULT_B₀ = 1.0
 const DEFAULT_q₀ = 2.0
 
+const ITER_R₀ = 6.2
+const ITER_B₀ = 5.3
+const ITER_q₀ = √2
+
 struct AxisymmetricTokamakToroidalEquilibrium{T<:Number} <: AnalyticEquilibrium
     name::String
     R₀::T
