@@ -447,7 +447,7 @@ perts = (
 @test_equilibrium Singular [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
 @test_equilibrium SymmetricQuadratic [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
 @test_equilibrium ThetaPinch [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
-# @test_equilibrium SolovevFRC                                    [0., 0., 2π]
+@test_equilibrium SolovevFRC [-Inf, -Inf, 0.0] [+Inf, +Inf, 2π]
 @test_equilibrium SolovevITER [-Inf, -Inf, 0.0] [+Inf, +Inf, 2π]
 @test_equilibrium SolovevITERwXpoint [-Inf, -Inf, 0.0] [+Inf, +Inf, 2π]
 @test_equilibrium SolovevNSTX [-Inf, -Inf, 0.0] [+Inf, +Inf, 2π]
@@ -647,9 +647,7 @@ function same_expression(body::Expr, block::Expr)
     value == root
 end
 
-# The same equilibria `@test_equilibrium` covers above, and for the same reason in the one case it
-# skips: `SolovevFRC` is `SolovevEquilibrium(0.0, 0.0, 0.99, 10.0, 0.7, 0.0)`, and with `R₀ = 0` the
-# flux function degenerates and `generate_equilibrium_functions` does not return.
+# The same equilibria `@test_equilibrium` covers above.
 const cse_equilibria = (
     ("ABC", ElectromagneticFields.ABC.init()),
     ("AxisymmetricTokamakCartesian", ElectromagneticFields.AxisymmetricTokamakCartesian.init()),
@@ -662,6 +660,7 @@ const cse_equilibria = (
     ("PenningTrapAsymmetric", ElectromagneticFields.PenningTrapAsymmetric.init()),
     ("QuadraticPotentials", ElectromagneticFields.QuadraticPotentials.init()),
     ("Singular", ElectromagneticFields.Singular.init()),
+    ("SolovevFRC", ElectromagneticFields.Solovev.FRC()),
     ("SolovevITER", ElectromagneticFields.Solovev.ITER()),
     ("SolovevITERwXpoint", ElectromagneticFields.Solovev.ITER(xpoint=true)),
     ("SolovevNSTX", ElectromagneticFields.Solovev.NSTX()),
