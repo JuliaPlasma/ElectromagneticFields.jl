@@ -210,8 +210,16 @@ SolovevEquilibriumITER() = SolovevEquilibrium(6.2, 5.3, 0.32, 1.7, 0.33, -0.155)
 # SolovevEquilibriumJET()  = SolovevEquilibrium(3.0, 3.6, 0.333, 1.7, 0.25, )
 SolovevEquilibriumNSTX() = SolovevEquilibrium(0.85, 0.30, 0.78, 2.00, 0.35, 1.0)
 # SolovevEquilibriumMAST() = SolovevEquilibrium(0.85, 0.52, 0.77, 2.45, 0.50,  )
-SolovevEquilibriumFRC() = SolovevEquilibrium(0.0, 0.0, 0.99, 10.0, 0.7, 0.0)
-# SolovevEquilibriumFRC2() = SolovevEquilibrium(0.0, 0.0, 1.00, 10., 1.0, 0.0)
+# Cerfon & Freidberg, Sec. VIII: an FRC "is very elongated (i.e. κ ~ 10) and has zero toroidal field
+# (i.e. B₀ = 0) implying that A = 0", approximated by their first method with ϵ = 0.99 and δ = 0.7.
+# `B₀ = 0` is the physics — the toroidal field is absent and A₃ = ψ carries the poloidal field alone.
+# `R₀` is the major radius the paper normalises with (R = R₀x, Z = R₀y), so it cannot be zero: it
+# enters the metric as g₁₁ = g₂₂ = R₀². One is the natural choice in these normalised coordinates.
+SolovevEquilibriumFRC() = SolovevEquilibrium(1.0, 0.0, 0.99, 10.0, 0.7, 0.0)
+# Their second method, ϵ = 1 and δ = 1, needs the half-ellipse constraints of their Eqs. (23)–(25)
+# rather than the seven above — with ϵ = 1 the inner equatorial point falls on x₁ = 0 and log(x₁)
+# diverges — so it stays out until those are implemented.
+# SolovevEquilibriumFRC2() = SolovevEquilibrium(1.0, 0.0, 1.00, 10., 1.0, 0.0)
 
 
 function Base.show(io::IO, equ::SolovevEquilibrium)
