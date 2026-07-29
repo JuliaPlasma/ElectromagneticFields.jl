@@ -53,7 +53,7 @@ module PenningTrapAsymmetric
     PenningTrapAsymmetricEquilibrium(B₀::T=DEFAULT_B₀, Bₚ::T=DEFAULT_Bₚ, E₀::T=DEFAULT_E₀) where T <: Number = PenningTrapAsymmetricEquilibrium{T}(B₀, Bₚ, E₀)
 
     function init(B₀=DEFAULT_B₀, Bₚ=DEFAULT_Bₚ, E₀=DEFAULT_E₀)
-        PenningTrapAsymmetricEquilibrium(B₀, E₀, Bₚ)
+        PenningTrapAsymmetricEquilibrium(B₀, Bₚ, E₀)
     end
 
     macro code(args...)

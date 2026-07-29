@@ -53,7 +53,7 @@ module PenningTrapBottle
     PenningTrapBottleEquilibrium(B₀::T=DEFAULT_B₀, Bₚ::T=DEFAULT_Bₚ, E₀::T=DEFAULT_E₀) where T <: Number = PenningTrapBottleEquilibrium{T}(B₀, Bₚ, E₀)
 
     function init(B₀=DEFAULT_B₀, Bₚ=DEFAULT_Bₚ, E₀=DEFAULT_E₀)
-        PenningTrapBottleEquilibrium(B₀, E₀, Bₚ)
+        PenningTrapBottleEquilibrium(B₀, Bₚ, E₀)
     end
 
     macro code(args...)
