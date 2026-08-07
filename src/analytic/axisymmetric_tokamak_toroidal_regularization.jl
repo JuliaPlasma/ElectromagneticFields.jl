@@ -2,13 +2,16 @@
 Axisymmetric tokamak equilibrium in (r,θ,ϕ) coordinates with covariant
 components of the vector potential given by
 ```math
-A (r, \theta, \phi) = B_0 \, \bigg( 0 , \, \frac{r R_0}{\cos (\theta)} - \bigg( \frac{R_0}{\cos (\theta)} \bigg)^2 \, \ln \bigg( \frac{R}{R_0} \bigg) , \, - \frac{r^2}{2 q_0} \bigg)^T ,
+A (r, \theta, \phi) = B_0 \, \bigg( 0 , \, \bigg( \frac{R_0}{\cos (\theta)} \bigg)^2 \, \ln \bigg( \frac{R}{R_0} \bigg) - \frac{r R_0}{\cos (\theta)} , \, + \frac{r^2}{2 q_0} \bigg)^T ,
 ```
 resulting in the magnetic field with covariant components
 ```math
 B (r, \theta, \phi) = \frac{B_0}{q_0} \, \bigg( 0 , \, \frac{r^2}{R}, \, q_0 R_0 \bigg)^T ,
 ```
 where $R = R_0 + r \cos \theta$.
+
+This is the same magnetic field as [`AxisymmetricTokamakToroidal`](@ref), in a gauge whose
+poloidal vector potential is regular on the magnetic axis.
 
 Parameters:
  * `R₀`: position of magnetic axis
@@ -67,9 +70,11 @@ Y(x::AbstractVector, equ::AxisymmetricTokamakToroidalRegularizationEquilibrium) 
 Z(x::AbstractVector, equ::AxisymmetricTokamakToroidalRegularizationEquilibrium) = r(x, equ) * sin(θ(x, equ))
 
 ElectromagneticFields.J(x::AbstractVector, equ::AxisymmetricTokamakToroidalRegularizationEquilibrium) = r(x, equ) * R(x, equ)
+# As for the unregularised toroidal chart.
+ElectromagneticFields.orientation(::AxisymmetricTokamakToroidalRegularizationEquilibrium) = -1
 
 ElectromagneticFields.A₁(x::AbstractVector, equ::AxisymmetricTokamakToroidalRegularizationEquilibrium) = zero(eltype(x))
-ElectromagneticFields.A₂(x::AbstractVector, equ::AxisymmetricTokamakToroidalRegularizationEquilibrium) = +equ.B₀ * equ.R₀ / cos(θ(x, equ))^2 * (r(x, equ) * cos(θ(x, equ)) - equ.R₀ * log(R(x, equ) / equ.R₀))
+ElectromagneticFields.A₂(x::AbstractVector, equ::AxisymmetricTokamakToroidalRegularizationEquilibrium) = -equ.B₀ * equ.R₀ / cos(θ(x, equ))^2 * (r(x, equ) * cos(θ(x, equ)) - equ.R₀ * log(R(x, equ) / equ.R₀))
 ElectromagneticFields.A₃(x::AbstractVector, equ::AxisymmetricTokamakToroidalRegularizationEquilibrium) = +equ.B₀ * r(x, equ)^2 / equ.q₀ / 2
 
 ElectromagneticFields.x¹(ξ::AbstractVector, equ::AxisymmetricTokamakToroidalRegularizationEquilibrium) = X(ξ, equ)

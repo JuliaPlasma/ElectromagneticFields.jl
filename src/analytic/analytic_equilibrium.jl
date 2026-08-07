@@ -19,6 +19,47 @@ x³(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("x³() not impleme
 
 J(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("J() not implemented for ", ET)
 
+@doc raw"""
+    orientation(equ)
+
+Sign of the chart's orientation: `+1` if `(ξ¹, ξ², ξ³)` is right-handed, `-1` if left-handed.
+
+`J(x, equ)` is the *volume element* `√|g| = |det DF|`, which is what most of the machinery here
+wants and what `functions["J"]` exports. The Hodge star and the cross product, however, are
+orientation-dependent and need the *signed* determinant `det DF = orientation(equ) * J(x, equ)`.
+
+Several of the charts in this package are left-handed — `(R, Z, ϕ)` and `(r, θ, ϕ)` both have
+`det DF < 0`, since the right-handed orderings would be `(R, ϕ, Z)` and `(r, ϕ, θ)` — so this is
+not a corner case. Getting it wrong reverses `B` without any other visible symptom: the same
+vector potential yields a magnetic field antiparallel to the one the cartesian chart gives at the
+same physical point.
+
+# Orientation of the charts in this package
+
+Every equilibrium built on `CartesianEquilibrium` uses the identity map `(x, y, z)`, so `DF = I`,
+`J = 1` and the chart is right-handed. The four families below define their own coordinates, and
+all four are left-handed — in each case because the toroidal angle `ϕ` sits in the third slot where
+the right-handed ordering would put the second poloidal coordinate.
+
+| chart | coordinates `(ξ¹, ξ², ξ³)` | `J` | `det DF` | orientation |
+|:--|:--|:--|:--|:--:|
+| `CartesianEquilibrium` and all its subtypes | `(x, y, z)` | `1` | `+1` | `+1` |
+| `AxisymmetricTokamakCylindrical` | `(R, Z, ϕ)` | `R` | `-R` | `-1` |
+| `AxisymmetricTokamakToroidal` | `(r, θ, ϕ)` | `r R` | `-r R` | `-1` |
+| `AxisymmetricTokamakToroidalRegularization` | `(r, θ, ϕ)` | `r R` | `-r R` | `-1` |
+| `AbstractSolovevEquilibrium` | `(R/R₀, Z/R₀, ϕ)` | `R R₀²` | `-R R₀²` | `-1` |
+
+Concretely: `AxisymmetricTokamakCartesian`, `SolovevSymmetric`, `ThetaPinch`, `Dipole`, `ABC`,
+`Singular`, `SymmetricQuadratic`, `QuadraticPotentials` and the three Penning traps are
+right-handed; `AxisymmetricTokamakCylindrical`, `AxisymmetricTokamakToroidal`,
+`AxisymmetricTokamakToroidalRegularization` and every `Solovev*` equilibrium other than
+`SolovevSymmetric` (which is a cartesian chart despite the name) are left-handed.
+
+`test_analytic.jl` asserts `det(DF) ≈ orientation(equ) * J` for each of them, so a new chart that
+declares the wrong sign fails immediately rather than silently flipping its own `B`.
+"""
+orientation(::AnalyticField) = 1
+
 g₁₁(::AbstractVector{T}, ::AnalyticField) where {T} = one(T)
 g₁₂(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
 g₁₃(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
@@ -233,6 +274,11 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     Jdet = J(ξ, equ)
     symprint("J", Jdet, output, 2)
 
+    # Signed Jacobian determinant det(DF), for the orientation-dependent operations below. See
+    # `orientation`.
+    Jsgn = orientation(equ) * Jdet
+    symprint("det(DF)", Jsgn, output, 2)
+
     # obtain vector potential
     A¹ = A(ξ, equ) .+ A(ξ, pert)
     symprint("A¹", A¹, output, 2)
@@ -262,7 +308,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("B²", B², output, 2)
 
     # compute magnetic field one-form B¹ = ⋆B²
-    B¹ = [hodge²¹(B², ginv, Jdet, i) for i in 1:3]
+    B¹ = [hodge²¹(B², ginv, Jsgn, i) for i in 1:3]
     symprint("B¹", B¹, output, 2)
 
     # compute magnetic field in physical coordinates
@@ -318,12 +364,12 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     for tvec ∈ ([Basic(1), Basic(0), Basic(0)],
         [Basic(0), Basic(1), Basic(0)],
         [Basic(0), Basic(0), Basic(1)])
-        avec .= [crossproduct(tvec, bvec, ginv, Jdet, i) for i in 1:3]
+        avec .= [crossproduct(tvec, bvec, ginv, Jsgn, i) for i in 1:3]
         if avec != [Basic(0), Basic(0), Basic(0)]
             break
         end
     end
-    cvec = [crossproduct(bvec, avec, ginv, Jdet, i) for i in 1:3]
+    cvec = [crossproduct(bvec, avec, ginv, Jsgn, i) for i in 1:3]
 
     normalize!(avec, gmat)
     normalize!(cvec, gmat)
