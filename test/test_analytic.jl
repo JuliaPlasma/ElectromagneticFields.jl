@@ -479,23 +479,23 @@ function test_axisymmetric_tokamak_cartesian_equilibrium(equ_mod, t=0.0, x=[1.5,
 end
 
 function test_axisymmetric_tokamak_cylindrical_equilibrium(equ_mod, t=0.0, x=[1.5, 0.5, π / 5])
-    @test equ_mod.B¹(t, x) == +equ_mod.B₀ / equ_mod.q₀ * equ_mod.Z(t, x) / equ_mod.R(t, x)
-    @test equ_mod.B²(t, x) == -equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t, x) - equ_mod.R₀) / equ_mod.R(t, x)
-    @test equ_mod.B³(t, x) == -equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t, x)^2
+    @test equ_mod.B¹(t, x) == -equ_mod.B₀ / equ_mod.q₀ * equ_mod.Z(t, x) / equ_mod.R(t, x)
+    @test equ_mod.B²(t, x) == +equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t, x) - equ_mod.R₀) / equ_mod.R(t, x)
+    @test equ_mod.B³(t, x) == +equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t, x)^2
 
-    @test equ_mod.B₁(t, x) == +equ_mod.B₀ / equ_mod.q₀ * equ_mod.Z(t, x) / equ_mod.R(t, x)
-    @test equ_mod.B₂(t, x) == -equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t, x) - equ_mod.R₀) / equ_mod.R(t, x)
-    @test equ_mod.B₃(t, x) == -equ_mod.B₀ * equ_mod.R₀
+    @test equ_mod.B₁(t, x) == -equ_mod.B₀ / equ_mod.q₀ * equ_mod.Z(t, x) / equ_mod.R(t, x)
+    @test equ_mod.B₂(t, x) == +equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t, x) - equ_mod.R₀) / equ_mod.R(t, x)
+    @test equ_mod.B₃(t, x) == +equ_mod.B₀ * equ_mod.R₀
 end
 
 function test_axisymmetric_tokamak_toroidal_equilibrium(equ_mod, t=0.0, x=[0.5, π / 10, π / 5])
     @test equ_mod.B¹(t, x) == 0
-    @test equ_mod.B²(t, x) == -equ_mod.B₀ / equ_mod.q₀ / equ_mod.R(t, x)
-    @test equ_mod.B³(t, x) ≈ -equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t, x)^2 atol = 1E-14
+    @test equ_mod.B²(t, x) == +equ_mod.B₀ / equ_mod.q₀ / equ_mod.R(t, x)
+    @test equ_mod.B³(t, x) ≈ +equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t, x)^2 atol = 1E-14
 
     @test equ_mod.B₁(t, x) == 0
-    @test equ_mod.B₂(t, x) == -equ_mod.B₀ / equ_mod.q₀ * equ_mod.r(t, x)^2 / equ_mod.R(t, x)
-    @test equ_mod.B₃(t, x) ≈ -equ_mod.B₀ * equ_mod.R₀ atol = 1E-14
+    @test equ_mod.B₂(t, x) == +equ_mod.B₀ / equ_mod.q₀ * equ_mod.r(t, x)^2 / equ_mod.R(t, x)
+    @test equ_mod.B₃(t, x) ≈ +equ_mod.B₀ * equ_mod.R₀ atol = 1E-14
 end
 
 function test_consistency_axisymmetric_tokamak_cylindrical_equilibrium(equ_cyl, equ_car, t=0.0, ξ=[1.5, 0.5, π / 5])
@@ -510,8 +510,8 @@ function test_consistency_axisymmetric_tokamak_cylindrical_equilibrium(equ_cyl, 
     B̂_car = [equ_car.B₁(t, x), equ_car.B₂(t, x), equ_car.B₃(t, x)]
 
     @test B_cyl' * B̂_cyl ≈ B_car' * B̂_car atol = 1E-12
-    @test DF * B_cyl ≈ -B_car atol = 1E-12
-    @test DF̄' * B̂_cyl ≈ -B̂_car atol = 1E-12
+    @test DF * B_cyl ≈ B_car atol = 1E-12
+    @test DF̄' * B̂_cyl ≈ B̂_car atol = 1E-12
 end
 
 function test_consistency_axisymmetric_tokamak_toroidal_equilibrium(equ_tor, equ_car, t=0.0, ξ=[0.5, π / 10, π / 5])
@@ -526,8 +526,8 @@ function test_consistency_axisymmetric_tokamak_toroidal_equilibrium(equ_tor, equ
     B̂_car = [equ_car.B₁(t, x), equ_car.B₂(t, x), equ_car.B₃(t, x)]
 
     @test B_tor' * B̂_tor ≈ B_car' * B̂_car atol = 1E-12
-    @test DF * B_tor ≈ -B_car atol = 1E-12
-    @test DF̄' * B̂_tor ≈ -B̂_car atol = 1E-12
+    @test DF * B_tor ≈ B_car atol = 1E-12
+    @test DF̄' * B̂_tor ≈ B̂_car atol = 1E-12
 end
 
 function test_symmetric_quadratic_equilibrium(equ_mod, t=0.0, x=[1.0, 0.5, 0.5])

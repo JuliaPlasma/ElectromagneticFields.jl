@@ -67,6 +67,9 @@ Y(x::AbstractVector, equ::AxisymmetricTokamakToroidalRegularizationEquilibrium) 
 Z(x::AbstractVector, equ::AxisymmetricTokamakToroidalRegularizationEquilibrium) = r(x, equ) * sin(θ(x, equ))
 
 ElectromagneticFields.J(x::AbstractVector, equ::AxisymmetricTokamakToroidalRegularizationEquilibrium) = r(x, equ) * R(x, equ)
+# As for the unregularised toroidal chart.
+ElectromagneticFields.orientation(::AxisymmetricTokamakToroidalRegularizationEquilibrium) = -1
+
 
 ElectromagneticFields.A₁(x::AbstractVector, equ::AxisymmetricTokamakToroidalRegularizationEquilibrium) = zero(eltype(x))
 ElectromagneticFields.A₂(x::AbstractVector, equ::AxisymmetricTokamakToroidalRegularizationEquilibrium) = +equ.B₀ * equ.R₀ / cos(θ(x, equ))^2 * (r(x, equ) * cos(θ(x, equ)) - equ.R₀ * log(R(x, equ) / equ.R₀))

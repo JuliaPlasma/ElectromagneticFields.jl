@@ -82,6 +82,9 @@ Y(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = R(x, equ) * 
 Z(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = r(x, equ) * sin(θ(x, equ))
 
 ElectromagneticFields.J(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = r(x, equ) * R(x, equ)
+# (r, θ, ϕ) inherits the left-handed (R, Z, ϕ) orientation, since det ∂(R,Z)/∂(r,θ) = +r.
+ElectromagneticFields.orientation(::AxisymmetricTokamakToroidalEquilibrium) = -1
+
 
 ElectromagneticFields.A₁(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = +equ.B₀ * equ.R₀ * (Z(x, equ) / R(x, equ) * cos(θ(x, equ)) - log(R(x, equ) / equ.R₀) * sin(θ(x, equ))) / 2
 ElectromagneticFields.A₂(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = -equ.B₀ * equ.R₀ * (Z(x, equ) / R(x, equ) * sin(θ(x, equ)) + log(R(x, equ) / equ.R₀) * cos(θ(x, equ))) * r(x, equ) / 2

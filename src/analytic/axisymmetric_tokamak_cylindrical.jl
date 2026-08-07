@@ -2,11 +2,11 @@
 Axisymmetric tokamak equilibrium in (R,Z,ϕ) coordinates with covariant
 components of the vector potential given by
 ```math
-A (R, Z, \phi) = \frac{B_0}{2} \, \bigg( R_0 \, \frac{Z}{R} , \, - R_0 \, \ln \bigg( \frac{R}{R_0} \bigg) , \, - \frac{r^2}{q_0} \bigg)^T ,
+A (R, Z, \phi) = \frac{B_0}{2} \, \bigg( R_0 \, \frac{Z}{R} , \, - R_0 \, \ln \bigg( \frac{R}{R_0} \bigg) , \, + \frac{r^2}{q_0} \bigg)^T ,
 ```
 resulting in the magnetic field with covariant components
 ```math
-B (R, Z, \phi) = \frac{B_0}{q_0} \, \bigg( - \frac{Z}{R} , \, \frac{R - R_0}{R} , \, - q_0 R_0 \bigg)^T ,
+B (R, Z, \phi) = \frac{B_0}{q_0} \, \bigg( - \frac{Z}{R} , \, \frac{R - R_0}{R} , \, + q_0 R_0 \bigg)^T ,
 ```
 where $r = \sqrt{ (R - R_0)^2 + Z^2 }$.
 
@@ -83,6 +83,9 @@ Y(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = R(x, equ)
 θ(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = atan(Z(x, equ), R(x, equ) - equ.R₀)
 
 ElectromagneticFields.J(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = R(x, equ)
+# (R, Z, ϕ) is left-handed; the right-handed ordering would be (R, ϕ, Z). See `orientation`.
+ElectromagneticFields.orientation(::AxisymmetricTokamakCylindricalEquilibrium) = -1
+
 
 ElectromagneticFields.A₁(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = +equ.B₀ * equ.R₀ * Z(x, equ) / R(x, equ) / 2
 ElectromagneticFields.A₂(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = -equ.B₀ * equ.R₀ * log(R(x, equ) / equ.R₀) / 2
