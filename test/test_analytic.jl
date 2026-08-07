@@ -33,6 +33,45 @@ macro test_equilibrium(equilibrium_module, equilibrium_rangemin, equilibrium_ran
         # inject code
         $equilibrium_module.@code
 
+        # The equilibrium object itself, for the traits that are not part of the generated code.
+        const equ = $equilibrium_module.init()
+
+        """
+        `A` in cartesian components, as a function of a cartesian point.
+
+        `A₁, A₂, A₃` are the covariant components in the chart's own coordinates; `DF̄[j,i] =
+        ∂ξⱼ/∂xᵢ` pulls them back onto the cartesian frame, which is orthonormal, so the result is
+        both the covariant and the contravariant cartesian representation.
+        """
+        function A_cartesian(t, x)
+            η = from_cartesian(t, x)
+            Aη = [A₁(t, η...), A₂(t, η...), A₃(t, η...)]
+            D = DF̄(t, η)
+            [D[1, i] * Aη[1] + D[2, i] * Aη[2] + D[3, i] * Aη[3] for i in 1:3]
+        end
+
+        """
+        `B = ∇ × A`, checked in cartesian coordinates.
+
+        This is the one statement about the magnetic field that does not depend on the chart, so it
+        is the check that catches an orientation error: a left-handed chart whose Hodge star is
+        handed `|det DF|` instead of `det DF` produces a `B` that is exactly antiparallel to the
+        curl of its own vector potential, and nothing else in this file notices.
+        """
+        function test_curl(t, ξ; h=1E-5)
+            x = to_cartesian(t, ξ)
+            ê(i) = [k == i ? one(eltype(x)) : zero(eltype(x)) for k in 1:3]
+            ∂(i, j) = (A_cartesian(t, x .+ h .* ê(i))[j] -
+                       A_cartesian(t, x .- h .* ê(i))[j]) / (2h)
+
+            curlA = [∂(2, 3) - ∂(3, 2), ∂(3, 1) - ∂(1, 3), ∂(1, 2) - ∂(2, 1)]
+            Bcar = [B₍₁₎(t, ξ...), B₍₂₎(t, ξ...), B₍₃₎(t, ξ...)]
+
+            # central differences on an O(1) field carry an O(h²) truncation error; the tolerance is
+            # scaled by |B| so that it means the same thing for the Dipole as for the ThetaPinch
+            @test norm(curlA - Bcar) ≤ 1E-6 * max(norm(Bcar), 1)
+        end
+
         function test_equilibrium(t, ξ)
             @test ξ¹(t, ξ...) == ξ¹(t, ξ)
             @test ξ²(t, ξ...) == ξ²(t, ξ)
@@ -357,6 +396,13 @@ macro test_equilibrium(equilibrium_module, equilibrium_rangemin, equilibrium_ran
                 â = aₚ(t, ξ), b̂ = bₚ(t, ξ), ĉ = cₚ(t, ξ)
 
                 @test J(t, ξ) ≈ sqrt(det(DF' * DF)) atol = 1E-12
+
+                # `J` is the unsigned volume element |det DF|, asserted just above. `orientation`
+                # carries the sign that `J` throws away, and the two together must reproduce the
+                # signed determinant — otherwise the Hodge star and the cross product, which are
+                # handed `orientation(equ) * J`, are working in the wrong-handed frame.
+                @test det(DF) ≈ ElectromagneticFields.orientation(equ) * J(t, ξ) atol = 1E-12
+                @test ElectromagneticFields.orientation(equ) ∈ (-1, +1)
                 @test ḡ ≈ inv(g) atol = 1E-12
                 @test DF̄ ≈ inv(DF) atol = 1E-12
                 @test DF' * DF ≈ g atol = 1E-12
@@ -417,6 +463,7 @@ macro test_equilibrium(equilibrium_module, equilibrium_rangemin, equilibrium_ran
         @testset "$(rpad($module_name,60))" begin
             import .$module_test
             $module_test.test_equilibrium(t, ξ)
+            $module_test.test_curl(t, ξ)
         end
     end
 end
@@ -495,6 +542,22 @@ function test_axisymmetric_tokamak_toroidal_equilibrium(equ_mod, t=0.0, x=[0.5, 
 
     @test equ_mod.B₁(t, x) == 0
     @test equ_mod.B₂(t, x) == +equ_mod.B₀ / equ_mod.q₀ * equ_mod.r(t, x)^2 / equ_mod.R(t, x)
+    @test equ_mod.B₃(t, x) ≈ +equ_mod.B₀ * equ_mod.R₀ atol = 1E-14
+end
+
+"""
+The regularised chart carries the same magnetic field as `AxisymmetricTokamakToroidal`, in a gauge
+whose poloidal vector potential is regular on the magnetic axis, so it must reproduce that chart's
+field values exactly. Only the tolerances differ: the `1/cos²θ` gauge makes the generated
+expressions less well conditioned, so these are approximate where the unregularised ones are exact.
+"""
+function test_axisymmetric_tokamak_toroidal_regularization_equilibrium(equ_mod, t=0.0, x=[0.5, π / 10, π / 5])
+    @test equ_mod.B¹(t, x) ≈ 0 atol = 1E-14
+    @test equ_mod.B²(t, x) ≈ +equ_mod.B₀ / equ_mod.q₀ / equ_mod.R(t, x) atol = 1E-14
+    @test equ_mod.B³(t, x) ≈ +equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t, x)^2 atol = 1E-14
+
+    @test equ_mod.B₁(t, x) ≈ 0 atol = 1E-14
+    @test equ_mod.B₂(t, x) ≈ +equ_mod.B₀ / equ_mod.q₀ * equ_mod.r(t, x)^2 / equ_mod.R(t, x) atol = 1E-14
     @test equ_mod.B₃(t, x) ≈ +equ_mod.B₀ * equ_mod.R₀ atol = 1E-14
 end
 
@@ -588,6 +651,7 @@ end
     test_axisymmetric_tokamak_cartesian_equilibrium(AxisymmetricTokamakCartesianTest)
     test_axisymmetric_tokamak_cylindrical_equilibrium(AxisymmetricTokamakCylindricalTest)
     test_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidalTest)
+    test_axisymmetric_tokamak_toroidal_regularization_equilibrium(AxisymmetricTokamakToroidalRegularizationTest)
     test_symmetric_quadratic_equilibrium(SymmetricQuadraticTest)
     test_theta_pinch_equilibrium(ThetaPinchTest)
     test_abc_equilibrium(ABCTest)
@@ -596,6 +660,8 @@ end
 @testset "$(rpad("Consistency",60))" begin
     test_consistency_axisymmetric_tokamak_cylindrical_equilibrium(AxisymmetricTokamakCylindricalTest, AxisymmetricTokamakCartesianTest)
     test_consistency_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidalTest, AxisymmetricTokamakCartesianTest)
+    # the regularised chart shares the toroidal chart's coordinates, so the same check applies
+    test_consistency_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidalRegularizationTest, AxisymmetricTokamakCartesianTest)
 end
 
 

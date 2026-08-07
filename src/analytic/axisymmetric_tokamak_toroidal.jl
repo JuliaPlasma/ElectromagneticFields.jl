@@ -2,13 +2,13 @@
 Axisymmetric tokamak equilibrium in (r,θ,ϕ) coordinates with covariant
 components of the vector potential given by
 ```math
-A (r, \theta, \phi) = B_0 \, \bigg( 0 , \, \frac{r R_0}{\cos (\theta)} - \bigg( \frac{R_0}{\cos (\theta)} \bigg)^2 \, \ln \bigg( \frac{R}{R_0} \bigg) , \, - \frac{r^2}{2 q_0} \bigg)^T ,
+A (r, \theta, \phi) = \frac{B_0 R_0}{2} \, \bigg( \frac{Z}{R} \cos (\theta) - \ln \bigg( \frac{R}{R_0} \bigg) \sin (\theta) , \, - r \, \bigg[ \frac{Z}{R} \sin (\theta) + \ln \bigg( \frac{R}{R_0} \bigg) \cos (\theta) \bigg] , \, + \frac{r^2}{q_0 R_0} \bigg)^T ,
 ```
 resulting in the magnetic field with covariant components
 ```math
 B (r, \theta, \phi) = \frac{B_0}{q_0} \, \bigg( 0 , \, \frac{r^2}{R}, \, q_0 R_0 \bigg)^T ,
 ```
-where $R = R_0 + r \cos \theta$.
+where $R = R_0 + r \cos \theta$ and $Z = r \sin \theta$.
 
 Parameters:
  * `R₀`: position of magnetic axis
@@ -84,7 +84,6 @@ Z(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = r(x, equ) * 
 ElectromagneticFields.J(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = r(x, equ) * R(x, equ)
 # (r, θ, ϕ) inherits the left-handed (R, Z, ϕ) orientation, since det ∂(R,Z)/∂(r,θ) = +r.
 ElectromagneticFields.orientation(::AxisymmetricTokamakToroidalEquilibrium) = -1
-
 
 ElectromagneticFields.A₁(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = +equ.B₀ * equ.R₀ * (Z(x, equ) / R(x, equ) * cos(θ(x, equ)) - log(R(x, equ) / equ.R₀) * sin(θ(x, equ))) / 2
 ElectromagneticFields.A₂(x::AbstractVector, equ::AxisymmetricTokamakToroidalEquilibrium) = -equ.B₀ * equ.R₀ * (Z(x, equ) / R(x, equ) * sin(θ(x, equ)) + log(R(x, equ) / equ.R₀) * cos(θ(x, equ))) * r(x, equ) / 2

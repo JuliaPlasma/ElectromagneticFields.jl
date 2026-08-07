@@ -33,6 +33,30 @@ Several of the charts in this package are left-handed — `(R, Z, ϕ)` and `(r, 
 not a corner case. Getting it wrong reverses `B` without any other visible symptom: the same
 vector potential yields a magnetic field antiparallel to the one the cartesian chart gives at the
 same physical point.
+
+# Orientation of the charts in this package
+
+Every equilibrium built on `CartesianEquilibrium` uses the identity map `(x, y, z)`, so `DF = I`,
+`J = 1` and the chart is right-handed. The four families below define their own coordinates, and
+all four are left-handed — in each case because the toroidal angle `ϕ` sits in the third slot where
+the right-handed ordering would put the second poloidal coordinate.
+
+| chart | coordinates `(ξ¹, ξ², ξ³)` | `J` | `det DF` | orientation |
+|:--|:--|:--|:--|:--:|
+| `CartesianEquilibrium` and all its subtypes | `(x, y, z)` | `1` | `+1` | `+1` |
+| `AxisymmetricTokamakCylindrical` | `(R, Z, ϕ)` | `R` | `-R` | `-1` |
+| `AxisymmetricTokamakToroidal` | `(r, θ, ϕ)` | `r R` | `-r R` | `-1` |
+| `AxisymmetricTokamakToroidalRegularization` | `(r, θ, ϕ)` | `r R` | `-r R` | `-1` |
+| `AbstractSolovevEquilibrium` | `(R/R₀, Z/R₀, ϕ)` | `R R₀²` | `-R R₀²` | `-1` |
+
+Concretely: `AxisymmetricTokamakCartesian`, `SolovevSymmetric`, `ThetaPinch`, `Dipole`, `ABC`,
+`Singular`, `SymmetricQuadratic`, `QuadraticPotentials` and the three Penning traps are
+right-handed; `AxisymmetricTokamakCylindrical`, `AxisymmetricTokamakToroidal`,
+`AxisymmetricTokamakToroidalRegularization` and every `Solovev*` equilibrium other than
+`SolovevSymmetric` (which is a cartesian chart despite the name) are left-handed.
+
+`test_analytic.jl` asserts `det(DF) ≈ orientation(equ) * J` for each of them, so a new chart that
+declares the wrong sign fails immediately rather than silently flipping its own `B`.
 """
 orientation(::AnalyticField) = 1
 

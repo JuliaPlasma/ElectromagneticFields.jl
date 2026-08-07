@@ -25,7 +25,6 @@ ElectromagneticFields.J(x::AbstractVector, equ::AbstractSolovevEquilibrium) = R(
 # (R/R₀, Z/R₀, ϕ) is the same left-handed ordering as the cylindrical chart.
 ElectromagneticFields.orientation(::AbstractSolovevEquilibrium) = -1
 
-
 ElectromagneticFields.A₁(x::AbstractVector, equ::AbstractSolovevEquilibrium) = +equ.B₀ * equ.R₀ * x[2] / x[1] / 2
 ElectromagneticFields.A₂(x::AbstractVector, equ::AbstractSolovevEquilibrium) = -equ.B₀ * equ.R₀ * log(x[1]) / 2
 

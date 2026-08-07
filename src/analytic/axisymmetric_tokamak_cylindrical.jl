@@ -86,7 +86,6 @@ ElectromagneticFields.J(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEq
 # (R, Z, ϕ) is left-handed; the right-handed ordering would be (R, ϕ, Z). See `orientation`.
 ElectromagneticFields.orientation(::AxisymmetricTokamakCylindricalEquilibrium) = -1
 
-
 ElectromagneticFields.A₁(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = +equ.B₀ * equ.R₀ * Z(x, equ) / R(x, equ) / 2
 ElectromagneticFields.A₂(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = -equ.B₀ * equ.R₀ * log(R(x, equ) / equ.R₀) / 2
 ElectromagneticFields.A₃(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = +equ.B₀ * r²(x, equ) / equ.q₀ / 2
