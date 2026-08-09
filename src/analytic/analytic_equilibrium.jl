@@ -55,8 +55,14 @@ right-handed; `AxisymmetricTokamakCylindrical`, `AxisymmetricTokamakToroidal`,
 `AxisymmetricTokamakToroidalRegularization` and every `Solovev*` equilibrium other than
 `SolovevSymmetric` (which is a cartesian chart despite the name) are left-handed.
 
-`test_analytic.jl` asserts `det(DF) ≈ orientation(equ) * J` for each of them, so a new chart that
-declares the wrong sign fails immediately rather than silently flipping its own `B`.
+[`code`](@ref) emits a zero-argument `orientation()` into the generated module — the one generated
+function that takes no arguments, since the sign depends on neither `t` nor `ξ` — so a loaded
+equilibrium can recover `det DF = orientation() * J(t, ξ)` without the equilibrium object.
+
+`test_analytic.jl` asserts `det(DF) ≈ orientation() * J` for each of the charts above, reading the
+generated function, and separately that it equals the trait it was generated from. A new chart that
+declares the wrong sign therefore fails immediately rather than silently flipping its own `B`, and
+so does a generator that stops tracking the trait.
 """
 orientation(::AnalyticField) = 1
 
@@ -656,6 +662,10 @@ which `@code` splices into the calling module and [`load_equilibrium`](@ref) eva
 
 The `@code` macros take these as `key = value` arguments, after the equilibrium's parameters:
 `ThetaPinch.@code(B₀, cse = false)`, or just `ThetaPinch.@code cse = false` for the defaults.
+
+Every generated function takes `(t, ξ₁, ξ₂, ξ₃)` and `(t, ξ)`, except `orientation()`, which takes
+no arguments: it is the sign of the chart's handedness, constant in both `t` and `ξ`. See
+[`orientation`](@ref) for what it means and why `J` alone is not enough.
 """
 function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false, output=0, cse=true)
 
@@ -839,6 +849,19 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
         $(fnesc(:rangemax, escape))(ξ) = $(fnesc(:rangemax, escape))(0, ξ)
         $(fnesc(:rangemin, escape))(ξ₁, ξ₂, ξ₃) = $(fnesc(:rangemin, escape))(0, ξ₁, ξ₂, ξ₃)
         $(fnesc(:rangemax, escape))(ξ₁, ξ₂, ξ₃) = $(fnesc(:rangemax, escape))(0, ξ₁, ξ₂, ξ₃)
+    end
+
+    # append f_code to equ_code
+    append!(equ_code.args, f_code.args)
+
+    # The chart's orientation. Unlike every other generated function this one takes no arguments:
+    # it is a property of the chart, constant in both t and ξ. See
+    # `ElectromagneticFields.orientation`.
+    output ≥ 1 ? println("Generating function orientation") : nothing
+
+    f_code = quote
+        export $(fnesc(:orientation, escape))
+        $(fnesc(:orientation, escape))() = $(orientation(equ))
     end
 
     # append f_code to equ_code

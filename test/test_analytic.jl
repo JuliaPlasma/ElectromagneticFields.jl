@@ -33,7 +33,8 @@ macro test_equilibrium(equilibrium_module, equilibrium_rangemin, equilibrium_ran
         # inject code
         $equilibrium_module.@code
 
-        # The equilibrium object itself, for the traits that are not part of the generated code.
+        # The equilibrium object itself, so that the generated `orientation()` can be checked
+        # against the trait it is generated from.
         const equ = $equilibrium_module.init()
 
         """
@@ -401,8 +402,10 @@ macro test_equilibrium(equilibrium_module, equilibrium_rangemin, equilibrium_ran
                 # carries the sign that `J` throws away, and the two together must reproduce the
                 # signed determinant — otherwise the Hodge star and the cross product, which are
                 # handed `orientation(equ) * J`, are working in the wrong-handed frame.
-                @test det(DF) ≈ ElectromagneticFields.orientation(equ) * J(t, ξ) atol = 1E-12
-                @test ElectromagneticFields.orientation(equ) ∈ (-1, +1)
+                @test det(DF) ≈ orientation() * J(t, ξ) atol = 1E-12
+                @test orientation() ∈ (-1, +1)
+                # the generated function must agree with the trait it was generated from
+                @test orientation() == ElectromagneticFields.orientation(equ)
                 @test ḡ ≈ inv(g) atol = 1E-12
                 @test DF̄ ≈ inv(DF) atol = 1E-12
                 @test DF' * DF ≈ g atol = 1E-12
@@ -662,6 +665,40 @@ end
     test_consistency_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidalTest, AxisymmetricTokamakCartesianTest)
     # the regularised chart shares the toroidal chart's coordinates, so the same check applies
     test_consistency_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidalRegularizationTest, AxisymmetricTokamakCartesianTest)
+end
+
+
+# `code` has two callers with opposite `escape` settings, and everything above goes through only one
+# of them: `@test_equilibrium` splices `Mod.@code`, which escapes its names into the calling module.
+# `load_equilibrium` is the unescaped path, and it is the one that evaluates the generated `export`
+# statements into a module it does not own — so it is the path where `export orientation` can fail
+# without anything else noticing. Both handednesses are covered, since the sign is the whole point.
+
+using LinearAlgebra
+
+module AxisymmetricTokamakCylindricalLoadTest end
+module AxisymmetricTokamakCartesianLoadTest end
+
+const equ_cyl_loaded = ElectromagneticFields.AxisymmetricTokamakCylindrical.init()
+const equ_car_loaded = ElectromagneticFields.AxisymmetricTokamakCartesian.init()
+
+# at top level, so that the methods `load_equilibrium` evaluates are visible to the testset below —
+# calling it from inside `@testset` leaves them one world age too new to be called
+load_equilibrium(equ_cyl_loaded; target_module=AxisymmetricTokamakCylindricalLoadTest)
+load_equilibrium(equ_car_loaded; target_module=AxisymmetricTokamakCartesianLoadTest)
+
+@testset "$(rpad("load_equilibrium",60))" begin
+    for (target, equ) in (
+        (AxisymmetricTokamakCylindricalLoadTest, equ_cyl_loaded),
+        (AxisymmetricTokamakCartesianLoadTest, equ_car_loaded),
+    )
+        @test target.orientation() ∈ (-1, +1)
+        @test target.orientation() == ElectromagneticFields.orientation(equ)
+        @test det(target.DF(t, ξ)) ≈ target.orientation() * target.J(t, ξ) atol = 1E-12
+
+        # `names` sees only what the module exports, which is what the unescaped path emits
+        @test :orientation ∈ names(target)
+    end
 end
 
 
