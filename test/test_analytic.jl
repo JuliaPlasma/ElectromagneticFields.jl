@@ -668,6 +668,40 @@ end
 end
 
 
+# `code` has two callers with opposite `escape` settings, and everything above goes through only one
+# of them: `@test_equilibrium` splices `Mod.@code`, which escapes its names into the calling module.
+# `load_equilibrium` is the unescaped path, and it is the one that evaluates the generated `export`
+# statements into a module it does not own — so it is the path where `export orientation` can fail
+# without anything else noticing. Both handednesses are covered, since the sign is the whole point.
+
+using LinearAlgebra
+
+module AxisymmetricTokamakCylindricalLoadTest end
+module AxisymmetricTokamakCartesianLoadTest end
+
+const equ_cyl_loaded = ElectromagneticFields.AxisymmetricTokamakCylindrical.init()
+const equ_car_loaded = ElectromagneticFields.AxisymmetricTokamakCartesian.init()
+
+# at top level, so that the methods `load_equilibrium` evaluates are visible to the testset below —
+# calling it from inside `@testset` leaves them one world age too new to be called
+load_equilibrium(equ_cyl_loaded; target_module=AxisymmetricTokamakCylindricalLoadTest)
+load_equilibrium(equ_car_loaded; target_module=AxisymmetricTokamakCartesianLoadTest)
+
+@testset "$(rpad("load_equilibrium",60))" begin
+    for (target, equ) in (
+        (AxisymmetricTokamakCylindricalLoadTest, equ_cyl_loaded),
+        (AxisymmetricTokamakCartesianLoadTest, equ_car_loaded),
+    )
+        @test target.orientation() ∈ (-1, +1)
+        @test target.orientation() == ElectromagneticFields.orientation(equ)
+        @test det(target.DF(t, ξ)) ≈ target.orientation() * target.J(t, ξ) atol = 1E-12
+
+        # `names` sees only what the module exports, which is what the unescaped path emits
+        @test :orientation ∈ names(target)
+    end
+end
+
+
 # `code` runs every SymEngine-derived body through `eliminate_common_subexpressions`, which is only
 # safe because it names subexpressions rather than rewriting them. That claim is what is checked
 # here — that the eliminated block still denotes the very same expression — for every generated
