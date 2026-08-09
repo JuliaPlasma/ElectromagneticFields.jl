@@ -17,9 +17,6 @@ Parameters: `B₀`
 """
 module Singular
 
-    using LaTeXStrings
-    # using Plots
-    using RecipesBase
 
     import ..ElectromagneticFields
     import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
@@ -66,63 +63,5 @@ module Singular
 
     ElectromagneticFields.get_functions(::SingularEquilibrium) = (X=X, Y=Y, Z=Z, R=R, r=r, θ=θ, ϕ=ϕ, r²=r²)
 
-
-    @recipe function f(equ::SingularEquilibrium;
-                       nx = 100, ny = 100, levels = 25, size = (400,1200),
-                       xlims = (-1., +1.),
-                       ylims = (-1., +1.))
-
-        xgrid  = LinRange(xlims[1], xlims[2], nx)
-        ygrid  = LinRange(ylims[1], ylims[2], ny)
-        pot1   = [A₁([xgrid[i], ygrid[j], 0], equ) for i in eachindex(xgrid), j in eachindex(ygrid)]
-        pot2   = [A₂([xgrid[i], ygrid[j], 0], equ) for i in eachindex(xgrid), j in eachindex(ygrid)]
-        Bfield = [B([xgrid[i], ygrid[j], 0], equ) for i in eachindex(xgrid), j in eachindex(ygrid)]
-
-        seriestype   := :contour
-        aspect_ratio := :equal
-        layout := (3,1)
-        size   := size
-        xlims  := xlims
-        ylims  := ylims
-        levels := levels
-        legend := :none
-
-        logrange(x1, x2, n) = collect(10^y for y in range(log10(x1), log10(x2), length=n))
-
-        function doublelogrange(x1, x2, n)
-            lvls = logrange(x1, x2, n)
-            vcat(-lvls, +lvls)
-        end
-
-        @series begin
-            subplot := 1
-            title  := L"A_x (x,y)"
-            xguide := L"x"
-            yguide := L"y"
-            levels := doublelogrange(0.1, maximum(pot1), levels)
-            # seriescolor := cgrad(:default, levels, scale = :log)
-            (xgrid, ygrid, pot1)
-        end
-
-        @series begin
-            subplot := 2
-            title  := L"A_y (x,y)"
-            xguide := L"x"
-            yguide := L"y"
-            levels := doublelogrange(0.1, maximum(pot2), levels)
-            # seriescolor := cgrad(:default, levels, scale = :log)
-            (xgrid, ygrid, pot2)
-        end
-
-        @series begin
-            subplot := 3
-            title  := L"B_z (x,y)"
-            xguide := L"x"
-            yguide := L"y"
-            levels := logrange(maximum([0.1, minimum(Bfield)]), maximum(Bfield), levels)
-            # seriescolor := cgrad(:default, levels, scale = :log)
-            (xgrid, ygrid, Bfield)
-        end
-    end
 
 end

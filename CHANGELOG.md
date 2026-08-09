@@ -7,6 +7,55 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Releases 
 not covered here; see the git history for those.
 
 
+## [0.8.0] - 2026-08-10
+
+### Changed
+
+- **Plotting moved from Plots.jl to Makie**, and out of the package proper into a package
+  extension. The twelve `RecipesBase.@recipe` definitions scattered through `src/analytic/` are
+  replaced by `ext/ElectromagneticFieldsMakieExt.jl`, which is loaded as soon as `Makie` (or one
+  of its backends) is. `RecipesBase` and `LaTeXStrings` are no longer dependencies of
+  ElectromagneticFields.
+
+  This is a breaking change: `plot(equ)` with Plots.jl no longer works. The replacement is
+
+  ```julia
+  using CairoMakie
+  using ElectromagneticFields
+
+  plot_equilibrium(Solovev.ITER())
+  ```
+
+  `plot_equilibrium(equ; size, kwargs...)` creates a `Figure` and returns it, while
+  `plot_equilibrium!(position, equ; kwargs...)` draws into an existing one at any Makie grid
+  position, e.g. `fig[1,2]`. The latter is what replaces Plots' `layout` for composing several
+  equilibria into one figure, and it works uniformly for the single-panel fields and for those
+  that draw a panel per vector potential component. The keyword arguments carry over unchanged
+  (`nx`, `ny`, `levels`, `xlims`, `ylims`, plus `nτ` for Solov'ev and `ni` for ABC), except that
+  ABC's `nl` is now spelled `levels` like everywhere else, and `aspect` replaces Plots'
+  `aspect_ratio`. Contour panels take an opt-in `colorbar` keyword.
+
+### Fixed
+
+- **Six of the contour plots were transposed.** Plots.jl expects the value matrix indexed as
+  `z[j,i]` for `(x[i], y[j])`, and only the tokamak and Solov'ev recipes transposed accordingly;
+  the recipes for ABC, Dipole, QuadraticPotentials, Singular, SymmetricQuadratic and ThetaPinch
+  passed the matrix through as built and so plotted the mirror image about the diagonal. Makie
+  uses the `z[i,j]` convention that the comprehensions already produce, and the ported code
+  passes them straight through, so all twelve plots now show the field in the correct orientation.
+
+- The quantity plotted as `|B|` for the ABC field was `|B|²`, and the one plotted as `B_z` for the
+  symmetric quadratic field was `B₀ / (1 + x² + y²)` where the field is `B₀ (1 + x² + y²)`. Both
+  helpers are used only for plotting — the generated evaluation routines were never affected.
+
+### Removed
+
+- The `examples/` directory. Its Jupyter notebooks predated the current API, carried no narrative,
+  and one of them had been sitting in the repository with unresolved merge-conflict markers since
+  2020. Everything worth keeping now lives in the documentation, one page per field, as executed
+  `@example` blocks.
+
+
 ## [0.7.1] - 2026-08-10
 
 ### Added

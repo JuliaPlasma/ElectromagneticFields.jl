@@ -27,7 +27,6 @@ Parameters:
 """
 module PenningTrapAsymmetric
 
-    using RecipesBase
 
     import ..ElectromagneticFields
     import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments

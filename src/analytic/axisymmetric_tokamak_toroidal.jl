@@ -17,7 +17,6 @@ Parameters:
 """
 module AxisymmetricTokamakToroidal
 
-using RecipesBase
 
 import NaNMath: log
 
@@ -108,27 +107,5 @@ ElectromagneticFields.minx³(ξ::AbstractVector{T}, equ::AxisymmetricTokamakToro
 ElectromagneticFields.maxx²(ξ::AbstractVector{T}, equ::AxisymmetricTokamakToroidalEquilibrium) where {T} = T(2π)
 ElectromagneticFields.maxx³(ξ::AbstractVector{T}, equ::AxisymmetricTokamakToroidalEquilibrium) where {T} = T(2π)
 
-
-@recipe function f(equ::AxisymmetricTokamakToroidalEquilibrium;
-    nx=100, ny=120, levels=50, size=(400, 400),
-    xlims=(0.5 * equ.R₀, 1.5 * equ.R₀),
-    ylims=(-0.5 * equ.R₀, +0.5 * equ.R₀))
-
-    xgrid = LinRange(xlims[1], xlims[2], nx)
-    zgrid = LinRange(ylims[1], ylims[2], ny)
-    rgrid = [ElectromagneticFields.ξ¹([xgrid[i], 0.0, zgrid[j]], equ) for i in eachindex(xgrid), j in eachindex(zgrid)]
-    θgrid = [ElectromagneticFields.ξ²([xgrid[i], 0.0, zgrid[j]], equ) for i in eachindex(xgrid), j in eachindex(zgrid)]
-    pot = [ElectromagneticFields.A₃([rgrid[i, j], θgrid[i, j], 0.0], equ) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
-
-    seriestype := :contour
-    aspect_ratio := :equal
-    size := size
-    xlims := xlims
-    ylims := ylims
-    levels := levels
-    legend := :none
-
-    (xgrid, zgrid, pot')
-end
 
 end

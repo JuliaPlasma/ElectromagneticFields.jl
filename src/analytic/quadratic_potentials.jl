@@ -18,8 +18,6 @@ and electrostatic potential
 """
 module QuadraticPotentials
 
-using RecipesBase
-using LaTeXStrings
 
 import ..ElectromagneticFields
 import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
@@ -61,50 +59,5 @@ ElectromagneticFields.φ(x::AbstractVector, equ::QuadraticPotentialsField) = (X(
 
 ElectromagneticFields.get_functions(::QuadraticPotentialsField) = (X=X, Y=Y, Z=Z)
 
-
-@recipe function f(equ::QuadraticPotentialsField;
-    nx=100, ny=100, levels=20, size=(1200, 400),
-    xlims=(-1.0, +1.0),
-    ylims=(-1.0, +1.0))
-
-    xgrid = LinRange(xlims[1], xlims[2], nx)
-    ygrid = LinRange(ylims[1], ylims[2], ny)
-    pot1 = [ElectromagneticFields.A₁([xgrid[i], ygrid[j], 0.0], equ) for i in eachindex(xgrid), j in eachindex(ygrid)]
-    pot2 = [ElectromagneticFields.A₂([xgrid[i], ygrid[j], 0.0], equ) for i in eachindex(xgrid), j in eachindex(ygrid)]
-    pot3 = [ElectromagneticFields.A₃([xgrid[i], ygrid[j], 0.0], equ) for i in eachindex(xgrid), j in eachindex(ygrid)]
-
-    seriestype := :contour
-    aspect_ratio := :equal
-    layout := (1, 3)
-    size := size
-    xlims := xlims
-    ylims := ylims
-    levels := levels
-    legend := :none
-
-    @series begin
-        subplot := 1
-        title := L"A_x (x,y,0)"
-        xguide := L"x"
-        yguide := L"y"
-        (xgrid, ygrid, pot1)
-    end
-
-    @series begin
-        subplot := 2
-        title := L"A_y (x,y,0)"
-        xguide := L"x"
-        yguide := L"y"
-        (xgrid, ygrid, pot2)
-    end
-
-    @series begin
-        subplot := 3
-        title := L"A_z (x,y,0)"
-        xguide := L"x"
-        yguide := L"y"
-        (xgrid, ygrid, pot3)
-    end
-end
 
 end
