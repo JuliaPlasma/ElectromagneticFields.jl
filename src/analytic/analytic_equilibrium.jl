@@ -875,16 +875,50 @@ end
 
 """
     load_equilibrium(equ, pert = ZeroPerturbation(); target_module = Main, output = 0, cse = true)
+    load_equilibrium(f, equ, pert = ZeroPerturbation(); target_module = Main, output = 0, cse = true)
 
 Evaluate functions for evaluating analytic equilibria: generate the field functions of `equ` with
-[`code`](@ref) and evaluate them into `target_module`.
+[`code`](@ref) and evaluate them into `target_module`, which is returned.
 
 `output` and `cse` are passed on to [`code`](@ref) — in particular `cse = false` emits every repeated
 subexpression in full, which is slower but easier to read against a paper.
+
+The first form is only usable from top level. The methods it evaluates are defined in a world age
+newer than the frame that called it, so that frame cannot call them: from inside a function they are
+"too new", which Julia reports as a `MethodError` on a name that plainly exists. At top level — the
+REPL, a notebook cell, the body of a script — the world age advances between statements, so the
+generated functions are there for everything that follows.
+
+The second form is for everywhere else. It passes `target_module` to `f` through
+`Base.invokelatest`, so the body runs in the world age the generated methods live in:
+
+```julia
+load_equilibrium(equ; target_module = MyModule) do mod
+    mod.orientation()
+    mod.DF(t, ξ)
+end
+```
+
+Both the name lookup and the call have to happen inside `f` — on Julia 1.12 and newer a binding
+created by the evaluation is as invisible to the calling frame as a method is. `f`'s value is
+returned. For a caller that cannot be restructured around a callback, `Base.invokelatest(mod.B, t, ξ)`
+does the same thing one call at a time.
+
+The `@code` macros are not affected either way: they splice the same definitions in at expansion
+time, so they are already there when the surrounding code is compiled.
 """
 function load_equilibrium(equ, pert=ZeroPerturbation(); target_module=Main, output=0, cse=true)
     equ_code = code(equ, pert; output=output, cse=cse)
     Core.eval(target_module, equ_code)
+    target_module
+end
+
+# `f::Function` is what keeps this from replacing the method above: unannotated, its two-argument
+# form would have the identical `(Any, Any)` signature. No equilibrium is a `Function`, so the two
+# never compete for a call. Same shape as `open(f::Function, ...)`.
+function load_equilibrium(f::Function, equ, pert=ZeroPerturbation(); target_module=Main, output=0, cse=true)
+    target = load_equilibrium(equ, pert; target_module=target_module, output=output, cse=cse)
+    Base.invokelatest(f, target)
 end
 
 function symprint(name, symexpr, output=1, detail_level=0)
