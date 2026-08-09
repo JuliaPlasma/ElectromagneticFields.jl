@@ -685,10 +685,10 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
 
     # generate Julia code and export parameters
     if export_parameters
-        try
-            global parameters = get_parameters(equ)
+        parameters = try
+            get_parameters(equ)
         catch
-            global parameters = fieldnames(typeof(equ))
+            fieldnames(typeof(equ))
         end
 
         for param in parameters
