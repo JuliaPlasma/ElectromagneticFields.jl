@@ -33,7 +33,8 @@ macro test_equilibrium(equilibrium_module, equilibrium_rangemin, equilibrium_ran
         # inject code
         $equilibrium_module.@code
 
-        # The equilibrium object itself, for the traits that are not part of the generated code.
+        # The equilibrium object itself, so that the generated `orientation()` can be checked
+        # against the trait it is generated from.
         const equ = $equilibrium_module.init()
 
         """
@@ -401,8 +402,10 @@ macro test_equilibrium(equilibrium_module, equilibrium_rangemin, equilibrium_ran
                 # carries the sign that `J` throws away, and the two together must reproduce the
                 # signed determinant — otherwise the Hodge star and the cross product, which are
                 # handed `orientation(equ) * J`, are working in the wrong-handed frame.
-                @test det(DF) ≈ ElectromagneticFields.orientation(equ) * J(t, ξ) atol = 1E-12
-                @test ElectromagneticFields.orientation(equ) ∈ (-1, +1)
+                @test det(DF) ≈ orientation() * J(t, ξ) atol = 1E-12
+                @test orientation() ∈ (-1, +1)
+                # the generated function must agree with the trait it was generated from
+                @test orientation() == ElectromagneticFields.orientation(equ)
                 @test ḡ ≈ inv(g) atol = 1E-12
                 @test DF̄ ≈ inv(DF) atol = 1E-12
                 @test DF' * DF ≈ g atol = 1E-12

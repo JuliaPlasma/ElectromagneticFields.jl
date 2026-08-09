@@ -57,6 +57,10 @@ right-handed; `AxisymmetricTokamakCylindrical`, `AxisymmetricTokamakToroidal`,
 
 `test_analytic.jl` asserts `det(DF) ≈ orientation(equ) * J` for each of them, so a new chart that
 declares the wrong sign fails immediately rather than silently flipping its own `B`.
+
+[`code`](@ref) emits a zero-argument `orientation()` into the generated module — the one generated
+function that takes no arguments, since the sign depends on neither `t` nor `ξ` — so a loaded
+equilibrium can recover `det DF = orientation() * J(t, ξ)` without the equilibrium object.
 """
 orientation(::AnalyticField) = 1
 
@@ -839,6 +843,17 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
         $(fnesc(:rangemax, escape))(ξ) = $(fnesc(:rangemax, escape))(0, ξ)
         $(fnesc(:rangemin, escape))(ξ₁, ξ₂, ξ₃) = $(fnesc(:rangemin, escape))(0, ξ₁, ξ₂, ξ₃)
         $(fnesc(:rangemax, escape))(ξ₁, ξ₂, ξ₃) = $(fnesc(:rangemax, escape))(0, ξ₁, ξ₂, ξ₃)
+    end
+
+    # append f_code to equ_code
+    append!(equ_code.args, f_code.args)
+
+    # The chart's orientation. Unlike every other generated function this one takes no arguments:
+    # it is a property of the chart, constant in both t and ξ. See
+    # `ElectromagneticFields.orientation`.
+    f_code = quote
+        export $(fnesc(:orientation, escape))
+        $(fnesc(:orientation, escape))() = $(orientation(equ))
     end
 
     # append f_code to equ_code
