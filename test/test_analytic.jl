@@ -678,27 +678,43 @@ using LinearAlgebra
 
 module AxisymmetricTokamakCylindricalLoadTest end
 module AxisymmetricTokamakCartesianLoadTest end
+module ThetaPinchLoadTest end
 
 const equ_cyl_loaded = ElectromagneticFields.AxisymmetricTokamakCylindrical.init()
 const equ_car_loaded = ElectromagneticFields.AxisymmetricTokamakCartesian.init()
-
-# at top level, so that the methods `load_equilibrium` evaluates are visible to the testset below —
-# calling it from inside `@testset` leaves them one world age too new to be called
-load_equilibrium(equ_cyl_loaded; target_module=AxisymmetricTokamakCylindricalLoadTest)
-load_equilibrium(equ_car_loaded; target_module=AxisymmetricTokamakCartesianLoadTest)
+const equ_pinch_loaded = ElectromagneticFields.ThetaPinch.init()
 
 @testset "$(rpad("load_equilibrium",60))" begin
+    # inside the testset on purpose. A `@testset` body is a function body, so this is exactly the
+    # case the plain form cannot serve: the methods it evaluates would be one world age too new for
+    # this frame to call. The do-block form runs its body in the world age they live in, and that is
+    # what is under test here — everything below would be a `MethodError` without it.
     for (target, equ) in (
         (AxisymmetricTokamakCylindricalLoadTest, equ_cyl_loaded),
         (AxisymmetricTokamakCartesianLoadTest, equ_car_loaded),
     )
-        @test target.orientation() ∈ (-1, +1)
-        @test target.orientation() == ElectromagneticFields.orientation(equ)
-        @test det(target.DF(t, ξ)) ≈ target.orientation() * target.J(t, ξ) atol = 1E-12
+        result = load_equilibrium(equ; target_module=target) do mod
+            # the module the code went into, not a copy of it
+            @test mod === target
 
-        # `names` sees only what the module exports, which is what the unescaped path emits
-        @test :orientation ∈ names(target)
+            @test mod.orientation() ∈ (-1, +1)
+            @test mod.orientation() == ElectromagneticFields.orientation(equ)
+            @test det(mod.DF(t, ξ)) ≈ mod.orientation() * mod.J(t, ξ) atol = 1E-12
+
+            # `names` sees only what the module exports, which is what the unescaped path emits
+            @test :orientation ∈ names(mod)
+
+            mod.orientation()
+        end
+
+        # the callback's value comes back out
+        @test result == ElectromagneticFields.orientation(equ)
     end
+
+    # the plain form returns the target module. Its own module, since loading twice into one would
+    # redefine every method there; and the check stops at the return value, because from this frame
+    # the definitions it just made are one world age too new to call
+    @test load_equilibrium(equ_pinch_loaded; target_module=ThetaPinchLoadTest) === ThetaPinchLoadTest
 end
 
 
