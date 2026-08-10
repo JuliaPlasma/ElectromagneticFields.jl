@@ -10,6 +10,8 @@ makedocs(
         assets=[asset("assets/style.css", class=:css, islocal=true)]),
     pages=["Home" => "index.md",
         "Usage" => "usage.md",
+        "Coordinates" => "coordinates.md",
+        "Fields" => "fields.md",
         "Plotting" => "plotting.md",
         "Analytic Fields" => [
             "Overview" => "analytic/index.md",

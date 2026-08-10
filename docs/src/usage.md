@@ -107,7 +107,9 @@ typeof(expr)
 
 Rather more than just the magnetic field. The naming follows the usual conventions of
 differential geometry: subscripts denote covariant components, superscripts contravariant ones,
-and parenthesised subscripts the components in the physical (orthonormal) frame.
+and parenthesised subscripts the components in the physical (orthonormal) frame. See
+[Coordinates](coordinates.md) for what those three representations are and
+[Fields](fields.md) for how the field quantities below are derived from the vector potential.
 
 | | |
 |---|---|

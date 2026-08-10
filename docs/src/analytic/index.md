@@ -3,8 +3,9 @@
 ElectromagneticFields.jl provides a collection of analytically known electromagnetic fields.
 Each of them lives in its own submodule, is constructed by an `init` function taking the
 parameters of the field, and generates its evaluation routines through a `@code` macro — see
-[Usage](../usage.md) for the general workflow and [Plotting](../plotting.md) for how the figures
-on the following pages are made.
+[Usage](../usage.md) for the general workflow, [Coordinates](../coordinates.md) for the charts
+listed below, [Fields](../fields.md) for the field quantities each of them provides, and
+[Plotting](../plotting.md) for how the figures on the following pages are made.
 
 | Field | Coordinates | |
 |---|---|---|
