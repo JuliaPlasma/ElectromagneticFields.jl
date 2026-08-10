@@ -1,7 +1,7 @@
 using Documenter, ElectromagneticFields
 using CairoMakie
 
-CairoMakie.activate!(type="png")
+CairoMakie.activate!(type="svg")
 
 makedocs(
     sitename="ElectromagneticFields.jl",
