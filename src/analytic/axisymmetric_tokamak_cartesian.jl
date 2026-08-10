@@ -17,8 +17,6 @@ Parameters:
 """
 module AxisymmetricTokamakCartesian
 
-    using RecipesBase
-
     import ..ElectromagneticFields
     import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
     import ..AnalyticCartesianField: X, Y, Z
@@ -86,24 +84,4 @@ module AxisymmetricTokamakCartesian
     ElectromagneticFields.get_functions(::AxisymmetricTokamakCartesianEquilibrium) = (X=X, Y=Y, Z=Z, R=R, r=r, θ=θ, ϕ=ϕ, R²=R², r²=r²)
 
 
-    @recipe function f(equ::AxisymmetricTokamakCartesianEquilibrium;
-                       nx = 100, ny = 120, levels = 50, size = (400,400),
-                       xlims = (  0.5 * equ.R₀,   1.5 * equ.R₀),
-                       ylims = (- 0.5 * equ.R₀, + 0.5 * equ.R₀))
-
-        xgrid = LinRange(xlims[1], xlims[2], nx)
-        zgrid = LinRange(ylims[1], ylims[2], ny)
-        pot   = [ElectromagneticFields.A₂([xgrid[i], 0.0, zgrid[j]], equ) for i in eachindex(xgrid), j in eachindex(zgrid)]
-
-        seriestype   := :contour
-        aspect_ratio := :equal
-        size   := size
-        xlims  := xlims
-        ylims  := ylims
-        levels := levels
-        legend := :none
-
-        (xgrid, zgrid, pot')
-    end
-    
 end

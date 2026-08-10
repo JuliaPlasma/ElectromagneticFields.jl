@@ -1,6 +1,5 @@
 module ElectromagneticFields
 
-using Documenter
 using LinearAlgebra
 
 export ElectromagneticField
@@ -43,5 +42,9 @@ include("analytic/solovev_symmetric.jl")
 include("analytic/singular.jl")
 include("analytic/symmetric_quadratic.jl")
 include("analytic/theta_pinch.jl")
+
+export plot_equilibrium, plot_equilibrium!
+
+include("plots.jl")
 
 end

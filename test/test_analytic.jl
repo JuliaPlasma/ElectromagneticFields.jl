@@ -391,6 +391,26 @@ macro test_equilibrium(equilibrium_module, equilibrium_rangemin, equilibrium_ran
             # check internal consistency
             @test from_cartesian(t, to_cartesian(t, ξ)) ≈ ξ atol = 1E-14
 
+            # Every component carries the type of the coordinates, whether or not its body mentions
+            # them. A structurally constant entry such as `g₁₁ = 1` must not come out as the `Int`
+            # literal SymEngine emits for it, which would make the type of a component depend on
+            # which entry it is.
+            @test typeof(g₁₁(t, ξ)) === typeof(g₃₃(t, ξ)) === typeof(ξ[1])
+            @test typeof(DF₁₂(t, ξ)) === typeof(DF₁₁(t, ξ)) === typeof(ξ[1])
+            @test typeof(φ(t, ξ)) === typeof(B(t, ξ)) === typeof(ξ[1])
+
+            # A scalar component allocates nothing, and a matrix wrapper only the 3×3 matrix it
+            # returns, 144 bytes. Components of mixed type would make `hvcat` promote at runtime and
+            # cost several times that, which is what the bound catches; it is generous rather than
+            # exact so that it does not pin the size of an array header.
+            let bound = 400
+                B(t, ξ), J(t, ξ), g(t, ξ), DF(t, ξ)     # warm up
+                @test @allocated(B(t, ξ)) == 0
+                @test @allocated(J(t, ξ)) == 0
+                @test @allocated(g(t, ξ)) ≤ bound
+                @test @allocated(DF(t, ξ)) ≤ bound
+            end
+
             let g = g(t, ξ), ḡ = ḡ(t, ξ), DF = DF(t, ξ), DF̄ = DF̄(t, ξ),
                 a = a(t, ξ), b = b(t, ξ), c = c(t, ξ),
                 a⃗ = a⃗(t, ξ), b⃗ = b⃗(t, ξ), c⃗ = c⃗(t, ξ),
@@ -715,6 +735,42 @@ const equ_pinch_loaded = ElectromagneticFields.ThetaPinch.init()
     # redefine every method there; and the check stops at the return value, because from this frame
     # the definitions it just made are one world age too new to call
     @test load_equilibrium(equ_pinch_loaded; target_module=ThetaPinchLoadTest) === ThetaPinchLoadTest
+end
+
+
+# `A₃` is the poloidal flux function of the axisymmetric equilibria, and it is what the plotting
+# extension contours. The defining property is that the magnetic field lies in its level surfaces,
+# `B · ∇A₃ = 0`. The second half of each case guards the distinction that makes this worth asserting:
+# the physical toroidal component `A₃ / R` is a plausible-looking stand-in that does not have the
+# property. `R` there is the major radius in each chart's own coordinates, not `ξ₁` — in the toroidal
+# chart `ξ₁` is `r`, and dividing by it leaves a flux label behind.
+
+module FluxLabelCylindrical end
+module FluxLabelToroidal end
+module FluxLabelSolovev end
+
+@testset "$(rpad("A₃ is a flux label for the axisymmetric equilibria",60))" begin
+    for (target, equ, p) in (
+        (FluxLabelCylindrical, ElectromagneticFields.AxisymmetricTokamakCylindrical.init(), [1.1, 0.2, 0.3]),
+        (FluxLabelToroidal, ElectromagneticFields.AxisymmetricTokamakToroidal.init(), [0.2, 0.7, 0.3]),
+        (FluxLabelSolovev, ElectromagneticFields.Solovev.ITER(), [1.1, 0.2, 0.3]),
+    )
+        load_equilibrium(equ; target_module=target) do mod
+            Bcon = [mod.B¹(t, p), mod.B²(t, p), mod.B³(t, p)]
+
+            # central differences, so the tolerance is set by the truncation error rather than by ε
+            h = 1E-6
+            ê(i) = [k == i ? h : zero(h) for k in 1:3]
+            ∇(f) = [(f(p .+ ê(i)) - f(p .- ê(i))) / 2h for i in 1:3]
+
+            ψ(q) = mod.A₃(t, q)
+            @test Bcon' * ∇(ψ) ≈ 0 atol = 1E-8
+
+            # the quantity that is *not* a flux label, at a point where the difference shows
+            physical(q) = mod.A₃(t, q) / mod.R(t, q)
+            @test !isapprox(Bcon' * ∇(physical), 0; atol=1E-8)
+        end
+    end
 end
 
 

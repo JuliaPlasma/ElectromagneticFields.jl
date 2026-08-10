@@ -14,9 +14,6 @@ B (x,y,z) = - \frac{B₀}{r^5} \big( 3xz, \, 3yz, \, 2z^2 - x^2 - y^2 \big)^T .
 """
 module Dipole
 
-using RecipesBase
-using LaTeXStrings
-
 import ..ElectromagneticFields
 import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
 import ..AnalyticCartesianField: X, Y, Z
@@ -56,41 +53,5 @@ ElectromagneticFields.A₃(x::AbstractVector, equ::DipoleField) = zero(eltype(x)
 
 ElectromagneticFields.get_functions(::DipoleField) = (X=X, Y=Y, Z=Z)
 
-
-@recipe function f(equ::DipoleField;
-    nx=100, ny=100, levels=20, size=(800, 400),
-    xlims=(-1.0, +1.0),
-    ylims=(-1.0, +1.0))
-
-    xgrid = LinRange(xlims[1], xlims[2], nx)
-    ygrid = LinRange(ylims[1], ylims[2], ny)
-    pot1 = [ElectromagneticFields.A₁([xgrid[i], ygrid[j], 1.0], equ) for i in eachindex(xgrid), j in eachindex(ygrid)]
-    pot2 = [ElectromagneticFields.A₂([xgrid[i], ygrid[j], 1.0], equ) for i in eachindex(xgrid), j in eachindex(ygrid)]
-
-    seriestype := :contour
-    aspect_ratio := :equal
-    layout := (1, 2)
-    size := size
-    xlims := xlims
-    ylims := ylims
-    levels := levels
-    legend := :none
-
-    @series begin
-        subplot := 1
-        title := L"A_x (x,y,1)"
-        xguide := L"x"
-        yguide := L"y"
-        (xgrid, ygrid, pot1)
-    end
-
-    @series begin
-        subplot := 2
-        title := L"A_y (x,y,1)"
-        xguide := L"x"
-        yguide := L"y"
-        (xgrid, ygrid, pot2)
-    end
-end
 
 end

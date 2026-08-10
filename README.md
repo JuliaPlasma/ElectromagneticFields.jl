@@ -7,7 +7,8 @@
 [![Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://juliaplasma.github.io/ElectromagneticFields.jl/latest/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
 [![PkgEval Status](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/E/ElectromagneticFields.svg)](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/E/ElectromagneticFields.html)
-[![CI](https://github.com/JuliaPlasma/ElectromagneticFields.jl/workflows/CI/badge.svg)](https://github.com/JuliaPlasma/ElectromagneticFields.jl/actions?query=workflow:CI)
+[![CI](https://github.com/JuliaPlasma/ElectromagneticFields.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/JuliaPlasma/ElectromagneticFields.jl/actions/workflows/CI.yml)
+[![Documentation](https://github.com/JuliaPlasma/ElectromagneticFields.jl/actions/workflows/Documentation.yml/badge.svg)](https://github.com/JuliaPlasma/ElectromagneticFields.jl/actions/workflows/Documentation.yml)
 [![Coverage](https://codecov.io/gh/JuliaPlasma/ElectromagneticFields.jl/graph/badge.svg?token=shiEHXD1rj)](https://codecov.io/gh/JuliaPlasma/ElectromagneticFields.jl)
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.3662494.svg)](https://doi.org/10.5281/zenodo.3662494)
 

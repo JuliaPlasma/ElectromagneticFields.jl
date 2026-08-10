@@ -7,6 +7,139 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Releases 
 not covered here; see the git history for those.
 
 
+## [0.8.0] - 2026-08-10
+
+### Changed
+
+- **Plotting moved from Plots.jl to Makie**, and out of the package proper into a package
+  extension. The twelve `RecipesBase.@recipe` definitions scattered through `src/analytic/` are
+  replaced by `ext/ElectromagneticFieldsMakieExt.jl`, which is loaded as soon as `Makie` (or one
+  of its backends) is. `RecipesBase` and `LaTeXStrings` are no longer dependencies of
+  ElectromagneticFields.
+
+  This is a breaking change: `plot(equ)` with Plots.jl no longer works. The replacement is
+
+  ```julia
+  using CairoMakie
+  using ElectromagneticFields
+
+  plot_equilibrium(Solovev.ITER())
+  ```
+
+  `plot_equilibrium(equ; size, kwargs...)` creates a `Figure` and returns it, while
+  `plot_equilibrium!(position, equ; kwargs...)` draws into an existing one at any Makie grid
+  position, e.g. `fig[1,2]`, and returns the `Axis` it created, or the vector of axes for the
+  fields that draw more than one panel. The latter is what replaces Plots' `layout` for composing
+  several equilibria into one figure, and it works uniformly for the single-panel fields and for
+  those that draw a panel per vector potential component. The keyword arguments carry over
+  unchanged (`nx`, `ny`, `levels`, `xlims`, `ylims`, plus `nτ` for Solov'ev and `ni` for ABC),
+  except that ABC's `nl` is now spelled `levels` like everywhere else, and `aspect` replaces
+  Plots' `aspect_ratio`. Contour panels take an opt-in `colorbar` keyword, and the Solov'ev
+  equilibrium a `boundary` keyword to switch off the plasma boundary drawn on top of the flux
+  surfaces.
+
+  Equilibria without a plotting method — the three Penning traps — now report that in an
+  `ArgumentError` instead of a `MethodError` on an internal helper.
+
+- **`Documenter` is no longer a dependency.** `src/ElectromagneticFields.jl` carried a `using
+  Documenter` that nothing used — `@doc raw` is Base, and `@ref` in a docstring is plain text until
+  Documenter parses it at build time — so every downstream install pulled in Documenter and its
+  tree. The inert `[targets] docs` entry goes with it; the doc environment declares Documenter
+  itself.
+
+- **Every generated function now returns the type of the coordinates it was given.** A body that
+  does not mention the coordinates used to evaluate to whatever literal type SymEngine emitted, so
+  the structurally constant components came out as `Int64` — `g₁₁`, the off-diagonal entries of `g`
+  and `DF`, and `φ` and `E` of a purely magnetic equilibrium — while the rest were `Float64`. That
+  made the matrix wrappers promote at runtime: `g` allocated 976 bytes and `DF` 1072 per call, where
+  the 3×3 matrix they return is 144. Both are now 144, the scalar functions still allocate nothing,
+  and `test_analytic.jl` asserts as much for every equilibrium. Values are unchanged; the one
+  behavioural difference is that a coordinate-independent constant such as `B₃ = B₀ R₀` now takes the
+  coordinate's type, so `Float32` coordinates give a `Float32` result where they previously gave
+  `Float64` — the convention the `one(T)` / `zero(T)` chart traits already followed.
+
+- The identity blocks in the documentation are wrapped in a hidden `@assert`, so an identity that
+  stops holding fails the doc build instead of quietly rendering `false`.
+
+- The `Documentation` workflow drops four redundant steps — a `Pkg.develop` that duplicates the
+  `[sources]` entry in `docs/Project.toml`, a `Pkg.build`/`Pkg.precompile` pair covered by
+  `Pkg.instantiate`, a `julia-buildpkg` for the main project the doc build never uses, and a
+  standalone doctest run that repeats what `makedocs` already does — pins Julia to 1.12, which
+  `[sources]` requires, and caches its depot.
+
+- The stale Travis and Coveralls badges are gone, and the CI and Codecov badges in the documentation
+  now match the working ones in the README, alongside a new Documentation badge in both.
+
+### Fixed
+
+- **Six of the contour plots were transposed.** Plots.jl expects the value matrix indexed as
+  `z[j,i]` for `(x[i], y[j])`, and only the tokamak and Solov'ev recipes transposed accordingly;
+  the recipes for ABC, Dipole, QuadraticPotentials, Singular, SymmetricQuadratic and ThetaPinch
+  passed the matrix through as built and so plotted the mirror image about the diagonal. Makie
+  uses the `z[i,j]` convention that the comprehensions already produce, and the ported code
+  passes them straight through, so all twelve plots now show the field in the correct orientation.
+
+  The six affected recipes are exactly the six with square default grids, `nx == ny == 100`,
+  which is why Plots.jl never raised a dimension error; the two families that sample
+  `nx = 100, ny = 120` are precisely the two that transposed correctly. The test suite now plots
+  every field on a non-square grid as well, so a reintroduced transpose fails loudly.
+
+- The quantity plotted as `|B|` for the ABC field was `|B|²`, and the one plotted as `B_z` for the
+  symmetric quadratic field was `B₀ / (1 + x² + y²)` where the field is `B₀ (1 + x² + y²)`. Both
+  helpers are used only for plotting — the generated evaluation routines were never affected.
+
+- The logarithmic contour levels of the singular field are now derived from the finite magnitudes
+  of the data. Previously they came from `maximum` and `minimum` directly, which failed on any
+  grid that includes the singular line (`Inf` and `NaN` values, e.g. for odd `nx` and `ny`) and on
+  any plot range in which a component of the vector potential does not change sign, such as a
+  window that does not straddle the axis.
+
+- The ABC field no longer evaluates `|B|` on the full three-dimensional grid to draw three
+  mid-planes, which cost `O(nx³)` time and memory for `O(nx²)` values.
+
+- **The tokamak and Solov'ev plots showed the wrong quantity.** They contoured `A₃ / R`, the
+  *physical* toroidal component of the vector potential, and described it as the poloidal flux
+  function. The flux function is the covariant component `A₃ = ψ` itself: contracting the magnetic
+  field with `∇A₃` gives zero, while `B · ∇(A₃/R) ≠ 0`, so the contours drawn were not flux
+  surfaces. For the cartesian tokamak, whose `A_y` at `y = 0` is that same physical component, the
+  plot now shows `R A_y`. Only the `ψ = 0` contour was unaffected, which is why the red plasma
+  boundary of the Solov'ev equilibria always looked right. Five figures in the documentation change.
+
+- `plot_equilibrium` gives `size` and `figure` a defined precedence — the size chosen for the
+  equilibrium, then `figure`, then an explicit `size` — instead of letting a size inside `figure`
+  override the `size` argument as a side effect of the splat order. Documented and tested.
+
+- The contour levels of the Solov'ev equilibria are anchored to the flux on the magnetic axis rather
+  than spread evenly over the sampled range. `ψ` vanishes on the plasma boundary and grows without
+  bound away from it, so an even spread spent nearly all its levels on the far field and left the
+  flux surfaces of the plasma to four or five of them. They are now uniform in `ψ`, with one level
+  exactly on the boundary and a quarter of them inside it — ten at the default `levels = 40`, down
+  from `50`. Passing the levels themselves still bypasses this, as everywhere else.
+
+- The default plot range of `SolovevSymmetric` is centred on its magnetic axis. The flux function
+  depends on `x` through `(R₀ + x)⁴`, so the axis sits at `x = -R₀`, while the window was centred on
+  `+R₀` — for any `R₀ ≠ 0` it showed a monotone ramp rather than closed flux surfaces. Its docstring
+  described `R₀` as the position of the magnetic axis, which is off by a sign.
+
+- The `φ` in the docstrings of the three Penning traps is missing its minus sign: the potential is
+  `-E₀ (x²/2 + y²/2 - z²)`, which is what makes the stated `E = E₀ (x, y, -2z)` follow from
+  `E = -∇φ` and what the code has always computed.
+
+- The ABC page documented the wrong integrability criterion. The field lines are integrable when one
+  of `a`, `b`, `c` vanishes; equal coefficients are not a special case, and `a = b = c = 1` — the
+  package default — is the classic chaotic one.
+
+- `singular.md` claimed the vector potential diverges like `r⁻³`. It diverges like `r⁻²`; only `|B|`
+  goes as `r⁻³`.
+
+### Removed
+
+- The `examples/` directory. Its Jupyter notebooks predated the current API, carried no narrative,
+  and one of them had been sitting in the repository with unresolved merge-conflict markers since
+  2020. Everything worth keeping now lives in the documentation, one page per field, as executed
+  `@example` blocks.
+
+
 ## [0.7.1] - 2026-08-10
 
 ### Added

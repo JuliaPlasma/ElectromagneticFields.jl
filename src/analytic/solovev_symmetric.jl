@@ -1,5 +1,5 @@
 @doc raw"""
-Symmetric Solov'ev equilibrium in (R,Z,phi) coordinates.
+Symmetric Solov'ev equilibrium in cartesian (x,y,z) coordinates.
 Based on McCarthy, Physics of Plasmas 6, 3554, 1999.
 
 The covariant components of the vector potential are given by
@@ -8,13 +8,11 @@ A (x, y) = \frac{B_0}{2} \, \bigg( 0 , \, 0 , \, - \frac{\alpha}{4} (R_0 + x)^4 
 ```
 
 Parameters:
- * `R₀`: position of magnetic axis
+ * `R₀`: major radius, which places the magnetic axis at `x = -R₀`
  * `B₀`: B-field at magnetic axis
  * `α`, `β`: free constants
 """
 module SolovevSymmetric
-
-    using RecipesBase
 
     import ..ElectromagneticFields
     import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
@@ -67,26 +65,4 @@ module SolovevSymmetric
     ElectromagneticFields.get_functions(::SolovevSymmetricEquilibrium) = (X=X, Y=Y, Z=Z)
 
 
-    @recipe function f(equ::SolovevSymmetricEquilibrium;
-                       nx = 100, ny = 120, levels = 25, size = (600,400),
-                       xlims = (equ.R₀-0.75, equ.R₀+0.75),
-                       ylims = (-0.50, +0.50))
-
-        xgrid = LinRange(xlims[1], xlims[2], nx)
-        zgrid = LinRange(ylims[1], ylims[2], ny)
-        pot   = [ElectromagneticFields.A₃([xgrid[i], zgrid[j], 0.0], equ) for i in eachindex(xgrid), j in eachindex(zgrid)]
-
-        seriestype := :contour
-        aspect_ratio := :equal
-        size   := size
-        xlims  := xlims
-        ylims  := ylims
-        levels := levels
-        legend := :none
-        xguide := "x"
-        yguide := "y"
-
-        (xgrid, zgrid, pot')
-    end
-    
 end

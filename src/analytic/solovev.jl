@@ -5,8 +5,6 @@ Based on Cerfon & Freidberg, Physics of Plasmas 17, 032502, 2010,
 """
 module Solovev
 
-using RecipesBase
-
 using SymEngine: N, symbols, diff, expand, subs
 
 import NaNMath: log
@@ -242,7 +240,6 @@ function ElectromagneticFields.A₃(x::AbstractArray{T,1}, equ::SolovevEquilibri
      + equ.c[6] * ψ₆(x)
      + equ.c[7] * ψ₇(x))
 end
-
 
 
 @doc raw"""
@@ -523,60 +520,6 @@ macro code_frc(args...)
     code(FRC(); escape=true, options...)
 end
 
-
-@recipe function f(equ::SolovevEquilibrium;
-    nx=100, ny=120, nτ=200, levels=50, size=(300, 400), aspect_ratio=:equal,
-    xlims=(0.50, 1.50),
-    ylims=(-0.75, +0.75))
-
-    xgrid = LinRange(xlims[1], xlims[2], nx)
-    zgrid = LinRange(ylims[1], ylims[2], ny)
-    pot = [ElectromagneticFields.A₃([xgrid[i], zgrid[j], 0.0], equ) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
-
-    τ = LinRange(0, 2π, nτ)
-    boundary_X = 1 .+ equ.ϵ .* cos.(τ .+ asin(equ.δ) .* sin.(τ))
-    boundary_Y = equ.ϵ .* equ.κ .* sin.(τ)
-
-    aspect_ratio := aspect_ratio
-    size := size
-    xlims := xlims
-    ylims := ylims
-    levels := levels
-    legend := :none
-
-    @series begin
-        seriestype := :contour
-        (xgrid, zgrid, pot')
-    end
-
-    @series begin
-        seriestype := :path
-        seriescolor := :red
-        linewidth := 3
-        (boundary_X, boundary_Y)
-    end
-end
-
-
-@recipe function f(equ::SolovevXpointEquilibrium;
-    nx=100, ny=120, levels=50, size=(300, 400),
-    xlims=(0.50, 1.50),
-    ylims=(-0.75, +0.75))
-
-    xgrid = LinRange(xlims[1], xlims[2], nx)
-    zgrid = LinRange(ylims[1], ylims[2], ny)
-    pot = [ElectromagneticFields.A₃([xgrid[i], zgrid[j], 0.0], equ) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
-
-    seriestype := :contour
-    aspect_ratio := :equal
-    size := size
-    xlims := xlims
-    ylims := ylims
-    levels := levels
-    legend := :none
-
-    (xgrid, zgrid, pot')
-end
 
 end
 

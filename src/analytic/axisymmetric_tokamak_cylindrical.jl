@@ -17,8 +17,6 @@ Parameters:
 """
 module AxisymmetricTokamakCylindrical
 
-using RecipesBase
-
 import NaNMath: log
 
 import ..ElectromagneticFields
@@ -107,25 +105,5 @@ ElectromagneticFields.get_functions(::AxisymmetricTokamakCylindricalEquilibrium)
 ElectromagneticFields.minx³(ξ::AbstractVector{T}, equ::AxisymmetricTokamakCylindricalEquilibrium) where {T} = T(0)
 ElectromagneticFields.maxx³(ξ::AbstractVector{T}, equ::AxisymmetricTokamakCylindricalEquilibrium) where {T} = T(2π)
 
-
-@recipe function f(equ::AxisymmetricTokamakCylindricalEquilibrium;
-    nx=100, ny=120, levels=50, size=(400, 400),
-    xlims=(0.5 * equ.R₀, 1.5 * equ.R₀),
-    ylims=(-0.5 * equ.R₀, +0.5 * equ.R₀))
-
-    xgrid = LinRange(xlims[1], xlims[2], nx)
-    zgrid = LinRange(ylims[1], ylims[2], ny)
-    pot = [ElectromagneticFields.A₃([xgrid[i], zgrid[j], 0.0], equ) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
-
-    seriestype := :contour
-    aspect_ratio := :equal
-    size := size
-    xlims := xlims
-    ylims := ylims
-    levels := levels
-    legend := :none
-
-    (xgrid, zgrid, pot')
-end
 
 end
