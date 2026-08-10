@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Solov&#39;ev Equilibrium · ElectromagneticFields.jl</title><meta name="title" content="Solov&#39;ev Equilibrium · ElectromagneticFields.jl"/><meta property="og:title" content="Solov&#39;ev Equilibrium · ElectromagneticFields.jl"/><meta property="twitter:title" content="Solov&#39;ev Equilibrium · ElectromagneticFields.jl"/><meta name="description" content="Documentation for ElectromagneticFields.jl."/><meta property="og:description" content="Documentation for ElectromagneticFields.jl."/><meta property="twitter:description" content="Documentation for ElectromagneticFields.jl."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/style.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">ElectromagneticFields.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../usage/">Usage</a></li><li><a class="tocitem" href="../../coordinates/">Coordinates</a></li><li><a class="tocitem" href="../../fields/">Fields</a></li><li><a class="tocitem" href="../../plotting/">Plotting</a></li><li><span class="tocitem">Analytic Fields</span><ul><li><a class="tocitem" href="../">Overview</a></li><li><a class="tocitem" href="../abc/">Arnold-Beltrami-Childress Field</a></li><li><a class="tocitem" href="../axisymmetric_tokamak_cartesian/">Axisymmetric Tokamak (Cartesian)</a></li><li><a class="tocitem" href="../axisymmetric_tokamak_cylindrical/">Axisymmetric Tokamak (Cylindrical)</a></li><li><a class="tocitem" href="../axisymmetric_tokamak_toroidal/">Axisymmetric Tokamak (Toroidal)</a></li><li><a class="tocitem" href="../dipole/">Dipole</a></li><li><a class="tocitem" href="../penning_traps/">Penning Traps</a></li><li><a class="tocitem" href="../quadratic_potentials/">Quadratic Potentials</a></li><li><a class="tocitem" href="../singular/">Singular Field</a></li><li class="is-active"><a class="tocitem" href>Solov&#39;ev Equilibrium</a><ul class="internal"><li><a class="tocitem" href="#Up/Down-Symmetric-Equilibrium"><span>Up/Down Symmetric Equilibrium</span></a></li><li><a class="tocitem" href="#Equilibrium-with-X-Point"><span>Equilibrium with X-Point</span></a></li><li><a class="tocitem" href="#Evaluating-the-Field"><span>Evaluating the Field</span></a></li></ul></li><li><a class="tocitem" href="../solovev_symmetric/">Symmetric Solov&#39;ev Equilibrium</a></li><li><a class="tocitem" href="../symmetric_quadratic/">Symmetric Quadratic Field</a></li><li><a class="tocitem" href="../theta_pinch/">Theta Pinch</a></li></ul></li><li><a class="tocitem" href="../../modules/">Modules</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Analytic Fields</a></li><li class="is-active"><a href>Solov&#39;ev Equilibrium</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Solov&#39;ev Equilibrium</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaPlasma/ElectromagneticFields.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaPlasma/ElectromagneticFields.jl/blob/main/docs/src/analytic/solovev.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Solov&#39;ev-Equilibrium"><a class="docs-heading-anchor" href="#Solov&#39;ev-Equilibrium">Solov&#39;ev Equilibrium</a><a id="Solov&#39;ev-Equilibrium-1"></a><a class="docs-heading-anchor-permalink" href="#Solov&#39;ev-Equilibrium" title="Permalink"></a></h1><p>The Solov&#39;ev equilibria are exact solutions of the Grad-Shafranov equation, parametrised by the inverse aspect ratio <span>$\epsilon$</span>, the elongation <span>$\kappa$</span> and the triangularity <span>$\delta$</span> of the plasma boundary. Between them these three shape parameters cover configurations as different as a conventional tokamak, a spherical torus and a field reversed configuration.</p><p>The coordinates are <span>$(R/R_0, Z/R_0, \phi)$</span>, i.e. normalised to the major radius.</p><h2 id="Up/Down-Symmetric-Equilibrium"><a class="docs-heading-anchor" href="#Up/Down-Symmetric-Equilibrium">Up/Down Symmetric Equilibrium</a><a id="Up/Down-Symmetric-Equilibrium-1"></a><a class="docs-heading-anchor-permalink" href="#Up/Down-Symmetric-Equilibrium" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="ElectromagneticFields.Solovev.SolovevEquilibrium"><a class="docstring-binding" href="#ElectromagneticFields.Solovev.SolovevEquilibrium"><code>ElectromagneticFields.Solovev.SolovevEquilibrium</code></a> — <span class="docstring-category">Type</span></summary><section><div><p>Axisymmetric Solov&#39;ev equilibra in (R/R₀,Z/R₀,ϕ) coordinates. Based on Cerfon &amp; Freidberg, Physics of Plasmas 17, 032502, 2010,     and Freidberg, Ideal Magnetohydrodynamics, 2014.</p><p>The covariant components of the vector potential are given by</p><p class="math-container">\[A (x, y, \phi) = \left( \frac{B_0 R_0}{2} \, \frac{y}{x} , \, - \frac{B_0 R_0}{2} \, \ln x , \, \psi(x,y) \right)^T ,\]</p><p>with <span>$x = R/R_0$</span> and <span>$y = Z/R_0$</span>. The normalised poloidal flux <span>$\psi$</span> is given by</p><p class="math-container">\[\psi (x,y) = \psi_0 + \sum \limits_{i=1}^{7} c_i \psi_i (x,y) ,\]</p><p>with</p><p class="math-container">\[\begin{aligned}
+\psi_{0} &amp;= \frac{x^4}{8} + \alpha \left( \frac{1}{2} x^2 \, \ln x - \frac{x^4}{8} \right) , \\
+\psi_{1} &amp;= 1 , \\
+\psi_{2} &amp;= x^2 , \\
+\psi_{3} &amp;= y^2 - x^2 \, \ln x , \\
+\psi_{4} &amp;= x^4 - 4 x^2 y^2 , \\
+\psi_{5} &amp;= 2 y^4 9 y^2 x^2 + 3 x^4 \, \ln x - 12 x^2 y^2 \, \ln x , \\
+\psi_{6} &amp;= x^6 - 12 x^4 y^2 + 8 x^2 y^4 , \\
+\psi_{7} &amp;= 8 y^6 - 140 y^4 x^2 + 75 y^2 x^4 - 15 x^6 \, \ln x + 180 x^4 y^2 \, \ln x - 120 x^2 y^4 \, \ln x .
+\end{aligned}\]</p><p>This formula describes exact solutions of the Grad-Shafranov equation with up-down symmetry. The constants <span>$c_i$</span> are determined from boundary constraints on <span>$\psi$</span>, that are derived from the following analytic model for a smooth, elongated &quot;D&quot; shaped cross section:</p><p class="math-container">\[\begin{aligned}
+x &amp;= 1 + \epsilon \, \cos (\tau + \delta_0 \, \sin \tau) , \\
+y &amp;= \epsilon \kappa \, \sin (\tau) ,
+\end{aligned}\]</p><p>where <span>$0 \leq \tau &lt; 2 \pi$</span>, <span>$\epsilon = a / R_0$</span> is the inverse aspect ratio, <span>$\kappa$</span> the elongation, and <span>$\sin \delta_0 = \delta$</span> is the triangularity.</p><p>Defining three test points, namely</p><ul><li>the high point <span>$(1 - \delta \epsilon, \kappa \epsilon)$</span>,</li><li>the inner equatorial point <span>$(1 - \epsilon, 0)$</span>,</li><li>and the outer equatorial point <span>$(1 + \epsilon, 0)$</span>,</li></ul><p>the following geometric constraints can be posed on the solution:</p><p class="math-container">\[\begin{aligned}
+\psi (1 + \epsilon, 0) &amp;= 0 , \\
+\psi (1 - \epsilon, 0) &amp;= 0 , \\
+\psi (1 - \delta \epsilon, \kappa \epsilon) &amp;= 0 , \\
+\psi_{x} (1 - \delta \epsilon, \kappa \epsilon) &amp;= 0 , \\
+\psi_{yy} (1 + \epsilon, 0) &amp;= - N_1 \psi_{x} (1 + \epsilon, 0) , \\
+\psi_{yy} (1 - \epsilon, 0) &amp;= - N_2 \psi_{x} (1 - \epsilon, 0) , \\
+\psi_{xx} (1 - \delta \epsilon, \kappa \epsilon) &amp;= - N_3 \psi_y (1 - \delta \epsilon, \kappa \epsilon) .
+\end{aligned}\]</p><p>The first three equations define the three test points, the fourth equations enforces the high point to be a maximum, and the last three equations define the curvature at the test points.</p><p>The coefficients <span>$N_j$</span> can be found from the analytic model cross section as</p><p class="math-container">\[\begin{aligned}
+N_1 &amp;= \left[ \frac{d^2 x}{dy^2} \right]_{\tau = 0}     = - \frac{(1 + \delta_0)^2}{\epsilon \kappa^2} , \\
+N_2 &amp;= \left[ \frac{d^2 x}{dy^2} \right]_{\tau = \pi}   = \hphantom{-} \frac{(1 - \delta_0)^2}{\epsilon \kappa^2} , \\
+N_3 &amp;= \left[ \frac{d^2 x}{dy^2} \right]_{\tau = \pi/2} = - \frac{\kappa}{\epsilon \, \cos^2 \delta_0} .
+\end{aligned}\]</p><p>For a given value of the constant <span>$a$</span> above conditions reduce to a set of seven linear inhomogeneous algebraic equations for the unknown <span>$c_i$</span>, which can easily be solved.</p><p>Parameters:</p><ul><li><code>R₀</code>: position of magnetic axis</li><li><code>B₀</code>: B-field at magnetic axis</li><li><code>ϵ</code>:  inverse aspect ratio</li><li><code>κ</code>:  elongation</li><li><code>δ</code>:  triangularity</li><li><code>α</code>:  free constant, determined to match a given beta value</li></ul></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaPlasma/ElectromagneticFields.jl/blob/36253125d91ec0f65c5f784fd5dcf219a2dbfc69/src/analytic/solovev.jl#L73-L156">source</a></section></details></article><h3 id="Constructing-the-Field"><a class="docs-heading-anchor" href="#Constructing-the-Field">Constructing the Field</a><a id="Constructing-the-Field-1"></a><a class="docs-heading-anchor-permalink" href="#Constructing-the-Field" title="Permalink"></a></h3><p>The parameters can be given explicitly,</p><pre><code class="language-julia hljs">using CairoMakie
+using ElectromagneticFields
+
+equ = Solovev.init(6.2, 5.3, 0.32, 1.7, 0.33, -0.155)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SolovevEquilibrium Equilibrium with
+  R₀ = 6.2
+  B₀ = 5.3
+  ϵ  = 0.32
+  κ  = 1.7
+  δ  = 0.33
+  α  = -0.155</code></pre><p>or one of the named configurations can be used. <code>ITER</code>, <code>NSTX</code> and <code>FRC</code> are provided:</p><pre><code class="language-julia hljs">equ = Solovev.ITER()</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SolovevEquilibrium Equilibrium with
+  R₀ = 6.2
+  B₀ = 5.3
+  ϵ  = 0.32
+  κ  = 1.7
+  δ  = 0.33
+  α  = -0.155</code></pre><h3 id="Plotting"><a class="docs-heading-anchor" href="#Plotting">Plotting</a><a id="Plotting-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting" title="Permalink"></a></h3><p>The contours are the flux surfaces, and the plasma boundary is drawn on top in red:</p><pre><code class="language-julia hljs">plot_equilibrium(equ)</code></pre><img src="556fe882.svg" alt="Example block output"/><p>The three named configurations side by side. Note how much of the aspect ratio, elongation and triangularity is visible directly in the shape of the boundary:</p><pre><code class="language-julia hljs">fig = Figure(size = (900, 400))
+
+plot_equilibrium!(fig[1,1], Solovev.ITER();
+    title = &quot;ITER&quot;, xlims = (0.6, 1.4))
+plot_equilibrium!(fig[1,2], Solovev.NSTX();
+    title = &quot;NSTX&quot;, xlims = (0.05, 2.3), ylims = (-2.25, +2.25))
+plot_equilibrium!(fig[1,3], Solovev.FRC();
+    title = &quot;FRC&quot;, xlims = (0.0, 2.0), ylims = (-10.0, +10.0),
+    aspect = AxisAspect(0.5))
+
+fig</code></pre><img src="d81ba174.svg" alt="Example block output"/><h2 id="Equilibrium-with-X-Point"><a class="docs-heading-anchor" href="#Equilibrium-with-X-Point">Equilibrium with X-Point</a><a id="Equilibrium-with-X-Point-1"></a><a class="docs-heading-anchor-permalink" href="#Equilibrium-with-X-Point" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="ElectromagneticFields.Solovev.SolovevXpointEquilibrium"><a class="docstring-binding" href="#ElectromagneticFields.Solovev.SolovevXpointEquilibrium"><code>ElectromagneticFields.Solovev.SolovevXpointEquilibrium</code></a> — <span class="docstring-category">Type</span></summary><section><div><p>Axisymmetric Solov&#39;ev equilibra with X-point in (R/R₀,Z/R₀,phi) coordinates. Based on Cerfon &amp; Freidberg, Physics of Plasmas 17, 032502, 2010,     and Freidberg, Ideal Magnetohydrodynamics, 2014.</p><p>The covariant components of the vector potential are given by</p><p class="math-container">\[A (x, y, \phi) = \left( \frac{B_0 R_0}{2} \, \frac{y}{x} , \, - \frac{B_0 R_0}{2} \, \ln x , \, \psi(x,y) \right)^T ,\]</p><p>with <span>$x = R/R_0$</span> and <span>$y = Z/R_0$</span>. The normalised poloidal flux <span>$\psi$</span> is given by</p><p class="math-container">\[\psi (x,y) = \psi_0 + \sum \limits_{i=1}^{12} c_i \psi_i (x,y) ,\]</p><p>with</p><p class="math-container">\[\begin{aligned}
+\psi_{0}  &amp;= \frac{x^4}{8} + \alpha \left( \frac{1}{2} x^2 \, \ln x - \frac{x^4}{8} \right) , \\
+\psi_{1}  &amp;= 1 , \\
+\psi_{2}  &amp;= x^2 , \\
+\psi_{3}  &amp;= y^2 - x^2 \, \ln x , \\
+\psi_{4}  &amp;= x^4 - 4 x^2 y^2 , \\
+\psi_{5}  &amp;= 2 y^4 9 y^2 x^2 + 3 x^4 \, \ln x - 12 x^2 y^2 \, \ln x , \\
+\psi_{6}  &amp;= x^6 - 12 x^4 y^2 + 8 x^2 y^4 , \\
+\psi_{7}  &amp;= 8 y^6 - 140 y^4 x^2 + 75 y^2 x^4 - 15 x^6 \, \ln x + 180 x^4 y^2 \, \ln x - 120 x^2 y^4 \, \ln x , \\
+\psi_{8}  &amp;= y , \\
+\psi_{9}  &amp;= y x^2 , \\
+\psi_{10} &amp;= y^3 - 3 y x^2 \, \ln x , \\
+\psi_{11} &amp;= 3 y x^4 - 4 y^3 x^2 , \\
+\psi_{12} &amp;= 8 y^5 - 45 y x^4 - 80 y^3 x^2 \, \ln x + 60 y x^4 \, \ln x .
+\end{aligned}\]</p><p>This formula describes exact solutions of the Grad-Shafranov equation with up-down asymmetry. The constants <span>$c_i$</span> are determined from boundary constraints on <span>$\psi$</span>, that are derived from the following analytic model for a smooth, elongated &quot;D&quot; shaped cross section:</p><p class="math-container">\[\begin{aligned}
+x &amp;= 1 + \epsilon \, \cos (\tau + \arcsin \delta \, \sin \tau) , \\
+y &amp;= \epsilon \kappa \, \sin (\tau) ,
+\end{aligned}\]</p><p>where <span>$0 \leq \tau &lt; 2 \pi$</span>, <span>$\epsilon = a / R_0$</span> is the inverse aspect ratio, <span>$\kappa$</span> the elongation, and <span>$\sin \delta_0 = \delta$</span> is the triangularity.</p><p>Defining four test points, namely</p><ul><li>the high point <span>$(1 - \delta \epsilon, \kappa \epsilon)$</span>,</li><li>the inner equatorial point <span>$(1 - \epsilon, 0)$</span>,</li><li>and the outer equatorial point <span>$(1 + \epsilon, 0)$</span>,</li><li>the position of the X-point <span>$(x_{\mathrm{sep}}, y_{\mathrm{sep}})$</span>,</li></ul><p>the following geometric constraints can be posed on the solution:</p><p class="math-container">\[\begin{aligned}
+\psi (1 + \epsilon, 0) &amp;= 0 , \\
+\psi (1 - \epsilon, 0) &amp;= 0 , \\
+\psi (1 - \delta \epsilon, \kappa \epsilon) &amp;= 0 , \\
+\psi (x_{\mathrm{sep}}, y_{\mathrm{sep}}) &amp;= 0 , \\
+\psi_{y} (1 + \epsilon, 0) &amp;= 0 , \\
+\psi_{y} (1 - \epsilon, 0) &amp;= 0 , \\
+\psi_{x} (1 - \delta \epsilon, \kappa \epsilon) &amp;= 0 , \\
+\psi_{x} (x_{\mathrm{sep}}, y_{\mathrm{sep}}) &amp;= 0 , \\
+\psi_{y} (x_{\mathrm{sep}}, y_{\mathrm{sep}}) &amp;= 0 , \\
+\psi_{yy} (1 + \epsilon, 0) &amp;= - N_1 \psi_{x} (1 + \epsilon, 0) , \\
+\psi_{yy} (1 - \epsilon, 0) &amp;= - N_2 \psi_{x} (1 - \epsilon, 0) , \\
+\psi_{xx} (1 - \delta \epsilon, \kappa \epsilon) &amp;= - N_3 \psi_y (1 - \delta \epsilon, \kappa \epsilon) .
+\end{aligned}\]</p><p>The first four equations define the four test points, the fifth and sixth equations define the up-down symmetry, the seventh equations enforces the high point to be a maximum, the eighth and ninth eqaution set the <span>$x$</span>- and <span>$y$</span>-components of the magnetic field at the X-point to zero, and the last three equations define the curvature at the first three test points.</p><p>The coefficients <span>$N_j$</span> can be found from the analytic model cross section as</p><p class="math-container">\[\begin{aligned}
+N_1 &amp;= \left[ \frac{d^2 x}{dy^2} \right]_{\tau = 0}     = - \frac{(1 + \delta_0)^2}{\epsilon \kappa^2} , \\
+N_2 &amp;= \left[ \frac{d^2 x}{dy^2} \right]_{\tau = \pi}   = \hphantom{-} \frac{(1 - \delta_0)^2}{\epsilon \kappa^2} , \\
+N_3 &amp;= \left[ \frac{d^2 x}{dy^2} \right]_{\tau = \pi/2} = - \frac{\kappa}{\epsilon \, \cos^2 \delta_0} .
+\end{aligned}\]</p><p>For a given value of the constant <span>$a$</span> above conditions reduce to a set of seven linear inhomogeneous algebraic equations for the unknown <span>$c_i$</span>, which can easily be solved.</p><p>Parameters:</p><ul><li><code>R₀</code>: position of magnetic axis</li><li><code>B₀</code>: B-field at magnetic axis</li><li><code>ϵ</code>:  inverse aspect ratio</li><li><code>κ</code>:  elongation</li><li><code>δ</code>:  triangularity</li><li><code>α</code>:  free constant, determined to match a given beta value</li><li><code>xsep</code>: x position of the X point</li><li><code>ysep</code>: y position of the X point</li></ul></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaPlasma/ElectromagneticFields.jl/blob/36253125d91ec0f65c5f784fd5dcf219a2dbfc69/src/analytic/solovev.jl#L245-L343">source</a></section></details></article><h3 id="Constructing-the-Field-2"><a class="docs-heading-anchor" href="#Constructing-the-Field-2">Constructing the Field</a><a class="docs-heading-anchor-permalink" href="#Constructing-the-Field-2" title="Permalink"></a></h3><p>Passing <code>xpoint = true</code> to any of the named configurations places an X-point below the plasma, turning the outermost closed flux surface into a separatrix:</p><pre><code class="language-julia hljs">equ_xpoint = Solovev.ITER(xpoint = true)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Solovev Xpoint Equilibrium with
+  R₀ = 6.2
+  B₀ = 5.3
+  ϵ  = 0.32
+  κ  = 1.7
+  δ  = 0.33
+  α  = -0.155
+  xsep  = 0.88
+  ysep  = -0.6</code></pre><p><code>Solovev.NSTXdoubleX()</code> gives a configuration with X-points above <em>and</em> below the plasma.</p><h3 id="Plotting-2"><a class="docs-heading-anchor" href="#Plotting-2">Plotting</a><a class="docs-heading-anchor-permalink" href="#Plotting-2" title="Permalink"></a></h3><pre><code class="language-julia hljs">fig = Figure(size = (900, 400))
+
+plot_equilibrium!(fig[1,1], Solovev.ITER(xpoint = true);
+    title = &quot;ITER&quot;, xlims = (0.6, 1.4))
+plot_equilibrium!(fig[1,2], Solovev.NSTX(xpoint = true);
+    title = &quot;NSTX&quot;, xlims = (0.05, 2.3), ylims = (-2.25, +2.25))
+plot_equilibrium!(fig[1,3], Solovev.NSTXdoubleX();
+    title = &quot;NSTX (double X-point)&quot;, xlims = (0.05, 2.3), ylims = (-2.25, +2.25))
+
+fig</code></pre><img src="44ba0a4d.svg" alt="Example block output"/><p>The X-point shows up as the saddle where the innermost open surface pinches off — for the double X-point configuration there is one at the top and one at the bottom.</p><h2 id="Evaluating-the-Field"><a class="docs-heading-anchor" href="#Evaluating-the-Field">Evaluating the Field</a><a id="Evaluating-the-Field-1"></a><a class="docs-heading-anchor-permalink" href="#Evaluating-the-Field" title="Permalink"></a></h2><pre><code class="language-julia hljs">Solovev.@code_iter()</code></pre><p>Each named configuration has its own code macro (<code>@code_iter</code>, <code>@code_nstx</code>, <code>@code_frc</code>, and the <code>_xpoint</code> variants); for an equilibrium built from explicit parameters use <code>Solovev.@code</code> or <a href="../../usage/#load_equilibrium"><code>load_equilibrium</code></a>.</p><p>The coordinates are normalised to <span>$R_0$</span>, so a physical grid has to be divided by it before the generated functions are called:</p><pre><code class="language-julia hljs">nr, nz = 100, 120
+
+Rgrid = LinRange(3.0, 9.0, nr)
+Zgrid = LinRange(-5.0, +5.0, nz)
+
+sample(f) = [f(0.0, Rgrid[i] / R₀, Zgrid[j] / R₀, 0.0)
+             for i in eachindex(Rgrid), j in eachindex(Zgrid)]
+
+Bfield = sample(B)
+A_R = sample(A₁)
+A_Z = sample(A₂)
+A_ϕ = sample(A₃)
+
+extrema(Bfield)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(0.5889650506872077, 1.7666835067380915)</code></pre><p>The plasma boundary is the flux surface parametrised by the shape parameters, which are available as constants in the generated code:</p><pre><code class="language-julia hljs">τ = LinRange(0, 2π, 200)
+
+boundary_R = R₀ .* (1 .+ ϵ .* cos.(τ .+ asin(δ) .* sin.(τ)))
+boundary_Z = R₀ .* ϵ .* κ .* sin.(τ)</code></pre><p>Putting the two together, the field strength and the three components of the vector potential with the boundary drawn on top. The toroidal field dominates by far, so the contours of <span>$|B|$</span> are almost the lines of constant <span>$R$</span>, and it is <span>$A_\phi$</span> that carries the flux surfaces:</p><pre><code class="language-julia hljs">fig = Figure(size = (800, 900))
+
+panels = ((Bfield, L&quot;|B| (R,Z)&quot;), (A_ϕ, L&quot;A_\phi (R,Z)&quot;),
+          (A_R, L&quot;A_R (R,Z)&quot;), (A_Z, L&quot;A_Z (R,Z)&quot;))
+
+for (n, (vals, title)) in enumerate(panels)
+    ax = Axis(fig[cld(n,2), mod1(n,2)];
+        xlabel = L&quot;R&quot;, ylabel = L&quot;Z&quot;, title = title, aspect = DataAspect())
+    contour!(ax, Rgrid, Zgrid, vals; levels = 25)
+    lines!(ax, boundary_R, boundary_Z; color = :red, linewidth = 3)
+end
+
+fig</code></pre><img src="edb4b587.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../singular/">« Singular Field</a><a class="docs-footer-nextpage" href="../solovev_symmetric/">Symmetric Solov&#39;ev Equilibrium »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Monday 10 August 2026 06:29">Monday 10 August 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
