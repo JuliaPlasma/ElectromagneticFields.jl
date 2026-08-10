@@ -518,19 +518,20 @@ end
 #
 # `convert(Expr, ::Basic)` writes out SymEngine's expanded tree verbatim, and SymEngine shares
 # nothing: a subexpression common to fifty branches of `∂ⱼ(Bᵢ / sqrt(gᵏˡBₖBₗ))` is emitted fifty
-# times. On the ITER Solov'ev equilibrium with an X-point, whose flux function carries `x² log x`
-# terms, `db₁dx₁` comes out as 1905 statements containing 108 separate evaluations of `log(x₁)` and
-# 557 powers, and `d²b₁dx₁dx₁` as 6231 statements with 367 logs. Naming each distinct subexpression
-# once takes those to 83 ns and 137 ns from 566 ns and 1749 ns.
+# times. The worst case in the package is the ITER Solov'ev equilibrium with an X-point, whose flux
+# function carries `x² log x` terms: unshared, `db₁dx₁` is 1905 statements containing 108 separate
+# evaluations of `log(x₁)` and 557 powers, and `d²b₁dx₁dx₁` is 6231 statements with 367 logs. Naming
+# each distinct subexpression once brings those two to 83 ns and 137 ns, against 566 ns and 1749 ns
+# unshared.
 #
-# This only *names* subexpressions. It never reassociates, never reorders an operand, never folds a
-# constant — so every generated function returns bit-for-bit what it returned before, which
+# This only *names* subexpressions. It never reassociates, never reorders an operand and never folds
+# a constant, so a generated function computes bit for bit what its unshared form computes, which
 # `test/test_analytic.jl` asserts for every function of every equilibrium.
 #
-# Implemented by hash-consing rather than by hashing whole `Expr`s: a node is keyed by its head and
-# the integer ids of its arguments, so no subtree is ever hashed or printed as a whole and the pass
-# is linear in the size of the expression. The naive version — `Dict{Expr,Int}` keyed by the
-# subtrees themselves, sorted by printed length — is quadratic and does not finish on the Solov'ev
+# The pass is a hash-cons rather than a hash of whole `Expr`s: a node is keyed by its head and the
+# integer ids of its arguments, so no subtree is ever hashed or printed as a whole and the cost is
+# linear in the size of the expression. Keying on the subtrees themselves instead — a
+# `Dict{Expr,Int}` ordered by printed length — is quadratic, and does not finish on the Solov'ev
 # second derivatives.
 #
 # Ids are handed out in post-order, so a node's arguments always have smaller ids than the node.

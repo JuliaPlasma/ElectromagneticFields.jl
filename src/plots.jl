@@ -26,9 +26,10 @@ remaining fields defined in cartesian coordinates it is a panel per vector poten
 component, and for the ABC field the absolute value of the magnetic field in three
 mid-planes.
 
-The figure `size` defaults to one chosen per equilibrium; anything else in `figure`
-is passed on to `Makie.Figure`. All remaining keyword arguments are forwarded to
-[`plot_equilibrium!`](@ref).
+The figure `size` defaults to one chosen per equilibrium, and everything in `figure`
+is passed on to `Makie.Figure`. Both can carry a size; the precedence is the
+per-equilibrium default first, then `figure`, then an explicit `size`. All remaining
+keyword arguments are forwarded to [`plot_equilibrium!`](@ref).
 
 See also [`plot_equilibrium!`](@ref).
 """

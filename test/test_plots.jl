@@ -42,6 +42,16 @@ isaxis(x) = x isa Makie.Axis || (x isa AbstractVector && all(ax -> ax isa Makie.
         @test plot_equilibrium(equ; levels=5, colorbar=true, colormap=:plasma) isa Makie.Figure
     end
 
+    # `size` and `figure` can both carry a figure size, so the precedence is part of the interface:
+    # the size chosen for the equilibrium, then `figure`, then an explicit `size`
+    figuresize(fig) = Tuple(Makie.widths(fig.scene.viewport[]))
+    let equ = ThetaPinch.init()
+        @test figuresize(plot_equilibrium(equ)) == (800, 400)
+        @test figuresize(plot_equilibrium(equ; size=(320, 240))) == (320, 240)
+        @test figuresize(plot_equilibrium(equ; figure=(; size=(360, 260)))) == (360, 260)
+        @test figuresize(plot_equilibrium(equ; size=(320, 240), figure=(; size=(360, 260)))) == (320, 240)
+    end
+
     # A non-square grid is what guards against the value matrices being transposed:
     # Makie rejects a matrix whose dimensions do not match (length(x), length(y)),
     # while a square grid accepts a transposed one silently.

@@ -26,8 +26,11 @@ import ElectromagneticFields: plot_equilibrium, plot_equilibrium!
 const Position = Union{GridPosition,GridSubposition,GridLayout}
 
 function plot_equilibrium(equ::ElectromagneticFields.AnalyticEquilibrium;
-    size=figuresize(equ), figure=NamedTuple(), kwargs...)
-    fig = Figure(; size=size, figure...)
+    size=nothing, figure=NamedTuple(), kwargs...)
+    # `size` and `figure` can both carry one, so the order here is the documented precedence: the
+    # size chosen for the equilibrium, then whatever `figure` holds, then an explicit `size`.
+    opts = merge((; size=figuresize(equ)), figure, size === nothing ? (;) : (; size=size))
+    fig = Figure(; opts...)
     plot_equilibrium!(fig[1, 1], equ; kwargs...)
     fig
 end

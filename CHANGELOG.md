@@ -105,6 +105,10 @@ not covered here; see the git history for those.
   plot now shows `R A_y`. Only the `ψ = 0` contour was unaffected, which is why the red plasma
   boundary of the Solov'ev equilibria always looked right. Five figures in the documentation change.
 
+- `plot_equilibrium` gives `size` and `figure` a defined precedence — the size chosen for the
+  equilibrium, then `figure`, then an explicit `size` — instead of letting a size inside `figure`
+  override the `size` argument as a side effect of the splat order. Documented and tested.
+
 - The contour levels of the Solov'ev equilibria are anchored to the flux on the magnetic axis rather
   than spread evenly over the sampled range. `ψ` vanishes on the plasma boundary and grows without
   bound away from it, so an even spread spent nearly all its levels on the far field and left the
