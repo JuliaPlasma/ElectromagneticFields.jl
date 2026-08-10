@@ -15,9 +15,9 @@ equ = Singular.init()
 
 ## Plotting
 
-Both the vector potential and the magnetic field diverge like ``r^{-3}`` as the ``z`` axis is
-approached, so linearly spaced contour levels would show nothing but the singularity. The plot
-therefore uses logarithmically spaced levels:
+Both the vector potential and the magnetic field diverge as the ``z`` axis is approached — the
+potential like ``r^{-2}``, the field like ``r^{-3}`` — so linearly spaced contour levels would show
+nothing but the singularity. The plot therefore uses logarithmically spaced levels:
 
 ```@example singular
 plot_equilibrium(equ)

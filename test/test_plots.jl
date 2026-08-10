@@ -3,9 +3,8 @@ using CairoMakie
 using ElectromagneticFields
 using Test
 
-# One instance of every equilibrium that has a plotting method. Loading CairoMakie
-# above is what brings the Makie extension into scope, so this testset doubles as a
-# check that the extension is found and precompiles.
+# One instance of every equilibrium that has a plotting method. Loading CairoMakie above is what
+# brings the extension into scope, so this testset doubles as a check that it is found at all.
 const plot_equilibria = (
     ABC.init(),
     AxisymmetricTokamakCartesian.init(),
@@ -24,8 +23,8 @@ const plot_equilibria = (
     Solovev.NSTXdoubleX(),
 )
 
-# ABC is the one field that is sampled on a cubic grid, so it takes neither `ny` nor
-# `xlims`/`ylims` and has to sit out the tests that vary them.
+# ABC is sampled on a cubic grid, so it takes neither `ny` nor `xlims`/`ylims` and has to sit out
+# the tests that vary them.
 const rectangular_equilibria = filter(equ -> !(equ isa ABC.ABCEquilibrium), plot_equilibria)
 
 isaxis(x) = x isa Makie.Axis || (x isa AbstractVector && all(ax -> ax isa Makie.Axis, x))

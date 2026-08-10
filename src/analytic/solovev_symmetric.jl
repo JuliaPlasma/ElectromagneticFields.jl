@@ -1,5 +1,5 @@
 @doc raw"""
-Symmetric Solov'ev equilibrium in (R,Z,phi) coordinates.
+Symmetric Solov'ev equilibrium in cartesian (x,y,z) coordinates.
 Based on McCarthy, Physics of Plasmas 6, 3554, 1999.
 
 The covariant components of the vector potential are given by
@@ -8,7 +8,7 @@ A (x, y) = \frac{B_0}{2} \, \bigg( 0 , \, 0 , \, - \frac{\alpha}{4} (R_0 + x)^4 
 ```
 
 Parameters:
- * `R₀`: position of magnetic axis
+ * `R₀`: major radius, which places the magnetic axis at `x = -R₀`
  * `B₀`: B-field at magnetic axis
  * `α`, `β`: free constants
 """

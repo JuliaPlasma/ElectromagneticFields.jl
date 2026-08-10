@@ -41,6 +41,35 @@ not covered here; see the git history for those.
   Equilibria without a plotting method — the three Penning traps — now report that in an
   `ArgumentError` instead of a `MethodError` on an internal helper.
 
+- **`Documenter` is no longer a dependency.** `src/ElectromagneticFields.jl` carried a `using
+  Documenter` that nothing used — `@doc raw` is Base, and `@ref` in a docstring is plain text until
+  Documenter parses it at build time — so every downstream install pulled in Documenter and its
+  tree. The inert `[targets] docs` entry goes with it; the doc environment declares Documenter
+  itself.
+
+- **Every generated function now returns the type of the coordinates it was given.** A body that
+  does not mention the coordinates used to evaluate to whatever literal type SymEngine emitted, so
+  the structurally constant components came out as `Int64` — `g₁₁`, the off-diagonal entries of `g`
+  and `DF`, and `φ` and `E` of a purely magnetic equilibrium — while the rest were `Float64`. That
+  made the matrix wrappers promote at runtime: `g` allocated 976 bytes and `DF` 1072 per call, where
+  the 3×3 matrix they return is 144. Both are now 144, the scalar functions still allocate nothing,
+  and `test_analytic.jl` asserts as much for every equilibrium. Values are unchanged; the one
+  behavioural difference is that a coordinate-independent constant such as `B₃ = B₀ R₀` now takes the
+  coordinate's type, so `Float32` coordinates give a `Float32` result where they previously gave
+  `Float64` — the convention the `one(T)` / `zero(T)` chart traits already followed.
+
+- The identity blocks in the documentation are wrapped in a hidden `@assert`, so an identity that
+  stops holding fails the doc build instead of quietly rendering `false`.
+
+- The `Documentation` workflow drops four redundant steps — a `Pkg.develop` that duplicates the
+  `[sources]` entry in `docs/Project.toml`, a `Pkg.build`/`Pkg.precompile` pair covered by
+  `Pkg.instantiate`, a `julia-buildpkg` for the main project the doc build never uses, and a
+  standalone doctest run that repeats what `makedocs` already does — pins Julia to 1.12, which
+  `[sources]` requires, and caches its depot.
+
+- The stale Travis and Coveralls badges are gone, and the CI and Codecov badges in the documentation
+  now match the working ones in the README, alongside a new Documentation badge in both.
+
 ### Fixed
 
 - **Six of the contour plots were transposed.** Plots.jl expects the value matrix indexed as
@@ -67,6 +96,37 @@ not covered here; see the git history for those.
 
 - The ABC field no longer evaluates `|B|` on the full three-dimensional grid to draw three
   mid-planes, which cost `O(nx³)` time and memory for `O(nx²)` values.
+
+- **The tokamak and Solov'ev plots showed the wrong quantity.** They contoured `A₃ / R`, the
+  *physical* toroidal component of the vector potential, and described it as the poloidal flux
+  function. The flux function is the covariant component `A₃ = ψ` itself: contracting the magnetic
+  field with `∇A₃` gives zero, while `B · ∇(A₃/R) ≠ 0`, so the contours drawn were not flux
+  surfaces. For the cartesian tokamak, whose `A_y` at `y = 0` is that same physical component, the
+  plot now shows `R A_y`. Only the `ψ = 0` contour was unaffected, which is why the red plasma
+  boundary of the Solov'ev equilibria always looked right. Five figures in the documentation change.
+
+- The contour levels of the Solov'ev equilibria are anchored to the flux on the magnetic axis rather
+  than spread evenly over the sampled range. `ψ` vanishes on the plasma boundary and grows without
+  bound away from it, so an even spread spent nearly all its levels on the far field and left the
+  flux surfaces of the plasma to four or five of them. They are now uniform in `ψ`, with one level
+  exactly on the boundary and a quarter of them inside it — ten at the default `levels = 40`, down
+  from `50`. Passing the levels themselves still bypasses this, as everywhere else.
+
+- The default plot range of `SolovevSymmetric` is centred on its magnetic axis. The flux function
+  depends on `x` through `(R₀ + x)⁴`, so the axis sits at `x = -R₀`, while the window was centred on
+  `+R₀` — for any `R₀ ≠ 0` it showed a monotone ramp rather than closed flux surfaces. Its docstring
+  described `R₀` as the position of the magnetic axis, which is off by a sign.
+
+- The `φ` in the docstrings of the three Penning traps is missing its minus sign: the potential is
+  `-E₀ (x²/2 + y²/2 - z²)`, which is what makes the stated `E = E₀ (x, y, -2z)` follow from
+  `E = -∇φ` and what the code has always computed.
+
+- The ABC page documented the wrong integrability criterion. The field lines are integrable when one
+  of `a`, `b`, `c` vanishes; equal coefficients are not a special case, and `a = b = c = 1` — the
+  package default — is the classic chaotic one.
+
+- `singular.md` claimed the vector potential diverges like `r⁻³`. It diverges like `r⁻²`; only `|B|`
+  goes as `r⁻³`.
 
 ### Removed
 

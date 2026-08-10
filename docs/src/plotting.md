@@ -1,7 +1,8 @@
 # Plotting
 
-Every analytic equilibrium can be plotted. The plotting routines are provided by a package
-extension, so they become available as soon as [Makie](https://docs.makie.org) or one of its
+Most analytic equilibria can be plotted directly; the exceptions are the three Penning traps, which
+have no plotting method and say so in an `ArgumentError`. The plotting routines are provided by a
+package extension, so they become available as soon as [Makie](https://docs.makie.org) or one of its
 backends is loaded. For documentation and other static output CairoMakie is the natural choice:
 
 ```@example plotting
@@ -11,21 +12,24 @@ using ElectromagneticFields
 plot_equilibrium(Solovev.ITER())
 ```
 
-What is shown depends on the field. For the tokamak and Solov'ev equilibria it is the poloidal
-flux function ``A_\phi / R``, whose contours are the flux surfaces, with the plasma boundary drawn
-on top in red. For the fields defined in cartesian coordinates it is one panel per component of
-the vector potential, and for the ABC field the absolute value of the magnetic field in the three
+What is shown depends on the field. For the tokamak and Solov'ev equilibria it is the poloidal flux
+function ``\psi``, whose contours are the flux surfaces — that is the third covariant component
+`A₃`, which is ``A_\phi`` in the toroidal charts and ``R \, A_y`` in the cartesian tokamak. The
+Solov'ev equilibrium draws the plasma boundary on top in red; it is the only one that does. For the
+remaining fields defined in cartesian coordinates the plot shows one panel per component of the
+vector potential, and for the ABC field the absolute value of the magnetic field in the three
 mid-planes.
 
 
 ## Adjusting the Plot
 
 Every method accepts the number of contour `levels`, the axis labels `title`, `xlabel` and
-`ylabel`, the `aspect` ratio, and the figure `size`. Most of them are sampled on a rectangular
+`ylabel`, the `aspect` ratio, and an opt-in `colorbar`. Most of them are sampled on a rectangular
 grid and accordingly take its resolution as `nx` and `ny` and its extent as `xlims` and `ylims`;
 the ABC field is the exception, being sampled on a cubic grid of `nx` points per direction. The
 Solov'ev equilibrium takes `boundary` in addition, to switch off the plasma boundary drawn on top
-of the flux surfaces.
+of the flux surfaces. The figure `size` belongs to `plot_equilibrium` alone — `plot_equilibrium!`
+draws into a figure that already has one.
 
 Anything not recognised is forwarded to Makie's `contour!`, so e.g. `colormap` and `linewidth`
 work too:
@@ -34,13 +38,14 @@ work too:
 plot_equilibrium(Solovev.NSTX();
     xlims = (0.05, 2.3),
     ylims = (-2.25, +2.25),
-    levels = 25,
+    levels = 60,
     size = (350, 500),
     colormap = :plasma,
 )
 ```
 
-Contour panels can also be given a colorbar, which is off by default:
+The colorbar, off by default, is built from the range of the data, since a line contour carries no
+colormap Makie could derive one from:
 
 ```@example plotting
 plot_equilibrium(ThetaPinch.init(); colorbar = true, size = (900, 400))
@@ -62,7 +67,7 @@ plot_equilibrium!(fig[1,1], Solovev.ITER();
 plot_equilibrium!(fig[1,2], Solovev.NSTX();
     title = "NSTX", xlims = (0.05, 2.3), ylims = (-2.25, +2.25))
 plot_equilibrium!(fig[1,3], Solovev.FRC();
-    title = "FRC", xlims = (0.0, 2.0), ylims = (-10.0, +10.0), levels = 25,
+    title = "FRC", xlims = (0.0, 2.0), ylims = (-10.0, +10.0),
     aspect = AxisAspect(0.5))
 
 fig

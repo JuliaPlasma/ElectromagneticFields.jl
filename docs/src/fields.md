@@ -1,8 +1,8 @@
 # Electromagnetic Fields
 
-Every equilibrium in this package is defined by two scalar-valued inputs: the three covariant
-components of the magnetic vector potential ``A_i`` and, where there is one, the electrostatic
-potential ``\varphi``. Everything else — the magnetic field, its magnitude, the unit vector along
+Every equilibrium in this package is defined by two inputs: the three covariant components of the
+magnetic vector potential ``A_i`` and, where there is one, the electrostatic potential
+``\varphi``. Everything else — the magnetic field, its magnitude, the unit vector along
 it, the perpendicular frame, the electric field, and the derivatives of all of these — is derived
 from them symbolically at code generation time.
 
@@ -119,16 +119,19 @@ The three representations, as columns — covariant, contravariant, physical:
 ```
 
 The covariant toroidal component is the outlier: it is ``B_0 R_0``, larger than the field strength
-by a factor ``R``, because the toroidal coordinate basis vector has length ``R`` rather than one.
-Contracting it with the contravariant components nevertheless gives the right answer, as does the
-euclidean norm of the physical ones:
+by very nearly a factor ``R``, because the toroidal coordinate basis vector has length ``R`` rather
+than one. It falls short of exactly ``R`` only because ``|B|`` carries the poloidal field as well.
+Contracting the covariant components with the contravariant ones nevertheless gives the right
+answer, as does the euclidean norm of the physical ones:
 
 ```@example fields
 Bcov = [B₁(t, ξ), B₂(t, ξ), B₃(t, ξ)]
 Bcon = [B¹(t, ξ), B²(t, ξ), B³(t, ξ)]
 Bphy = [B₍₁₎(t, ξ), B₍₂₎(t, ξ), B₍₃₎(t, ξ)]
 
-sqrt(Bcon' * Bcov) ≈ B(t, ξ), norm(Bphy) ≈ B(t, ξ)
+magnitudes = (sqrt(Bcon' * Bcov) ≈ B(t, ξ), norm(Bphy) ≈ B(t, ξ))
+@assert all(magnitudes) # hide
+magnitudes
 ```
 
 The two-form is antisymmetric by construction, and its entries are the curl of ``A`` before the
@@ -150,8 +153,9 @@ generated alongside it. `b` is the unit vector along ``B``,
 b = \frac{B}{|B|} ,
 ```
 
-and `a` and `c` complete it to an orthonormal triad. They are constructed by crossing `b` with the
-first coordinate basis vector that is not parallel to it, then normalising in the metric. Like every
+and `a` and `c` complete it to an orthonormal triad. `a` is the cross product of the first
+coordinate basis vector not parallel to `b` with `b` itself, `c` is `b × a`, and both are then
+normalised in the metric. Like every
 vector here they come in all three representations, both componentwise as `a₁ a₂ a₃`, `a¹ a² a³`,
 `a₍₁₎ a₍₂₎ a₍₃₎` and as the wrappers `a`, `a⃗`, `aₚ`.
 
@@ -161,6 +165,7 @@ triad is the identity:
 ```@example fields
 F = [aₚ(t, ξ) bₚ(t, ξ) cₚ(t, ξ)]
 
+@assert F' * F ≈ I # hide
 round.(F' * F; digits = 12)
 ```
 
@@ -235,9 +240,11 @@ Bcov = [Cylindrical.B₁(t, ξ), Cylindrical.B₂(t, ξ), Cylindrical.B₃(t, ξ
 Bcon_car = [Cartesian.B¹(t, x), Cartesian.B²(t, x), Cartesian.B³(t, x)]
 Bcov_car = [Cartesian.B₁(t, x), Cartesian.B₂(t, x), Cartesian.B₃(t, x)]
 
-(Cylindrical.DF(t, ξ) * Bcon ≈ Bcon_car,
- Cylindrical.DF̄(t, ξ)' * Bcov ≈ Bcov_car,
- Cylindrical.B(t, ξ) ≈ Cartesian.B(t, x))
+transforms = (Cylindrical.DF(t, ξ) * Bcon ≈ Bcon_car,
+              Cylindrical.DF̄(t, ξ)' * Bcov ≈ Bcov_car,
+              Cylindrical.B(t, ξ) ≈ Cartesian.B(t, x))
+@assert all(transforms) # hide
+transforms
 ```
 
 The physical components make the same point more directly. The cartesian chart is its own physical
@@ -245,7 +252,9 @@ frame, so the physical components of the cylindrical field are simply the compon
 cartesian one:
 
 ```@example independence
-[Cylindrical.B₍₁₎(t, ξ), Cylindrical.B₍₂₎(t, ξ), Cylindrical.B₍₃₎(t, ξ)] ≈ Bcon_car
+physical = [Cylindrical.B₍₁₎(t, ξ), Cylindrical.B₍₂₎(t, ξ), Cylindrical.B₍₃₎(t, ξ)] ≈ Bcon_car
+@assert physical # hide
+physical
 ```
 
 See [Usage](usage.md) for the code generation machinery used here, and

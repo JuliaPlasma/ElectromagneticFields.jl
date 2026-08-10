@@ -16,7 +16,8 @@ equ = AxisymmetricTokamakCylindrical.init()
 ## Plotting
 
 In cylindrical coordinates the flux surfaces are the contours of the poloidal flux function
-``A_\phi / R``:
+``\psi = A_\phi``, the covariant toroidal component of the vector potential. They are circles
+centred on the magnetic axis:
 
 ```@example atcyl
 plot_equilibrium(equ)

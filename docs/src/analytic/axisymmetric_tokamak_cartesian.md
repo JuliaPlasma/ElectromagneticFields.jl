@@ -15,8 +15,9 @@ equ = AxisymmetricTokamakCartesian.init()
 
 ## Plotting
 
-The flux surfaces of this equilibrium are circular. In the ``(x,z)`` plane at ``y = 0`` they show
-up as the contours of the ``y`` component of the vector potential:
+The flux surfaces of this equilibrium are circular. In the ``(x,z)`` plane at ``y = 0`` the ``y``
+component of the vector potential is the physical toroidal component ``A_\phi``, so ``R \, A_y`` is
+the poloidal flux function and its contours are the flux surfaces:
 
 ```@example atc
 plot_equilibrium(equ)

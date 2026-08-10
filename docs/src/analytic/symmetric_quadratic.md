@@ -32,5 +32,7 @@ nothing # hide
 The field is axisymmetric, so ``|B|`` depends on the radius alone:
 
 ```@example symmetric
-B(0.0, 0.3, 0.4, 0.0) ≈ B(0.0, 0.5, 0.0, 0.0)
+axisymmetric = B(0.0, 0.3, 0.4, 0.0) ≈ B(0.0, 0.5, 0.0, 0.0)
+@assert axisymmetric # hide
+axisymmetric
 ```

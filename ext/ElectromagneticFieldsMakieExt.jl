@@ -20,12 +20,8 @@ using ElectromagneticFields.ThetaPinch: ThetaPinchEquilibrium
 import ElectromagneticFields: plot_equilibrium, plot_equilibrium!
 
 
-#
-# Generic entry point
-#
-# Every equilibrium that can be plotted implements `plot_equilibrium!(position, equ; kwargs...)`
-# and `figuresize(equ)`; the figure-creating method is shared by all of them.
-#
+# Every equilibrium that can be plotted implements `plot_equilibrium!(position, equ; kwargs...)` and
+# `figuresize(equ)`; the figure-creating method below is shared by all of them.
 
 const Position = Union{GridPosition,GridSubposition,GridLayout}
 
@@ -43,13 +39,8 @@ figuresize(equ::ElectromagneticFields.AnalyticEquilibrium) = throw(ArgumentError
     "documentation for how to sample and plot such a field directly"))
 
 
-#
-# Shared drawing helper
-#
-# Draws a single contour panel, optionally with a colorbar to its right, and returns its `Axis`.
-# The values are expected in Makie's convention, i.e. `vals[i,j]` holds the value at
-# `(xgrid[i], ygrid[j])`.
-#
+# Shared drawing helper. The values are expected in Makie's convention, i.e. `vals[i,j]` holds the
+# value at `(xgrid[i], ygrid[j])`.
 
 function contourpanel!(position::Position, xgrid, ygrid, vals;
     title="", xlabel=L"x", ylabel=L"y", levels=20,
@@ -59,13 +50,12 @@ function contourpanel!(position::Position, xgrid, ygrid, vals;
     contour!(ax, xgrid, ygrid, vals; levels=levels, colormap=colormap, kwargs...)
 
     if colorbar
-        # a line contour carries no single colormap that Makie could derive a
-        # colorbar from, so it is built from the range of the data instead
+        # a line contour carries no colormap Makie could derive a colorbar from, so the range of
+        # the data stands in for it
         finite = filter(isfinite, vec(vals))
         if !isempty(finite)
             lo, hi = extrema(finite)
-            # Makie rejects a colorbar whose limits coincide, which happens for a
-            # panel that is constant across the whole grid
+            # Makie rejects coinciding limits, which a panel constant over the grid produces
             lo == hi && ((lo, hi) = (lo - one(lo), hi + one(hi)))
             Colorbar(position[1, 2]; colormap=colormap, limits=(lo, hi))
         end
@@ -74,17 +64,14 @@ function contourpanel!(position::Position, xgrid, ygrid, vals;
     ax
 end
 
-# Merges the per-panel defaults with the keywords the caller passed, letting the
-# latter win, so that e.g. `title` and `levels` can be overridden from outside
+# Caller keywords win over the per-panel defaults, so e.g. `title` and `levels` can be overridden
 # even though every panel provides its own.
 panelopts(kwargs; defaults...) = (; defaults..., kwargs...)
 
 grid(lims, n) = LinRange(lims[1], lims[2], n)
 
 
-#
 # Arnold-Beltrami-Childress field
-#
 
 figuresize(::ABCEquilibrium) = (400, 1200)
 
@@ -94,9 +81,8 @@ function plot_equilibrium!(position::Position, equ::ABCEquilibrium;
     lims = (0, 2π)
     xgrid = grid(lims, nx)
 
-    # only the three mid-planes are shown, so only they are evaluated; building the
-    # full cube first would cost O(nx³) time and memory for O(nx²) values.
-    # `ni` picks the grid point closest to π, which for odd `nx` is π exactly.
+    # Only the three mid-planes are shown, so only their 3nx² values are evaluated rather than the
+    # full nx³ cube. `ni` picks the grid point closest to π, which for odd `nx` is π exactly.
     B(x, y, z) = ElectromagneticFields.ABC.B([x, y, z], equ)
 
     Bxy = [B(xgrid[i], xgrid[j], xgrid[ni]) for i in eachindex(xgrid), j in eachindex(xgrid)]
@@ -118,9 +104,7 @@ function plot_equilibrium!(position::Position, equ::ABCEquilibrium;
 end
 
 
-#
 # Axisymmetric tokamak equilibria
-#
 
 figuresize(::AxisymmetricTokamakCartesianEquilibrium) = (400, 400)
 
@@ -131,10 +115,12 @@ function plot_equilibrium!(position::Position, equ::AxisymmetricTokamakCartesian
 
     xgrid = grid(xlims, nx)
     zgrid = grid(ylims, ny)
-    pot = [A₂([xgrid[i], 0.0, zgrid[j]], equ) for i in eachindex(xgrid), j in eachindex(zgrid)]
+    # at y = 0 the cartesian A_y is the physical toroidal component, so multiplying by R gives
+    # the covariant one, which is the flux function ψ whose contours are the flux surfaces
+    pot = [A₂([xgrid[i], 0.0, zgrid[j]], equ) * xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
 
     contourpanel!(position[1, 1], xgrid, zgrid, pot;
-        panelopts(kwargs; xlabel=L"x", ylabel=L"z", title=L"A_y (x,0,z)", levels=levels)...)
+        panelopts(kwargs; xlabel=L"x", ylabel=L"z", title=L"R \, A_y (x,0,z)", levels=levels)...)
 end
 
 
@@ -147,10 +133,10 @@ function plot_equilibrium!(position::Position, equ::AxisymmetricTokamakCylindric
 
     xgrid = grid(xlims, nx)
     zgrid = grid(ylims, ny)
-    pot = [A₃([xgrid[i], zgrid[j], 0.0], equ) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
+    pot = [A₃([xgrid[i], zgrid[j], 0.0], equ) for i in eachindex(xgrid), j in eachindex(zgrid)]
 
     contourpanel!(position[1, 1], xgrid, zgrid, pot;
-        panelopts(kwargs; xlabel=L"R", ylabel=L"Z", title=L"A_\phi (R,Z) / R", levels=levels)...)
+        panelopts(kwargs; xlabel=L"R", ylabel=L"Z", title=L"A_\phi (R,Z)", levels=levels)...)
 end
 
 
@@ -165,16 +151,14 @@ function plot_equilibrium!(position::Position, equ::AxisymmetricTokamakToroidalE
     zgrid = grid(ylims, ny)
     rgrid = [ξ¹([xgrid[i], 0.0, zgrid[j]], equ) for i in eachindex(xgrid), j in eachindex(zgrid)]
     θgrid = [ξ²([xgrid[i], 0.0, zgrid[j]], equ) for i in eachindex(xgrid), j in eachindex(zgrid)]
-    pot = [A₃([rgrid[i, j], θgrid[i, j], 0.0], equ) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
+    pot = [A₃([rgrid[i, j], θgrid[i, j], 0.0], equ) for i in eachindex(xgrid), j in eachindex(zgrid)]
 
     contourpanel!(position[1, 1], xgrid, zgrid, pot;
-        panelopts(kwargs; xlabel=L"R", ylabel=L"Z", title=L"A_\phi (r,\theta) / R", levels=levels)...)
+        panelopts(kwargs; xlabel=L"R", ylabel=L"Z", title=L"A_\phi (r,\theta)", levels=levels)...)
 end
 
 
-#
 # Dipole field
-#
 
 figuresize(::DipoleField) = (800, 400)
 
@@ -200,9 +184,7 @@ function plot_equilibrium!(position::Position, equ::DipoleField;
 end
 
 
-#
 # Quadratic potentials
-#
 
 figuresize(::QuadraticPotentialsField) = (1200, 400)
 
@@ -229,20 +211,18 @@ function plot_equilibrium!(position::Position, equ::QuadraticPotentialsField;
 end
 
 
-#
 # Singular magnetic field
 #
-# The vector potential and the magnetic field both diverge at the origin, so the
-# contour levels are spaced logarithmically instead of linearly.
-#
+# The vector potential and the magnetic field both diverge at the origin, so the contour levels are
+# spaced logarithmically instead of linearly.
 
 logrange(x1, x2, n) = collect(10^y for y in range(log10(x1), log10(x2), length=n))
 doublelogrange(x1, x2, n) = sort!(vcat(-logrange(x1, x2, n), +logrange(x1, x2, n)))
 
-# Where the grid meets the singular line the values are Inf or NaN, and a component
-# that does not change sign over the plot range has a negative maximum, so the upper
-# end of the level range is taken over the finite magnitudes rather than over
-# `maximum` directly. The lower bound keeps the range non-degenerate.
+# Taken over the finite magnitudes rather than over `maximum` directly, which copes both with a grid
+# that meets the singular line, where the values are Inf or NaN, and with a component that keeps one
+# sign over the plot range and so has a negative maximum. The lower bound keeps the range
+# non-degenerate.
 function logextent(vals; lo=0.1)
     hi = maximum(abs, Iterators.filter(isfinite, vals); init=lo)
     max(hi, 10 * lo)
@@ -278,9 +258,7 @@ function plot_equilibrium!(position::Position, equ::SingularEquilibrium;
 end
 
 
-#
 # Symmetric quadratic magnetic field
-#
 
 figuresize(::SymmetricQuadraticEquilibrium) = (400, 1200)
 
@@ -307,9 +285,7 @@ function plot_equilibrium!(position::Position, equ::SymmetricQuadraticEquilibriu
 end
 
 
-#
 # Theta pinch
-#
 
 figuresize(::ThetaPinchEquilibrium) = (800, 400)
 
@@ -335,22 +311,39 @@ function plot_equilibrium!(position::Position, equ::ThetaPinchEquilibrium;
 end
 
 
-#
 # Solov'ev equilibria
 #
+# `ψ` vanishes on the plasma boundary and is negative inside it, reaching its minimum on the
+# magnetic axis, while outside it grows without any bound the plot window imposes. Spreading `n`
+# levels evenly over the sampled range therefore spends nearly all of them on the far field and
+# leaves the flux surfaces of the plasma to a handful, so the spacing is anchored to the flux at the
+# axis instead: uniform in `ψ`, one level exactly on the boundary, and `n / (1 + OUTER_FLUX_SPAN)`
+# of them inside it. An explicit vector of levels overrides this, as it does everywhere else.
+
+const OUTER_FLUX_SPAN = 3
+
+function fluxlevels(vals, n::Integer)
+    lo, hi = extrema(Iterators.filter(isfinite, vals))
+    lo < 0 < hi || return n
+    nin = max(1, round(Int, (n - 1) / (1 + OUTER_FLUX_SPAN)))
+    Δψ = -lo / nin
+    Δψ .* (-nin:(n - 1 - nin))
+end
+
+fluxlevels(_, levels) = levels
 
 figuresize(::SolovevEquilibrium) = (300, 400)
 
 function plot_equilibrium!(position::Position, equ::SolovevEquilibrium;
-    nx=100, ny=120, nτ=200, levels=50, boundary=true,
+    nx=100, ny=120, nτ=200, levels=40, boundary=true,
     xlims=(0.50, 1.50), ylims=(-0.75, +0.75), kwargs...)
 
     xgrid = grid(xlims, nx)
     zgrid = grid(ylims, ny)
-    pot = [A₃([xgrid[i], zgrid[j], 0.0], equ) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
+    pot = [A₃([xgrid[i], zgrid[j], 0.0], equ) for i in eachindex(xgrid), j in eachindex(zgrid)]
 
     ax = contourpanel!(position[1, 1], xgrid, zgrid, pot;
-        panelopts(kwargs; xlabel=L"R / R_0", ylabel=L"Z / R_0", levels=levels)...)
+        panelopts(kwargs; xlabel=L"R / R_0", ylabel=L"Z / R_0", levels=fluxlevels(pot, levels))...)
 
     if boundary
         # the plasma boundary is the flux surface parametrised by the inverse aspect
@@ -368,15 +361,15 @@ end
 figuresize(::SolovevXpointEquilibrium) = (300, 400)
 
 function plot_equilibrium!(position::Position, equ::SolovevXpointEquilibrium;
-    nx=100, ny=120, levels=50,
+    nx=100, ny=120, levels=40,
     xlims=(0.50, 1.50), ylims=(-0.75, +0.75), kwargs...)
 
     xgrid = grid(xlims, nx)
     zgrid = grid(ylims, ny)
-    pot = [A₃([xgrid[i], zgrid[j], 0.0], equ) / xgrid[i] for i in eachindex(xgrid), j in eachindex(zgrid)]
+    pot = [A₃([xgrid[i], zgrid[j], 0.0], equ) for i in eachindex(xgrid), j in eachindex(zgrid)]
 
     contourpanel!(position[1, 1], xgrid, zgrid, pot;
-        panelopts(kwargs; xlabel=L"R / R_0", ylabel=L"Z / R_0", levels=levels)...)
+        panelopts(kwargs; xlabel=L"R / R_0", ylabel=L"Z / R_0", levels=fluxlevels(pot, levels))...)
 end
 
 
@@ -384,7 +377,8 @@ figuresize(::SolovevSymmetricEquilibrium) = (600, 400)
 
 function plot_equilibrium!(position::Position, equ::SolovevSymmetricEquilibrium;
     nx=100, ny=120, levels=25,
-    xlims=(equ.R₀ - 0.75, equ.R₀ + 0.75), ylims=(-0.50, +0.50), kwargs...)
+    # the flux function is quartic in `R₀ + x`, so the magnetic axis sits at `x = -R₀`
+    xlims=(-equ.R₀ - 0.75, -equ.R₀ + 0.75), ylims=(-0.50, +0.50), kwargs...)
 
     xgrid = grid(xlims, nx)
     zgrid = grid(ylims, ny)

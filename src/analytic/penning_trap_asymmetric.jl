@@ -13,7 +13,7 @@ B (x,y,z) = B_0 \, ( 1/3, 0, 1)^T + B_1 \, ( y-z, x+z, y-x )^T ,
 ```
 and the electrostatic potential given by
 ```math
-\varphi (x,y,z) = E_0 \, ( x^2 / 2 + y^2 / 2 - z^2) ,
+\varphi (x,y,z) = - E_0 \, ( x^2 / 2 + y^2 / 2 - z^2) ,
 ```
 resulting in the electric field with covariant components
 ```math

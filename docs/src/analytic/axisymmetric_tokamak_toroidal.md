@@ -43,7 +43,9 @@ x = to_cartesian(t, ξ)
 ```
 
 ```@example att
-from_cartesian(t, x) ≈ ξ
+roundtrip = from_cartesian(t, x) ≈ ξ
+@assert roundtrip # hide
+roundtrip
 ```
 
 Because the toroidal chart is left-handed, the determinant of its Jacobian is minus the Jacobian
@@ -52,5 +54,7 @@ determinant `J`:
 ```@example att
 using LinearAlgebra
 
-orientation(), det(DF(t, ξ)) ≈ orientation() * J(t, ξ)
+signed = det(DF(t, ξ)) ≈ orientation() * J(t, ξ)
+@assert signed # hide
+orientation(), signed
 ```

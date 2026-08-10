@@ -60,7 +60,9 @@ B(t, x)
 Both a splatted and a vector call are defined, so `B(t, x)` and `B(t, x...)` are the same thing:
 
 ```@example usage
-B(t, x...) == B(t, x)
+same = B(t, x...) == B(t, x)
+@assert same # hide
+same
 ```
 
 ### `load_equilibrium`
@@ -120,7 +122,7 @@ and parenthesised subscripts the components in the physical (orthonormal) frame.
 | `E₁, E₂, E₃` / `E¹, E², E³` | components of the electric field |
 | `φ` | electrostatic potential |
 | `g`, `ḡ` and `gᵢⱼ`, `gⁱʲ` | metric and its inverse |
-| `J` | Jacobian determinant of the coordinate transformation |
+| `J` | volume element of the chart, ``\sqrt{\|g\|} = \|\det DF\|`` |
 | `DF`, `DF̄` | Jacobian matrix of the chart and its inverse |
 | `from_cartesian`, `to_cartesian` | coordinate transformations |
 | `rangemin`, `rangemax` | bounds of the coordinate domain |
@@ -134,14 +136,16 @@ and `q₀`:
 R₀, B₀, q₀
 ```
 
-The chart itself is available as well. `J` is the Jacobian determinant, `DF` the Jacobian matrix,
-and the two are related through the orientation of the chart — this equilibrium uses a
-left-handed ``(R, Z, \phi)`` chart, so the determinant of `DF` is `-J`:
+The chart itself is available as well. `J` is the volume element, `DF` the Jacobian matrix, and the
+two are related through the orientation of the chart — this equilibrium uses a left-handed
+``(R, Z, \phi)`` chart, so the determinant of `DF` is `-J`:
 
 ```@example usage
 using LinearAlgebra
 
-orientation(), det(DF(t, x)) ≈ orientation() * J(t, x)
+signed = det(DF(t, x)) ≈ orientation() * J(t, x)
+@assert signed # hide
+orientation(), signed
 ```
 
 

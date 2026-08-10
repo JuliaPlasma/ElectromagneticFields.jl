@@ -1,6 +1,5 @@
 module ElectromagneticFields
 
-using Documenter
 using LinearAlgebra
 
 export ElectromagneticField

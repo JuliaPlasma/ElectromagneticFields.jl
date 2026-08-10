@@ -63,7 +63,9 @@ to_cartesian(t, ξ)
 ```
 
 ```@example coordinates
-from_cartesian(t, to_cartesian(t, ξ)) ≈ ξ
+roundtrip = from_cartesian(t, to_cartesian(t, ξ)) ≈ ξ
+@assert roundtrip # hide
+roundtrip
 ```
 
 The bounds of the coordinate domain come as `rangemin` and `rangemax`. For this chart only the
@@ -104,9 +106,11 @@ DF(t, ξ)
 The three identities relating them hold pointwise:
 
 ```@example coordinates
-(DF̄(t, ξ) ≈ inv(DF(t, ξ)),
- DF(t, ξ)' * DF(t, ξ) ≈ g(t, ξ),
- ḡ(t, ξ) ≈ inv(g(t, ξ)))
+checks = (DF̄(t, ξ) ≈ inv(DF(t, ξ)),
+          DF(t, ξ)' * DF(t, ξ) ≈ g(t, ξ),
+          ḡ(t, ξ) ≈ inv(g(t, ξ)))
+@assert all(checks) # hide
+checks
 ```
 
 Derivatives of the metric are generated as well, `dgᵢⱼdxₖ` and `dgⁱʲdxₖ` for the first and
@@ -132,7 +136,8 @@ indices directly: `B₁, B₂, B₃` are covariant, `B¹, B², B³` contravarian
 Neither of them is what a measurement returns. Covariant and contravariant components are taken with
 respect to the coordinate basis and its dual, and in a curvilinear chart those basis vectors are
 neither unit length nor mutually orthogonal — the covariant toroidal component of ``B`` below is
-larger than ``|B|`` by a factor of ``R``, and carries different units than the other two components.
+larger than ``|B|`` by nearly a factor of ``R``, and carries different units than the other two
+components.
 What is usually quoted in the literature, and what this package calls the *physical* components, are
 the components in an orthonormal frame:
 
@@ -159,10 +164,12 @@ vector-valued wrappers `b` (covariant), `b⃗` (contravariant) and `bₚ` (physi
 The three columns are the same vector. Lowering, raising and pushing forward take one into another:
 
 ```@example coordinates
-(g(t, ξ) * b⃗(t, ξ) ≈ b(t, ξ),
- ḡ(t, ξ) * b(t, ξ) ≈ b⃗(t, ξ),
- bₚ(t, ξ) ≈ DF(t, ξ) * b⃗(t, ξ),
- bₚ(t, ξ) ≈ DF̄(t, ξ)' * b(t, ξ))
+conversions = (g(t, ξ) * b⃗(t, ξ) ≈ b(t, ξ),
+               ḡ(t, ξ) * b(t, ξ) ≈ b⃗(t, ξ),
+               bₚ(t, ξ) ≈ DF(t, ξ) * b⃗(t, ξ),
+               bₚ(t, ξ) ≈ DF̄(t, ξ)' * b(t, ξ))
+@assert all(conversions) # hide
+conversions
 ```
 
 Only two of the three give the length of the vector directly. Contracting a covariant with a
@@ -171,6 +178,7 @@ physical components is an ordinary euclidean dot product. Contracting covariant 
 the other hand, is meaningless.
 
 ```@example coordinates
+@assert b⃗(t, ξ)' * b(t, ξ) ≈ 1 && norm(bₚ(t, ξ)) ≈ 1 # hide
 b⃗(t, ξ)' * b(t, ξ), norm(bₚ(t, ξ))
 ```
 
@@ -202,7 +210,7 @@ perpendicular frame, both need the *signed* determinant
 \det DF = \mathrm{orientation} \cdot J .
 ```
 
-Three of the five charts above are left-handed, because the toroidal angle sits in the third slot
+Four of the five charts above are left-handed, because the toroidal angle sits in the third slot
 where the right-handed ordering would put the second poloidal coordinate — ``(R, Z, \phi)`` rather
 than ``(R, \phi, Z)``. This is not a corner case, and getting it wrong has no visible symptom other
 than a magnetic field pointing the wrong way. Each equilibrium therefore declares its handedness
@@ -215,7 +223,9 @@ orientation(), J(t, ξ), det(DF(t, ξ))
 ```
 
 ```@example coordinates
-det(DF(t, ξ)) ≈ orientation() * J(t, ξ)
+signed = det(DF(t, ξ)) ≈ orientation() * J(t, ξ)
+@assert signed # hide
+signed
 ```
 
 

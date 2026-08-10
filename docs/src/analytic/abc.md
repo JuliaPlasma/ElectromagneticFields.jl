@@ -6,8 +6,10 @@ ABC
 
 ## Constructing the Field
 
-The three parameters `a`, `b` and `c` all default to one. Setting two of them to the same value
-makes the field integrable; the general case is chaotic.
+The three parameters `a`, `b` and `c` all default to one. If one of them vanishes the field lines
+are integrable, the flow reducing to a two-dimensional one. When all three are non-zero, regions of
+chaotic field lines appear alongside regular ones — including for ``a = b = c``, the case in which
+they were first studied ([Dombre et al., 1986](https://doi.org/10.1017/S0022112086002859)).
 
 ```@example abc
 using CairoMakie

@@ -1,6 +1,7 @@
 
 using Combinatorics
 using SymEngine
+using SymEngine: free_symbols
 
 abstract type AnalyticField <: ElectromagneticField end
 abstract type AnalyticEquilibrium <: AnalyticField end
@@ -825,6 +826,16 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
         # heads are not `:call` and which have nothing to share anyway.
         if cse && f_expr isa Basic && f_body isa Expr
             f_body = eliminate_common_subexpressions(f_body)
+        end
+
+        # A body that does not mention the coordinates gets the coordinate's own float type, so that
+        # every component of an equilibrium returns one type. Left alone it would evaluate to
+        # whatever literal type SymEngine emitted, which is `Int` for the structurally constant
+        # entries — `g₁₁ = 1`, the off-diagonal entries of `g` and `DF`, `φ` and `E` of a purely
+        # magnetic equilibrium — and the mixture makes the matrix wrappers below promote at runtime,
+        # for several times the cost of the matrix they return.
+        if f_expr isa Basic && isempty(free_symbols(f_expr))
+            f_body = :(oftype(float(ξ₁), $f_body))
         end
 
         output ≥ 2 ? println("   ", f_body) : nothing

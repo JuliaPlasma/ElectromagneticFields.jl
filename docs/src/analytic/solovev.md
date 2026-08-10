@@ -50,7 +50,7 @@ plot_equilibrium!(fig[1,1], Solovev.ITER();
 plot_equilibrium!(fig[1,2], Solovev.NSTX();
     title = "NSTX", xlims = (0.05, 2.3), ylims = (-2.25, +2.25))
 plot_equilibrium!(fig[1,3], Solovev.FRC();
-    title = "FRC", xlims = (0.0, 2.0), ylims = (-10.0, +10.0), levels = 25,
+    title = "FRC", xlims = (0.0, 2.0), ylims = (-10.0, +10.0),
     aspect = AxisAspect(0.5))
 
 fig

@@ -9,7 +9,7 @@ listed below, [Fields](../fields.md) for the field quantities each of them provi
 
 | Field | Coordinates | |
 |---|---|---|
-| [Arnold-Beltrami-Childress Field](@ref) | ``(x,y,z)`` | a three-dimensional chaotic field |
+| [Arnold-Beltrami-Childress Field](@ref) | ``(x,y,z)`` | three-dimensional field with chaotic field lines |
 | [Axisymmetric Tokamak (Cartesian)](@ref) | ``(x,y,z)`` | simple tokamak with circular flux surfaces |
 | [Axisymmetric Tokamak (Cylindrical)](@ref) | ``(R,Z,\phi)`` | the same field in cylindrical coordinates |
 | [Axisymmetric Tokamak (Toroidal)](@ref) | ``(r,\theta,\phi)`` | the same field in toroidal coordinates |
