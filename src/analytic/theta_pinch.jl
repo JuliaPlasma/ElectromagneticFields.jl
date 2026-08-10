@@ -14,7 +14,6 @@ Parameters:
 """
 module ThetaPinch
 
-
     import ..ElectromagneticFields
     import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
     import ..AnalyticCartesianField: X, Y, Z

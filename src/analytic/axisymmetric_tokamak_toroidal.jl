@@ -17,7 +17,6 @@ Parameters:
 """
 module AxisymmetricTokamakToroidal
 
-
 import NaNMath: log
 
 import ..ElectromagneticFields

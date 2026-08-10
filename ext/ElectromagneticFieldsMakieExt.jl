@@ -23,8 +23,8 @@ import ElectromagneticFields: plot_equilibrium, plot_equilibrium!
 #
 # Generic entry point
 #
-# Every equilibrium implements `plot_equilibrium!(position, equ; kwargs...)` and
-# `figuresize(equ)`; the figure-creating method is shared by all of them.
+# Every equilibrium that can be plotted implements `plot_equilibrium!(position, equ; kwargs...)`
+# and `figuresize(equ)`; the figure-creating method is shared by all of them.
 #
 
 const Position = Union{GridPosition,GridSubposition,GridLayout}
@@ -36,12 +36,18 @@ function plot_equilibrium(equ::ElectromagneticFields.AnalyticEquilibrium;
     fig
 end
 
+# Fields without a plotting method fail on `figuresize` before they ever reach
+# `plot_equilibrium!`, so that is where the explanation belongs.
+figuresize(equ::ElectromagneticFields.AnalyticEquilibrium) = throw(ArgumentError(
+    "no plotting method is defined for $(typeof(equ)); see the Plotting page of the " *
+    "documentation for how to sample and plot such a field directly"))
+
 
 #
 # Shared drawing helper
 #
-# Draws a single contour panel, optionally with a colorbar to its right. The
-# values are expected in Makie's convention, i.e. `vals[i,j]` holds the value at
+# Draws a single contour panel, optionally with a colorbar to its right, and returns its `Axis`.
+# The values are expected in Makie's convention, i.e. `vals[i,j]` holds the value at
 # `(xgrid[i], ygrid[j])`.
 #
 
@@ -55,7 +61,14 @@ function contourpanel!(position::Position, xgrid, ygrid, vals;
     if colorbar
         # a line contour carries no single colormap that Makie could derive a
         # colorbar from, so it is built from the range of the data instead
-        Colorbar(position[1, 2]; colormap=colormap, limits=extrema(filter(isfinite, vals)))
+        finite = filter(isfinite, vec(vals))
+        if !isempty(finite)
+            lo, hi = extrema(finite)
+            # Makie rejects a colorbar whose limits coincide, which happens for a
+            # panel that is constant across the whole grid
+            lo == hi && ((lo, hi) = (lo - one(lo), hi + one(hi)))
+            Colorbar(position[1, 2]; colormap=colormap, limits=(lo, hi))
+        end
     end
 
     ax
@@ -80,19 +93,28 @@ function plot_equilibrium!(position::Position, equ::ABCEquilibrium;
 
     lims = (0, 2π)
     xgrid = grid(lims, nx)
-    Bfield = [ElectromagneticFields.ABC.B([xgrid[i], xgrid[j], xgrid[k]], equ)
-              for i in eachindex(xgrid), j in eachindex(xgrid), k in eachindex(xgrid)]
+
+    # only the three mid-planes are shown, so only they are evaluated; building the
+    # full cube first would cost O(nx³) time and memory for O(nx²) values.
+    # `ni` picks the grid point closest to π, which for odd `nx` is π exactly.
+    B(x, y, z) = ElectromagneticFields.ABC.B([x, y, z], equ)
+
+    Bxy = [B(xgrid[i], xgrid[j], xgrid[ni]) for i in eachindex(xgrid), j in eachindex(xgrid)]
+    Bxz = [B(xgrid[i], xgrid[ni], xgrid[k]) for i in eachindex(xgrid), k in eachindex(xgrid)]
+    Byz = [B(xgrid[ni], xgrid[j], xgrid[k]) for j in eachindex(xgrid), k in eachindex(xgrid)]
+
+    axs = Axis[]
 
     for (n, (vals, xlabel, ylabel, title)) in enumerate((
-        (Bfield[:, :, ni], L"x", L"y", L"|B(x,y,\pi)|"),
-        (Bfield[:, ni, :], L"x", L"z", L"|B(x,\pi,z)|"),
-        (Bfield[ni, :, :], L"y", L"z", L"|B(\pi,y,z)|"),
+        (Bxy, L"x", L"y", L"|B(x,y,\pi)|"),
+        (Bxz, L"x", L"z", L"|B(x,\pi,z)|"),
+        (Byz, L"y", L"z", L"|B(\pi,y,z)|"),
     ))
-        contourpanel!(position[n, 1], xgrid, xgrid, vals;
-            panelopts(kwargs; title=title, xlabel=xlabel, ylabel=ylabel, levels=levels)...)
+        push!(axs, contourpanel!(position[n, 1], xgrid, xgrid, vals;
+            panelopts(kwargs; title=title, xlabel=xlabel, ylabel=ylabel, levels=levels)...))
     end
 
-    position
+    axs
 end
 
 
@@ -113,8 +135,6 @@ function plot_equilibrium!(position::Position, equ::AxisymmetricTokamakCartesian
 
     contourpanel!(position[1, 1], xgrid, zgrid, pot;
         panelopts(kwargs; xlabel=L"x", ylabel=L"z", title=L"A_y (x,0,z)", levels=levels)...)
-
-    position
 end
 
 
@@ -131,8 +151,6 @@ function plot_equilibrium!(position::Position, equ::AxisymmetricTokamakCylindric
 
     contourpanel!(position[1, 1], xgrid, zgrid, pot;
         panelopts(kwargs; xlabel=L"R", ylabel=L"Z", title=L"A_\phi (R,Z) / R", levels=levels)...)
-
-    position
 end
 
 
@@ -151,8 +169,6 @@ function plot_equilibrium!(position::Position, equ::AxisymmetricTokamakToroidalE
 
     contourpanel!(position[1, 1], xgrid, zgrid, pot;
         panelopts(kwargs; xlabel=L"R", ylabel=L"Z", title=L"A_\phi (r,\theta) / R", levels=levels)...)
-
-    position
 end
 
 
@@ -169,15 +185,18 @@ function plot_equilibrium!(position::Position, equ::DipoleField;
     xgrid = grid(xlims, nx)
     ygrid = grid(ylims, ny)
 
+    axs = Axis[]
+
     for (n, (component, title)) in enumerate((
         (A₁, L"A_x (x,y,1)"),
         (A₂, L"A_y (x,y,1)"),
     ))
         vals = [component([xgrid[i], ygrid[j], 1.0], equ) for i in eachindex(xgrid), j in eachindex(ygrid)]
-        contourpanel!(position[1, n], xgrid, ygrid, vals; panelopts(kwargs; title=title, levels=levels)...)
+        push!(axs, contourpanel!(position[1, n], xgrid, ygrid, vals;
+            panelopts(kwargs; title=title, levels=levels)...))
     end
 
-    position
+    axs
 end
 
 
@@ -194,16 +213,19 @@ function plot_equilibrium!(position::Position, equ::QuadraticPotentialsField;
     xgrid = grid(xlims, nx)
     ygrid = grid(ylims, ny)
 
+    axs = Axis[]
+
     for (n, (component, title)) in enumerate((
         (A₁, L"A_x (x,y,0)"),
         (A₂, L"A_y (x,y,0)"),
         (A₃, L"A_z (x,y,0)"),
     ))
         vals = [component([xgrid[i], ygrid[j], 0.0], equ) for i in eachindex(xgrid), j in eachindex(ygrid)]
-        contourpanel!(position[1, n], xgrid, ygrid, vals; panelopts(kwargs; title=title, levels=levels)...)
+        push!(axs, contourpanel!(position[1, n], xgrid, ygrid, vals;
+            panelopts(kwargs; title=title, levels=levels)...))
     end
 
-    position
+    axs
 end
 
 
@@ -215,7 +237,16 @@ end
 #
 
 logrange(x1, x2, n) = collect(10^y for y in range(log10(x1), log10(x2), length=n))
-doublelogrange(x1, x2, n) = vcat(-logrange(x1, x2, n), +logrange(x1, x2, n))
+doublelogrange(x1, x2, n) = sort!(vcat(-logrange(x1, x2, n), +logrange(x1, x2, n)))
+
+# Where the grid meets the singular line the values are Inf or NaN, and a component
+# that does not change sign over the plot range has a negative maximum, so the upper
+# end of the level range is taken over the finite magnitudes rather than over
+# `maximum` directly. The lower bound keeps the range non-degenerate.
+function logextent(vals; lo=0.1)
+    hi = maximum(abs, Iterators.filter(isfinite, vals); init=lo)
+    max(hi, 10 * lo)
+end
 
 figuresize(::SingularEquilibrium) = (400, 1200)
 
@@ -230,15 +261,20 @@ function plot_equilibrium!(position::Position, equ::SingularEquilibrium;
     pot2 = [A₂([xgrid[i], ygrid[j], 0.0], equ) for i in eachindex(xgrid), j in eachindex(ygrid)]
     Bfield = [ElectromagneticFields.Singular.B([xgrid[i], ygrid[j], 0.0], equ) for i in eachindex(xgrid), j in eachindex(ygrid)]
 
+    Blo = max(0.1, minimum(abs, Iterators.filter(isfinite, Bfield); init=0.1))
+
+    axs = Axis[]
+
     for (n, (vals, title, lvls)) in enumerate((
-        (pot1, L"A_x (x,y)", doublelogrange(0.1, maximum(pot1), levels)),
-        (pot2, L"A_y (x,y)", doublelogrange(0.1, maximum(pot2), levels)),
-        (Bfield, L"B_z (x,y)", logrange(max(0.1, minimum(Bfield)), maximum(Bfield), levels)),
+        (pot1, L"A_x (x,y)", doublelogrange(0.1, logextent(pot1), levels)),
+        (pot2, L"A_y (x,y)", doublelogrange(0.1, logextent(pot2), levels)),
+        (Bfield, L"B_z (x,y)", logrange(Blo, logextent(Bfield; lo=Blo), levels)),
     ))
-        contourpanel!(position[n, 1], xgrid, ygrid, vals; panelopts(kwargs; title=title, levels=lvls)...)
+        push!(axs, contourpanel!(position[n, 1], xgrid, ygrid, vals;
+            panelopts(kwargs; title=title, levels=lvls)...))
     end
 
-    position
+    axs
 end
 
 
@@ -255,16 +291,19 @@ function plot_equilibrium!(position::Position, equ::SymmetricQuadraticEquilibriu
     xgrid = grid(xlims, nx)
     ygrid = grid(ylims, ny)
 
+    axs = Axis[]
+
     for (n, (component, title)) in enumerate((
         (A₁, L"A_x (x,y)"),
         (A₂, L"A_y (x,y)"),
         (ElectromagneticFields.SymmetricQuadratic.B, L"B_z (x,y)"),
     ))
         vals = [component([xgrid[i], ygrid[j], 0.0], equ) for i in eachindex(xgrid), j in eachindex(ygrid)]
-        contourpanel!(position[n, 1], xgrid, ygrid, vals; panelopts(kwargs; title=title, levels=levels)...)
+        push!(axs, contourpanel!(position[n, 1], xgrid, ygrid, vals;
+            panelopts(kwargs; title=title, levels=levels)...))
     end
 
-    position
+    axs
 end
 
 
@@ -281,15 +320,18 @@ function plot_equilibrium!(position::Position, equ::ThetaPinchEquilibrium;
     xgrid = grid(xlims, nx)
     ygrid = grid(ylims, ny)
 
+    axs = Axis[]
+
     for (n, (component, title)) in enumerate((
         (A₁, L"A_x (x,y)"),
         (A₂, L"A_y (x,y)"),
     ))
         vals = [component([xgrid[i], ygrid[j], 0.0], equ) for i in eachindex(xgrid), j in eachindex(ygrid)]
-        contourpanel!(position[1, n], xgrid, ygrid, vals; panelopts(kwargs; title=title, levels=levels)...)
+        push!(axs, contourpanel!(position[1, n], xgrid, ygrid, vals;
+            panelopts(kwargs; title=title, levels=levels)...))
     end
 
-    position
+    axs
 end
 
 
@@ -319,7 +361,7 @@ function plot_equilibrium!(position::Position, equ::SolovevEquilibrium;
         lines!(ax, boundary_X, boundary_Y; color=:red, linewidth=3)
     end
 
-    position
+    ax
 end
 
 
@@ -335,8 +377,6 @@ function plot_equilibrium!(position::Position, equ::SolovevXpointEquilibrium;
 
     contourpanel!(position[1, 1], xgrid, zgrid, pot;
         panelopts(kwargs; xlabel=L"R / R_0", ylabel=L"Z / R_0", levels=levels)...)
-
-    position
 end
 
 
@@ -352,8 +392,6 @@ function plot_equilibrium!(position::Position, equ::SolovevSymmetricEquilibrium;
 
     contourpanel!(position[1, 1], xgrid, zgrid, pot;
         panelopts(kwargs; title=L"A_z (x,y)", levels=levels)...)
-
-    position
 end
 
 end

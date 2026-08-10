@@ -26,7 +26,6 @@ Parameters:
 """
 module PenningTrapUniform
 
-
     import ..ElectromagneticFields
     import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
     import ..AnalyticCartesianField: X, Y, Z

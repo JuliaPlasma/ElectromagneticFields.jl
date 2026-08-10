@@ -10,7 +10,6 @@ Parameters: `a`, `b`, `c`
 """
 module ABC
 
-
     import ..ElectromagneticFields
     import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
     import ..ElectromagneticFields: A₁, A₂, A₃

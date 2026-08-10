@@ -5,7 +5,6 @@ Based on Cerfon & Freidberg, Physics of Plasmas 17, 032502, 2010,
 """
 module Solovev
 
-
 using SymEngine: N, symbols, diff, expand, subs
 
 import NaNMath: log

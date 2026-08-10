@@ -3,7 +3,7 @@
 Plot an analytic equilibrium, typically as a contour plot of its vector potential.
 
 ```julia
-plot_equilibrium(equ; size = ..., kwargs...)
+plot_equilibrium(equ; size = ..., figure = NamedTuple(), kwargs...)
 ```
 
 Creates a new `Makie.Figure`, draws `equ` into it and returns the figure.
@@ -23,8 +23,9 @@ equilibria it is the poloidal flux function ``A_\phi / R``, for the fields defin
 in cartesian coordinates it is a panel per vector potential component, and for the
 ABC field it is the absolute value of the magnetic field in three mid-planes.
 
-All methods accept the resolution of the evaluation grid (`nx`, `ny`), the number of
-contour `levels`, the plot ranges `xlims` and `ylims`, and the figure `size`.
+The figure `size` defaults to one chosen per equilibrium; anything else in `figure`
+is passed on to `Makie.Figure`. All remaining keyword arguments are forwarded to
+[`plot_equilibrium!`](@ref).
 
 See also [`plot_equilibrium!`](@ref).
 """
@@ -37,9 +38,10 @@ Plot an analytic equilibrium into an existing figure.
 plot_equilibrium!(position, equ; kwargs...)
 ```
 
-Draws `equ` at `position`, which is any `Makie` grid position such as `fig[1,2]`,
-and returns that position. This is what to use for composing several equilibria into
-a single figure:
+Draws `equ` at `position`, which is any `Makie` grid position such as `fig[1,2]`, and
+returns the `Axis` it created, or the vector of axes for the equilibria that draw more
+than one panel. This is what to use for composing several equilibria into a single
+figure:
 
 ```julia
 using CairoMakie
@@ -52,5 +54,27 @@ fig
 ```
 
 Like [`plot_equilibrium`](@ref), this requires `Makie` to be loaded.
+
+# Keyword Arguments
+
+Common to every method:
+
+  - `levels`: number of contour levels, or the levels themselves
+  - `title`, `xlabel`, `ylabel`: axis labels, each panel providing its own default
+  - `aspect`: axis aspect ratio, `DataAspect()` by default
+  - `colorbar`: draw a colorbar next to each panel, `false` by default
+
+Anything not recognised is forwarded to `Makie.contour!`, so e.g. `colormap` and
+`linewidth` work as well.
+
+The remaining keywords depend on the field. Most methods take the resolution of the
+evaluation grid as `nx` and `ny` and the plot range as `xlims` and `ylims`. The
+exceptions are
+
+  - `ABCEquilibrium`, which is sampled on a cubic grid of `nx` points per direction
+    covering ``[0, 2\pi]``, and takes `ni` for the index of the mid-plane, by default
+    the grid point closest to ``\pi`` (exactly ``\pi`` for odd `nx`);
+  - `SolovevEquilibrium`, which takes `boundary` to draw the plasma boundary on top
+    of the flux surfaces, resolved with `nτ` points.
 """
 function plot_equilibrium! end

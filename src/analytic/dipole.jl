@@ -14,7 +14,6 @@ B (x,y,z) = - \frac{B₀}{r^5} \big( 3xz, \, 3yz, \, 2z^2 - x^2 - y^2 \big)^T .
 """
 module Dipole
 
-
 import ..ElectromagneticFields
 import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
 import ..AnalyticCartesianField: X, Y, Z

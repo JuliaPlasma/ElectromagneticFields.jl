@@ -28,12 +28,18 @@ not covered here; see the git history for those.
 
   `plot_equilibrium(equ; size, kwargs...)` creates a `Figure` and returns it, while
   `plot_equilibrium!(position, equ; kwargs...)` draws into an existing one at any Makie grid
-  position, e.g. `fig[1,2]`. The latter is what replaces Plots' `layout` for composing several
-  equilibria into one figure, and it works uniformly for the single-panel fields and for those
-  that draw a panel per vector potential component. The keyword arguments carry over unchanged
-  (`nx`, `ny`, `levels`, `xlims`, `ylims`, plus `nτ` for Solov'ev and `ni` for ABC), except that
-  ABC's `nl` is now spelled `levels` like everywhere else, and `aspect` replaces Plots'
-  `aspect_ratio`. Contour panels take an opt-in `colorbar` keyword.
+  position, e.g. `fig[1,2]`, and returns the `Axis` it created, or the vector of axes for the
+  fields that draw more than one panel. The latter is what replaces Plots' `layout` for composing
+  several equilibria into one figure, and it works uniformly for the single-panel fields and for
+  those that draw a panel per vector potential component. The keyword arguments carry over
+  unchanged (`nx`, `ny`, `levels`, `xlims`, `ylims`, plus `nτ` for Solov'ev and `ni` for ABC),
+  except that ABC's `nl` is now spelled `levels` like everywhere else, and `aspect` replaces
+  Plots' `aspect_ratio`. Contour panels take an opt-in `colorbar` keyword, and the Solov'ev
+  equilibrium a `boundary` keyword to switch off the plasma boundary drawn on top of the flux
+  surfaces.
+
+  Equilibria without a plotting method — the three Penning traps — now report that in an
+  `ArgumentError` instead of a `MethodError` on an internal helper.
 
 ### Fixed
 
@@ -44,9 +50,23 @@ not covered here; see the git history for those.
   uses the `z[i,j]` convention that the comprehensions already produce, and the ported code
   passes them straight through, so all twelve plots now show the field in the correct orientation.
 
+  The six affected recipes are exactly the six with square default grids, `nx == ny == 100`,
+  which is why Plots.jl never raised a dimension error; the two families that sample
+  `nx = 100, ny = 120` are precisely the two that transposed correctly. The test suite now plots
+  every field on a non-square grid as well, so a reintroduced transpose fails loudly.
+
 - The quantity plotted as `|B|` for the ABC field was `|B|²`, and the one plotted as `B_z` for the
   symmetric quadratic field was `B₀ / (1 + x² + y²)` where the field is `B₀ (1 + x² + y²)`. Both
   helpers are used only for plotting — the generated evaluation routines were never affected.
+
+- The logarithmic contour levels of the singular field are now derived from the finite magnitudes
+  of the data. Previously they came from `maximum` and `minimum` directly, which failed on any
+  grid that includes the singular line (`Inf` and `NaN` values, e.g. for odd `nx` and `ny`) and on
+  any plot range in which a component of the vector potential does not change sign, such as a
+  window that does not straddle the axis.
+
+- The ABC field no longer evaluates `|B|` on the full three-dimensional grid to draw three
+  mid-planes, which cost `O(nx³)` time and memory for `O(nx²)` values.
 
 ### Removed
 

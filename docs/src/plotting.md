@@ -20,9 +20,15 @@ mid-planes.
 
 ## Adjusting the Plot
 
-All methods accept the resolution of the evaluation grid (`nx`, `ny`), the number of contour
-`levels`, the plot ranges `xlims` and `ylims`, the figure `size`, and a `title`. Anything not
-recognised is forwarded to Makie's `contour!`, so e.g. `colormap` and `linewidth` work too:
+Every method accepts the number of contour `levels`, the axis labels `title`, `xlabel` and
+`ylabel`, the `aspect` ratio, and the figure `size`. Most of them are sampled on a rectangular
+grid and accordingly take its resolution as `nx` and `ny` and its extent as `xlims` and `ylims`;
+the ABC field is the exception, being sampled on a cubic grid of `nx` points per direction. The
+Solov'ev equilibrium takes `boundary` in addition, to switch off the plasma boundary drawn on top
+of the flux surfaces.
+
+Anything not recognised is forwarded to Makie's `contour!`, so e.g. `colormap` and `linewidth`
+work too:
 
 ```@example plotting
 plot_equilibrium(Solovev.NSTX();
@@ -45,7 +51,8 @@ plot_equilibrium(ThetaPinch.init(); colorbar = true, size = (900, 400))
 
 `plot_equilibrium` creates a figure of its own. To draw into an existing one — to compare
 several configurations side by side, or to combine an equilibrium with other plots — use
-`plot_equilibrium!`, which takes any Makie grid position as its first argument:
+`plot_equilibrium!`, which takes any Makie grid position as its first argument. It works the same
+way for the fields that draw a single panel and for those that draw one per component:
 
 ```@example plotting
 fig = Figure(size = (900, 400))
@@ -65,6 +72,19 @@ Note the `aspect` keyword on the last panel. By default the axes use `DataAspect
 unit in ``R`` has the same length as one unit in ``Z``. That is the right choice almost
 everywhere, but a field reversed configuration is so elongated that it would leave the panel a
 thin sliver, hence the explicit aspect ratio.
+
+`plot_equilibrium!` returns the `Axis` it created — or the vector of axes, for the fields that
+draw more than one panel — so the axis can be adjusted afterwards:
+
+```@example plotting
+fig = Figure(size = (450, 400))
+
+ax = plot_equilibrium!(fig[1,1], AxisymmetricTokamakCylindrical.init())
+scatter!(ax, [1.0], [0.0]; marker = :xcross, color = :red, markersize = 15)
+text!(ax, 1.02, 0.02; text = "magnetic axis", color = :red)
+
+fig
+```
 
 
 ## Plotting by Hand
