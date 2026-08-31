@@ -14,53 +14,52 @@ Parameters:
 """
 module ThetaPinch
 
-    import ..ElectromagneticFields
-    import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
-    import ..AnalyticCartesianField: X, Y, Z
+import ..ElectromagneticFields
+import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
+import ..AnalyticCartesianField: X, Y, Z
 
-    export ThetaPinchEquilibrium
+export ThetaPinchEquilibrium
 
-    const DEFAULT_B₀ = 1.0
+const DEFAULT_B₀ = 1.0
 
-    struct ThetaPinchEquilibrium{T <: Number} <: CartesianEquilibrium
-        name::String
-        B₀::T
+struct ThetaPinchEquilibrium{T <: Number} <: CartesianEquilibrium
+    name::String
+    B₀::T
 
-        function ThetaPinchEquilibrium{T}(B₀::T) where T <: Number
-            new("ThetaPinchEquilibrium", B₀)
-        end
+    function ThetaPinchEquilibrium{T}(B₀::T) where {T <: Number}
+        new("ThetaPinchEquilibrium", B₀)
     end
+end
 
-    ThetaPinchEquilibrium(B₀::T=DEFAULT_B₀) where T <: Number = ThetaPinchEquilibrium{T}(B₀)
+ThetaPinchEquilibrium(B₀::T = DEFAULT_B₀) where {T <: Number} = ThetaPinchEquilibrium{T}(B₀)
 
+function init(B₀ = DEFAULT_B₀)
+    ThetaPinchEquilibrium(B₀)
+end
 
-    function init(B₀=DEFAULT_B₀)
-        ThetaPinchEquilibrium(B₀)
-    end
+macro code(args...)
+    parameters, options = code_arguments(args)
+    code(init(parameters...); escape = true, options...)
+end
 
-    macro code(args...)
-        parameters, options = code_arguments(args)
-        code(init(parameters...); escape=true, options...)
-    end
+function Base.show(io::IO, equ::ThetaPinchEquilibrium)
+    print(io, "θ-Pinch Equilibrium in (x,y,z) Coordinates with\n")
+    print(io, "  B₀ = ", equ.B₀)
+end
 
+r²(x::AbstractVector, equ::ThetaPinchEquilibrium) = X(x, equ)^2 + Y(x, equ)^2
+r(x::AbstractVector, equ::ThetaPinchEquilibrium) = sqrt(r²(x, equ))
+R(x::AbstractVector, equ::ThetaPinchEquilibrium) = r(x, equ)
+θ(x::AbstractVector, equ::ThetaPinchEquilibrium) = atan(Y(x, equ), X(x, equ))
+ϕ(x::AbstractVector, equ::ThetaPinchEquilibrium) = θ(x, equ)
 
-    function Base.show(io::IO, equ::ThetaPinchEquilibrium)
-        print(io, "θ-Pinch Equilibrium in (x,y,z) Coordinates with\n")
-        print(io, "  B₀ = ", equ.B₀)
-    end
+ElectromagneticFields.A₁(x::AbstractVector, equ::ThetaPinchEquilibrium) = - equ.B₀ *
+                                                                          Y(x, equ) / 2
+ElectromagneticFields.A₂(x::AbstractVector, equ::ThetaPinchEquilibrium) = + equ.B₀ *
+                                                                          X(x, equ) / 2
+ElectromagneticFields.A₃(x::AbstractVector, equ::ThetaPinchEquilibrium) = zero(eltype(x))
 
-
-    r²(x::AbstractVector, equ::ThetaPinchEquilibrium) = X(x,equ)^2 + Y(x,equ)^2
-    r(x::AbstractVector, equ::ThetaPinchEquilibrium) = sqrt(r²(x,equ))
-    R(x::AbstractVector, equ::ThetaPinchEquilibrium) = r(x,equ)
-    θ(x::AbstractVector, equ::ThetaPinchEquilibrium) = atan(Y(x,equ), X(x,equ))
-    ϕ(x::AbstractVector, equ::ThetaPinchEquilibrium) = θ(x,equ)
-
-    ElectromagneticFields.A₁(x::AbstractVector, equ::ThetaPinchEquilibrium) = - equ.B₀ * Y(x,equ) / 2
-    ElectromagneticFields.A₂(x::AbstractVector, equ::ThetaPinchEquilibrium) = + equ.B₀ * X(x,equ) / 2
-    ElectromagneticFields.A₃(x::AbstractVector, equ::ThetaPinchEquilibrium) = zero(eltype(x))
-
-    ElectromagneticFields.get_functions(::ThetaPinchEquilibrium) = (X=X, Y=Y, Z=Z, R=R, r=r, θ=θ, ϕ=ϕ, r²=r²)
-
+ElectromagneticFields.get_functions(::ThetaPinchEquilibrium) = (
+    X = X, Y = Y, Z = Z, R = R, r = r, θ = θ, ϕ = ϕ, r² = r²)
 
 end

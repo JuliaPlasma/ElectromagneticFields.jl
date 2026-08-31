@@ -22,16 +22,16 @@ export DipoleField
 
 const DEFAULT_B₀ = 1000.0
 
-struct DipoleField{T<:Number} <: CartesianEquilibrium
+struct DipoleField{T <: Number} <: CartesianEquilibrium
     name::String
     B₀::T
 
-    function DipoleField{T}(B₀::T) where {T<:Number}
+    function DipoleField{T}(B₀::T) where {T <: Number}
         new("DipoleField", B₀)
     end
 end
 
-DipoleField(B₀::T=DEFAULT_B₀) where {T} = DipoleField{T}(B₀)
+DipoleField(B₀::T = DEFAULT_B₀) where {T} = DipoleField{T}(B₀)
 
 function init(args...)
     DipoleField(args...)
@@ -39,19 +39,23 @@ end
 
 macro code(args...)
     parameters, options = code_arguments(args)
-    code(init(parameters...); escape=true, options...)
+    code(init(parameters...); escape = true, options...)
 end
 
 function Base.show(io::IO, equ::DipoleField)
     print(io, "Dipole Field in (x,y,z) Coordinates")
 end
 
-
-ElectromagneticFields.A₁(x::AbstractVector, equ::DipoleField) = +equ.B₀ * Y(x, equ) / sqrt(X(x, equ)^2 + Y(x, equ)^2 + Z(x, equ)^2)^3
-ElectromagneticFields.A₂(x::AbstractVector, equ::DipoleField) = -equ.B₀ * X(x, equ) / sqrt(X(x, equ)^2 + Y(x, equ)^2 + Z(x, equ)^2)^3
+ElectromagneticFields.A₁(x::AbstractVector, equ::DipoleField) = +equ.B₀ * Y(x, equ) /
+                                                                sqrt(X(x, equ)^2 +
+                                                                     Y(x, equ)^2 +
+                                                                     Z(x, equ)^2)^3
+ElectromagneticFields.A₂(x::AbstractVector, equ::DipoleField) = -equ.B₀ * X(x, equ) /
+                                                                sqrt(X(x, equ)^2 +
+                                                                     Y(x, equ)^2 +
+                                                                     Z(x, equ)^2)^3
 ElectromagneticFields.A₃(x::AbstractVector, equ::DipoleField) = zero(eltype(x))
 
-ElectromagneticFields.get_functions(::DipoleField) = (X=X, Y=Y, Z=Z)
-
+ElectromagneticFields.get_functions(::DipoleField) = (X = X, Y = Y, Z = Z)
 
 end

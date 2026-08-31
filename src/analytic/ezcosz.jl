@@ -12,38 +12,38 @@ Parameters: `E₀`
 """
 module EzCosZ
 
-    import ..ElectromagneticFields
-    import ..ElectromagneticFields: CartesianPerturbation, code, code_arguments
-    import ..AnalyticCartesianField: X, Y, Z
+import ..ElectromagneticFields
+import ..ElectromagneticFields: CartesianPerturbation, code, code_arguments
+import ..AnalyticCartesianField: X, Y, Z
 
-    export EzCosZPerturbation
+export EzCosZPerturbation
 
-    const DEFAULT_E₀ = 1.0
+const DEFAULT_E₀ = 1.0
 
-    struct EzCosZPerturbation{T <: Number} <: CartesianPerturbation
-        name::String
-        E₀::T
-        EzCosZPerturbation{T}(E₀::T) where T <: Number = new("EzCosZ", E₀)
-    end
+struct EzCosZPerturbation{T <: Number} <: CartesianPerturbation
+    name::String
+    E₀::T
+    EzCosZPerturbation{T}(E₀::T) where {T <: Number} = new("EzCosZ", E₀)
+end
 
-    EzCosZPerturbation(E₀::T=DEFAULT_E₀) where T <: Number = EzCosZPerturbation{T}(E₀)
+EzCosZPerturbation(E₀::T = DEFAULT_E₀) where {T <: Number} = EzCosZPerturbation{T}(E₀)
 
-    function init(E₀=DEFAULT_E₀)
-        EzCosZPerturbation(E₀)
-    end
+function init(E₀ = DEFAULT_E₀)
+    EzCosZPerturbation(E₀)
+end
 
-    macro code(args...)
-        parameters, options = code_arguments(args)
-        code(init(parameters...); escape=true, options...)
-    end
+macro code(args...)
+    parameters, options = code_arguments(args)
+    code(init(parameters...); escape = true, options...)
+end
 
-    function Base.show(io::IO, equ::EzCosZPerturbation)
-        print(io, "Simple perturbation in electric field")
-    end
+function Base.show(io::IO, equ::EzCosZPerturbation)
+    print(io, "Simple perturbation in electric field")
+end
 
+ElectromagneticFields.φ(x::AbstractVector, equ::EzCosZPerturbation) = equ.E₀ / (2π) *
+                                                                      sin(2π * Z(x, equ))
 
-    ElectromagneticFields.φ(x::AbstractVector, equ::EzCosZPerturbation) = equ.E₀ / (2π) * sin(2π * Z(x,equ))
-
-    ElectromagneticFields.get_functions(::EzCosZPerturbation) = (X=X, Y=Y, Z=Z)
+ElectromagneticFields.get_functions(::EzCosZPerturbation) = (X = X, Y = Y, Z = Z)
 
 end

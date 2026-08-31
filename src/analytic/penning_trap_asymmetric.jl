@@ -27,51 +27,78 @@ Parameters:
 """
 module PenningTrapAsymmetric
 
-    import ..ElectromagneticFields
-    import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
-    import ..AnalyticCartesianField: X, Y, Z
+import ..ElectromagneticFields
+import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
+import ..AnalyticCartesianField: X, Y, Z
 
-    export  PenningTrapAsymmetricEquilibrium
+export PenningTrapAsymmetricEquilibrium
 
-    const DEFAULT_B₀ = 100.0
-    const DEFAULT_Bₚ = 50.0
-    const DEFAULT_E₀ = 10.0
+const DEFAULT_B₀ = 100.0
+const DEFAULT_Bₚ = 50.0
+const DEFAULT_E₀ = 10.0
 
-    struct PenningTrapAsymmetricEquilibrium{T <: Number} <: CartesianEquilibrium
-        name::String
-        B₀::T
-        Bₚ::T
-        E₀::T
+struct PenningTrapAsymmetricEquilibrium{T <: Number} <: CartesianEquilibrium
+    name::String
+    B₀::T
+    Bₚ::T
+    E₀::T
 
-        function PenningTrapAsymmetricEquilibrium{T}(B₀::T, Bₚ::T, E₀::T) where T <: Number
-            new("PenningTrapAsymmetricEquilibrium", B₀, Bₚ, E₀)
-        end
+    function PenningTrapAsymmetricEquilibrium{T}(B₀::T, Bₚ::T, E₀::T) where {T <: Number}
+        new("PenningTrapAsymmetricEquilibrium", B₀, Bₚ, E₀)
     end
+end
 
-    PenningTrapAsymmetricEquilibrium(B₀::T=DEFAULT_B₀, Bₚ::T=DEFAULT_Bₚ, E₀::T=DEFAULT_E₀) where T <: Number = PenningTrapAsymmetricEquilibrium{T}(B₀, Bₚ, E₀)
+PenningTrapAsymmetricEquilibrium(B₀::T = DEFAULT_B₀, Bₚ::T = DEFAULT_Bₚ,
+    E₀::T = DEFAULT_E₀) where {T <: Number} = PenningTrapAsymmetricEquilibrium{T}(B₀, Bₚ, E₀)
 
-    function init(B₀=DEFAULT_B₀, Bₚ=DEFAULT_Bₚ, E₀=DEFAULT_E₀)
-        PenningTrapAsymmetricEquilibrium(B₀, Bₚ, E₀)
-    end
+function init(B₀ = DEFAULT_B₀, Bₚ = DEFAULT_Bₚ, E₀ = DEFAULT_E₀)
+    PenningTrapAsymmetricEquilibrium(B₀, Bₚ, E₀)
+end
 
-    macro code(args...)
-        parameters, options = code_arguments(args)
-        code(init(parameters...); escape=true, options...)
-    end
+macro code(args...)
+    parameters, options = code_arguments(args)
+    code(init(parameters...); escape = true, options...)
+end
 
-    function Base.show(io::IO, equ::PenningTrapAsymmetricEquilibrium)
-        print(io, "Penning trap with asymmetric magnetic field in (x,y,z) coordinates with\n")
-        print(io, "  B₀ = ", equ.B₀, "\n")
-        print(io, "  Bₚ = ", equ.Bₚ, "\n")
-        print(io, "  E₀ = ", equ.E₀)
-    end
+function Base.show(io::IO, equ::PenningTrapAsymmetricEquilibrium)
+    print(io, "Penning trap with asymmetric magnetic field in (x,y,z) coordinates with\n")
+    print(io, "  B₀ = ", equ.B₀, "\n")
+    print(io, "  Bₚ = ", equ.Bₚ, "\n")
+    print(io, "  E₀ = ", equ.E₀)
+end
 
+ElectromagneticFields.A₁(x::AbstractVector, equ::PenningTrapAsymmetricEquilibrium) = - equ.B₀ /
+                                                                                     2 *
+                                                                                     Y(x, equ) +
+                                                                                     equ.Bₚ /
+                                                                                     2 *
+                                                                                     (Z(x, equ)^2 -
+                                                                                      Y(x, equ)^2)
+ElectromagneticFields.A₂(x::AbstractVector, equ::PenningTrapAsymmetricEquilibrium) = + equ.B₀ /
+                                                                                     2 *
+                                                                                     (X(x, equ) -
+                                                                                      Z(x, equ) /
+                                                                                      6) +
+                                                                                     equ.Bₚ /
+                                                                                     2 *
+                                                                                     (Z(x, equ)^2 -
+                                                                                      X(x, equ)^2)
+ElectromagneticFields.A₃(x::AbstractVector, equ::PenningTrapAsymmetricEquilibrium) = + equ.B₀ /
+                                                                                     2 *
+                                                                                     Y(x, equ) /
+                                                                                     6 +
+                                                                                     equ.Bₚ /
+                                                                                     2 *
+                                                                                     (Y(x, equ)^2 -
+                                                                                      X(x, equ)^2)
+ElectromagneticFields.φ(x::AbstractVector, equ::PenningTrapAsymmetricEquilibrium) = - equ.E₀ *
+                                                                                    (X(x, equ)^2 /
+                                                                                     2 +
+                                                                                     Y(x, equ)^2 /
+                                                                                     2 -
+                                                                                     Z(x, equ)^2)
 
-    ElectromagneticFields.A₁(x::AbstractVector, equ::PenningTrapAsymmetricEquilibrium) = - equ.B₀ / 2 *  Y(x,equ)                  + equ.Bₚ / 2* (Z(x,equ)^2 - Y(x,equ)^2)
-    ElectromagneticFields.A₂(x::AbstractVector, equ::PenningTrapAsymmetricEquilibrium) = + equ.B₀ / 2 * (X(x,equ) - Z(x,equ) / 6 ) + equ.Bₚ / 2* (Z(x,equ)^2 - X(x,equ)^2)
-    ElectromagneticFields.A₃(x::AbstractVector, equ::PenningTrapAsymmetricEquilibrium) = + equ.B₀ / 2 *             Y(x,equ) / 6   + equ.Bₚ / 2* (Y(x,equ)^2 - X(x,equ)^2)
-    ElectromagneticFields.φ(x::AbstractVector, equ::PenningTrapAsymmetricEquilibrium) = - equ.E₀ * (X(x,equ)^2 / 2 + Y(x,equ)^2 / 2 - Z(x,equ)^2)
-
-    ElectromagneticFields.get_functions(::PenningTrapAsymmetricEquilibrium) = (X=X, Y=Y, Z=Z)
+ElectromagneticFields.get_functions(::PenningTrapAsymmetricEquilibrium) = (
+    X = X, Y = Y, Z = Z)
 
 end

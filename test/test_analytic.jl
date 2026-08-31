@@ -2,7 +2,7 @@
 # some convenience functions
 function structname(equ)
     if occursin('.', equ)
-        return equ[findlast(isequal('.'), equ)+1:end]
+        return equ[(findlast(isequal('.'), equ) + 1):end]
     else
         return equ
     end
@@ -11,11 +11,9 @@ end
 teststring(equ) = structname(string(equ))
 teststring(equ, pert) = structname(string(equ)) * " + " * structname(string(pert))
 
-
 # testing parameters
 const t = 1.0
 const ξ = [1.05, 0.5, 0.5]
-
 
 macro test_equilibrium(equilibrium_module, equilibrium_rangemin, equilibrium_rangemax)
     module_name = string(equilibrium_module)
@@ -59,7 +57,7 @@ macro test_equilibrium(equilibrium_module, equilibrium_rangemin, equilibrium_ran
         handed `|det DF|` instead of `det DF` produces a `B` that is exactly antiparallel to the
         curl of its own vector potential, and nothing else in this file notices.
         """
-        function test_curl(t, ξ; h=1E-5)
+        function test_curl(t, ξ; h = 1E-5)
             x = to_cartesian(t, ξ)
             ê(i) = [k == i ? one(eltype(x)) : zero(eltype(x)) for k in 1:3]
             ∂(i, j) = (A_cartesian(t, x .+ h .* ê(i))[j] -
@@ -411,9 +409,8 @@ macro test_equilibrium(equilibrium_module, equilibrium_rangemin, equilibrium_ran
                 @test @allocated(DF(t, ξ)) ≤ bound
             end
 
-            let g = g(t, ξ), ḡ = ḡ(t, ξ), DF = DF(t, ξ), DF̄ = DF̄(t, ξ),
-                a = a(t, ξ), b = b(t, ξ), c = c(t, ξ),
-                a⃗ = a⃗(t, ξ), b⃗ = b⃗(t, ξ), c⃗ = c⃗(t, ξ),
+            let g = g(t, ξ), ḡ = ḡ(t, ξ), DF = DF(t, ξ), DF̄ = DF̄(t, ξ), a = a(t, ξ),
+                b = b(t, ξ), c = c(t, ξ), a⃗ = a⃗(t, ξ), b⃗ = b⃗(t, ξ), c⃗ = c⃗(t, ξ),
                 â = aₚ(t, ξ), b̂ = bₚ(t, ξ), ĉ = cₚ(t, ξ)
 
                 @test J(t, ξ) ≈ sqrt(det(DF' * DF)) atol = 1E-12
@@ -431,7 +428,6 @@ macro test_equilibrium(equilibrium_module, equilibrium_rangemin, equilibrium_ran
                 @test DF' * DF ≈ g atol = 1E-12
                 @test DF * DF̄ ≈ Array(I, 3, 3) atol = 1E-12
                 @test DF̄ * DF̄' ≈ ḡ atol = 1E-12
-
 
                 if $equilibrium_module != ElectromagneticFields.Singular
                     @test g * a⃗ ≈ a atol = 1E-14
@@ -491,16 +487,11 @@ macro test_equilibrium(equilibrium_module, equilibrium_rangemin, equilibrium_ran
     end
 end
 
-
-
 # perturbation list (equilibrium, parameters, perturbation, parameters, module)
 perts = (
     (SymmetricQuadratic, EzCosZ, (2.0)),
-    (ThetaPinch, EzCosZ, (2.0)),
+    (ThetaPinch, EzCosZ, (2.0))
 )
-
-
-
 
 # test equilibria
 
@@ -526,7 +517,6 @@ perts = (
 @test_equilibrium SolovevSymmetric [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
 println()
 
-
 # test perturbations
 # @testset "$(rpad(teststring(equ[1], equ[3]),60))" for equ in perts begin
 #         equ_obj = equ[1].init(equ[2]..., perturbation=equ[3].init(equ[4]...))
@@ -535,30 +525,41 @@ println()
 # end
 # println()
 
-
 # test correctness of some of the magnetic fields
 
-function test_axisymmetric_tokamak_cartesian_equilibrium(equ_mod, t=0.0, x=[1.5, 0.0, 0.5])
+function test_axisymmetric_tokamak_cartesian_equilibrium(equ_mod, t = 0.0, x = [
+        1.5, 0.0, 0.5])
     @test equ_mod.B¹(t, x) ≈ equ_mod.B₁(t, x) atol = 1E-16
     @test equ_mod.B²(t, x) ≈ equ_mod.B₂(t, x) atol = 1E-16
     @test equ_mod.B³(t, x) ≈ equ_mod.B₃(t, x) atol = 1E-16
 
-    @test equ_mod.B₁(t, x) ≈ -equ_mod.B₀ / equ_mod.q₀ * (equ_mod.q₀ * equ_mod.R₀ * equ_mod.Y(t, x) + equ_mod.X(t, x) * equ_mod.Z(t, x)) / equ_mod.R(t, x)^2 atol = 1E-16
-    @test equ_mod.B₂(t, x) ≈ +equ_mod.B₀ / equ_mod.q₀ * (equ_mod.q₀ * equ_mod.R₀ * equ_mod.X(t, x) - equ_mod.Y(t, x) * equ_mod.Z(t, x)) / equ_mod.R(t, x)^2 atol = 1E-16
-    @test equ_mod.B₃(t, x) ≈ +equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t, x) - equ_mod.R₀) / equ_mod.R(t, x) atol = 1E-16
+    @test equ_mod.B₁(t, x) ≈
+          -equ_mod.B₀ / equ_mod.q₀ *
+          (equ_mod.q₀ * equ_mod.R₀ * equ_mod.Y(t, x) + equ_mod.X(t, x) * equ_mod.Z(t, x)) /
+          equ_mod.R(t, x)^2 atol = 1E-16
+    @test equ_mod.B₂(t, x) ≈
+          +equ_mod.B₀ / equ_mod.q₀ *
+          (equ_mod.q₀ * equ_mod.R₀ * equ_mod.X(t, x) - equ_mod.Y(t, x) * equ_mod.Z(t, x)) /
+          equ_mod.R(t, x)^2 atol = 1E-16
+    @test equ_mod.B₃(t, x) ≈
+          +equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t, x) - equ_mod.R₀) / equ_mod.R(t, x) atol = 1E-16
 end
 
-function test_axisymmetric_tokamak_cylindrical_equilibrium(equ_mod, t=0.0, x=[1.5, 0.5, π / 5])
+function test_axisymmetric_tokamak_cylindrical_equilibrium(equ_mod, t = 0.0, x = [
+        1.5, 0.5, π / 5])
     @test equ_mod.B¹(t, x) == -equ_mod.B₀ / equ_mod.q₀ * equ_mod.Z(t, x) / equ_mod.R(t, x)
-    @test equ_mod.B²(t, x) == +equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t, x) - equ_mod.R₀) / equ_mod.R(t, x)
+    @test equ_mod.B²(t, x) ==
+          +equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t, x) - equ_mod.R₀) / equ_mod.R(t, x)
     @test equ_mod.B³(t, x) == +equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t, x)^2
 
     @test equ_mod.B₁(t, x) == -equ_mod.B₀ / equ_mod.q₀ * equ_mod.Z(t, x) / equ_mod.R(t, x)
-    @test equ_mod.B₂(t, x) == +equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t, x) - equ_mod.R₀) / equ_mod.R(t, x)
+    @test equ_mod.B₂(t, x) ==
+          +equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t, x) - equ_mod.R₀) / equ_mod.R(t, x)
     @test equ_mod.B₃(t, x) == +equ_mod.B₀ * equ_mod.R₀
 end
 
-function test_axisymmetric_tokamak_toroidal_equilibrium(equ_mod, t=0.0, x=[0.5, π / 10, π / 5])
+function test_axisymmetric_tokamak_toroidal_equilibrium(equ_mod, t = 0.0, x = [
+        0.5, π / 10, π / 5])
     @test equ_mod.B¹(t, x) == 0
     @test equ_mod.B²(t, x) == +equ_mod.B₀ / equ_mod.q₀ / equ_mod.R(t, x)
     @test equ_mod.B³(t, x) ≈ +equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t, x)^2 atol = 1E-14
@@ -574,7 +575,8 @@ whose poloidal vector potential is regular on the magnetic axis, so it must repr
 field values exactly. Only the tolerances differ: the `1/cos²θ` gauge makes the generated
 expressions less well conditioned, so these are approximate where the unregularised ones are exact.
 """
-function test_axisymmetric_tokamak_toroidal_regularization_equilibrium(equ_mod, t=0.0, x=[0.5, π / 10, π / 5])
+function test_axisymmetric_tokamak_toroidal_regularization_equilibrium(
+        equ_mod, t = 0.0, x = [0.5, π / 10, π / 5])
     @test equ_mod.B¹(t, x) ≈ 0 atol = 1E-14
     @test equ_mod.B²(t, x) ≈ +equ_mod.B₀ / equ_mod.q₀ / equ_mod.R(t, x) atol = 1E-14
     @test equ_mod.B³(t, x) ≈ +equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t, x)^2 atol = 1E-14
@@ -584,7 +586,8 @@ function test_axisymmetric_tokamak_toroidal_regularization_equilibrium(equ_mod, 
     @test equ_mod.B₃(t, x) ≈ +equ_mod.B₀ * equ_mod.R₀ atol = 1E-14
 end
 
-function test_consistency_axisymmetric_tokamak_cylindrical_equilibrium(equ_cyl, equ_car, t=0.0, ξ=[1.5, 0.5, π / 5])
+function test_consistency_axisymmetric_tokamak_cylindrical_equilibrium(
+        equ_cyl, equ_car, t = 0.0, ξ = [1.5, 0.5, π / 5])
     x = equ_cyl.to_cartesian(t, ξ)
     DF = equ_cyl.DF(t, ξ)
     DF̄ = equ_cyl.DF̄(t, ξ)
@@ -600,7 +603,8 @@ function test_consistency_axisymmetric_tokamak_cylindrical_equilibrium(equ_cyl, 
     @test DF̄' * B̂_cyl ≈ B̂_car atol = 1E-12
 end
 
-function test_consistency_axisymmetric_tokamak_toroidal_equilibrium(equ_tor, equ_car, t=0.0, ξ=[0.5, π / 10, π / 5])
+function test_consistency_axisymmetric_tokamak_toroidal_equilibrium(
+        equ_tor, equ_car, t = 0.0, ξ = [0.5, π / 10, π / 5])
     x = equ_tor.to_cartesian(t, ξ)
     DF = equ_tor.DF(t, ξ)
     DF̄ = equ_tor.DF̄(t, ξ)
@@ -616,7 +620,7 @@ function test_consistency_axisymmetric_tokamak_toroidal_equilibrium(equ_tor, equ
     @test DF̄' * B̂_tor ≈ B̂_car atol = 1E-12
 end
 
-function test_symmetric_quadratic_equilibrium(equ_mod, t=0.0, x=[1.0, 0.5, 0.5])
+function test_symmetric_quadratic_equilibrium(equ_mod, t = 0.0, x = [1.0, 0.5, 0.5])
     @test equ_mod.B¹(t, x) == equ_mod.B₁(t, x)
     @test equ_mod.B²(t, x) == equ_mod.B₂(t, x)
     @test equ_mod.B³(t, x) == equ_mod.B₃(t, x)
@@ -636,7 +640,7 @@ function test_symmetric_quadratic_equilibrium(equ_mod, t=0.0, x=[1.0, 0.5, 0.5])
     @test equ_mod.b₃(t, x) == 1
 end
 
-function test_theta_pinch_equilibrium(equ_mod, t=0.0, x=[1.0, 0.5, 0.5])
+function test_theta_pinch_equilibrium(equ_mod, t = 0.0, x = [1.0, 0.5, 0.5])
     @test equ_mod.B¹(t, x) == equ_mod.B₁(t, x)
     @test equ_mod.B²(t, x) == equ_mod.B₂(t, x)
     @test equ_mod.B³(t, x) == equ_mod.B₃(t, x)
@@ -656,7 +660,7 @@ function test_theta_pinch_equilibrium(equ_mod, t=0.0, x=[1.0, 0.5, 0.5])
     @test equ_mod.b₃(t, x) == 1
 end
 
-function test_abc_equilibrium(equ_mod, t=0.0, x=[1.0, 0.5, 0.5])
+function test_abc_equilibrium(equ_mod, t = 0.0, x = [1.0, 0.5, 0.5])
     @test equ_mod.B¹(t, x) == equ_mod.B₁(t, x)
     @test equ_mod.B²(t, x) == equ_mod.B₂(t, x)
     @test equ_mod.B³(t, x) == equ_mod.B₃(t, x)
@@ -665,9 +669,12 @@ function test_abc_equilibrium(equ_mod, t=0.0, x=[1.0, 0.5, 0.5])
     @test equ_mod.B₂(t, x) == equ_mod.A₂(t, x)
     @test equ_mod.B₃(t, x) == equ_mod.A₃(t, x)
 
-    @test equ_mod.B₁(t, x) == equ_mod.a₀ * sin(equ_mod.Z(t, x)) + equ_mod.c₀ * cos(equ_mod.Y(t, x))
-    @test equ_mod.B₂(t, x) == equ_mod.b₀ * sin(equ_mod.X(t, x)) + equ_mod.a₀ * cos(equ_mod.Z(t, x))
-    @test equ_mod.B₃(t, x) == equ_mod.c₀ * sin(equ_mod.Y(t, x)) + equ_mod.b₀ * cos(equ_mod.X(t, x))
+    @test equ_mod.B₁(t, x) ==
+          equ_mod.a₀ * sin(equ_mod.Z(t, x)) + equ_mod.c₀ * cos(equ_mod.Y(t, x))
+    @test equ_mod.B₂(t, x) ==
+          equ_mod.b₀ * sin(equ_mod.X(t, x)) + equ_mod.a₀ * cos(equ_mod.Z(t, x))
+    @test equ_mod.B₃(t, x) ==
+          equ_mod.c₀ * sin(equ_mod.Y(t, x)) + equ_mod.b₀ * cos(equ_mod.X(t, x))
 end
 
 @testset "$(rpad("Magnetic Fields",60))" begin
@@ -681,12 +688,14 @@ end
 end
 
 @testset "$(rpad("Consistency",60))" begin
-    test_consistency_axisymmetric_tokamak_cylindrical_equilibrium(AxisymmetricTokamakCylindricalTest, AxisymmetricTokamakCartesianTest)
-    test_consistency_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidalTest, AxisymmetricTokamakCartesianTest)
+    test_consistency_axisymmetric_tokamak_cylindrical_equilibrium(
+        AxisymmetricTokamakCylindricalTest, AxisymmetricTokamakCartesianTest)
+    test_consistency_axisymmetric_tokamak_toroidal_equilibrium(
+        AxisymmetricTokamakToroidalTest, AxisymmetricTokamakCartesianTest)
     # the regularised chart shares the toroidal chart's coordinates, so the same check applies
-    test_consistency_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidalRegularizationTest, AxisymmetricTokamakCartesianTest)
+    test_consistency_axisymmetric_tokamak_toroidal_equilibrium(
+        AxisymmetricTokamakToroidalRegularizationTest, AxisymmetricTokamakCartesianTest)
 end
-
 
 # `code` has two callers with opposite `escape` settings, and everything above goes through only one
 # of them: `@test_equilibrium` splices `Mod.@code`, which escapes its names into the calling module.
@@ -711,9 +720,9 @@ const equ_pinch_loaded = ElectromagneticFields.ThetaPinch.init()
     # what is under test here — everything below would be a `MethodError` without it.
     for (target, equ) in (
         (AxisymmetricTokamakCylindricalLoadTest, equ_cyl_loaded),
-        (AxisymmetricTokamakCartesianLoadTest, equ_car_loaded),
+        (AxisymmetricTokamakCartesianLoadTest, equ_car_loaded)
     )
-        result = load_equilibrium(equ; target_module=target) do mod
+        result = load_equilibrium(equ; target_module = target) do mod
             # the module the code went into, not a copy of it
             @test mod === target
 
@@ -734,9 +743,9 @@ const equ_pinch_loaded = ElectromagneticFields.ThetaPinch.init()
     # the plain form returns the target module. Its own module, since loading twice into one would
     # redefine every method there; and the check stops at the return value, because from this frame
     # the definitions it just made are one world age too new to call
-    @test load_equilibrium(equ_pinch_loaded; target_module=ThetaPinchLoadTest) === ThetaPinchLoadTest
+    @test load_equilibrium(equ_pinch_loaded; target_module = ThetaPinchLoadTest) ===
+          ThetaPinchLoadTest
 end
-
 
 # `A₃` is the poloidal flux function of the axisymmetric equilibria, and it is what the plotting
 # extension contours. The defining property is that the magnetic field lies in its level surfaces,
@@ -751,11 +760,13 @@ module FluxLabelSolovev end
 
 @testset "$(rpad("A₃ is a flux label for the axisymmetric equilibria",60))" begin
     for (target, equ, p) in (
-        (FluxLabelCylindrical, ElectromagneticFields.AxisymmetricTokamakCylindrical.init(), [1.1, 0.2, 0.3]),
-        (FluxLabelToroidal, ElectromagneticFields.AxisymmetricTokamakToroidal.init(), [0.2, 0.7, 0.3]),
-        (FluxLabelSolovev, ElectromagneticFields.Solovev.ITER(), [1.1, 0.2, 0.3]),
+        (FluxLabelCylindrical,
+        ElectromagneticFields.AxisymmetricTokamakCylindrical.init(), [1.1, 0.2, 0.3]),
+        (FluxLabelToroidal,
+        ElectromagneticFields.AxisymmetricTokamakToroidal.init(), [0.2, 0.7, 0.3]),
+        (FluxLabelSolovev, ElectromagneticFields.Solovev.ITER(), [1.1, 0.2, 0.3])
     )
-        load_equilibrium(equ; target_module=target) do mod
+        load_equilibrium(equ; target_module = target) do mod
             Bcon = [mod.B¹(t, p), mod.B²(t, p), mod.B³(t, p)]
 
             # central differences, so the tolerance is set by the truncation error rather than by ε
@@ -768,11 +779,10 @@ module FluxLabelSolovev end
 
             # the quantity that is *not* a flux label, at a point where the difference shows
             physical(q) = mod.A₃(t, q) / mod.R(t, q)
-            @test !isapprox(Bcon' * ∇(physical), 0; atol=1E-8)
+            @test !isapprox(Bcon' * ∇(physical), 0; atol = 1E-8)
         end
     end
 end
-
 
 # `code` runs every SymEngine-derived body through `eliminate_common_subexpressions`, which is only
 # safe because it names subexpressions rather than rewriting them. That claim is what is checked
@@ -795,20 +805,20 @@ end
 # each definition would hold the full expansion of its own subtree, so the work is the sum of all of
 # them. It does not finish on the Solov'ev second derivatives.
 function same_expression(body::Expr, block::Expr)
-    ids = Dict{Any,Int}()
+    ids = Dict{Any, Int}()
     next_id = Ref(0)
 
     intern(key) = get!(() -> (next_id[] += 1), ids, key)
 
-    visit(e, env) =
-        e isa Symbol && haskey(env, e) ? env[e] :
-        e isa Expr && e.head === :call ?
-        intern(Any[e.args[1]; Int[visit(a, env) for a in @view e.args[2:end]]]) :
-        intern((typeof(e), e))
+    visit(e, env) = e isa Symbol && haskey(env, e) ? env[e] :
+                    e isa Expr && e.head === :call ?
+                    intern(Any[e.args[1];
+                               Int[visit(a, env) for a in @view e.args[2:end]]]) :
+                    intern((typeof(e), e))
 
-    root = visit(body, Dict{Symbol,Int}())
+    root = visit(body, Dict{Symbol, Int}())
 
-    environment = Dict{Symbol,Int}()
+    environment = Dict{Symbol, Int}()
     value = 0
 
     for statement in block.args
@@ -825,10 +835,14 @@ end
 # The same equilibria `@test_equilibrium` covers above.
 const cse_equilibria = (
     ("ABC", ElectromagneticFields.ABC.init()),
-    ("AxisymmetricTokamakCartesian", ElectromagneticFields.AxisymmetricTokamakCartesian.init()),
-    ("AxisymmetricTokamakCylindrical", ElectromagneticFields.AxisymmetricTokamakCylindrical.init()),
-    ("AxisymmetricTokamakToroidal", ElectromagneticFields.AxisymmetricTokamakToroidal.init()),
-    ("AxisymmetricTokamakToroidalRegularization", ElectromagneticFields.AxisymmetricTokamakToroidalRegularization.init()),
+    ("AxisymmetricTokamakCartesian",
+        ElectromagneticFields.AxisymmetricTokamakCartesian.init()),
+    ("AxisymmetricTokamakCylindrical",
+        ElectromagneticFields.AxisymmetricTokamakCylindrical.init()),
+    ("AxisymmetricTokamakToroidal",
+        ElectromagneticFields.AxisymmetricTokamakToroidal.init()),
+    ("AxisymmetricTokamakToroidalRegularization",
+        ElectromagneticFields.AxisymmetricTokamakToroidalRegularization.init()),
     ("Dipole", ElectromagneticFields.Dipole.init()),
     ("PenningTrapUniform", ElectromagneticFields.PenningTrapUniform.init()),
     ("PenningTrapBottle", ElectromagneticFields.PenningTrapBottle.init()),
@@ -837,13 +851,13 @@ const cse_equilibria = (
     ("Singular", ElectromagneticFields.Singular.init()),
     ("SolovevFRC", ElectromagneticFields.Solovev.FRC()),
     ("SolovevITER", ElectromagneticFields.Solovev.ITER()),
-    ("SolovevITERwXpoint", ElectromagneticFields.Solovev.ITER(xpoint=true)),
+    ("SolovevITERwXpoint", ElectromagneticFields.Solovev.ITER(xpoint = true)),
     ("SolovevNSTX", ElectromagneticFields.Solovev.NSTX()),
-    ("SolovevNSTXwXpoint", ElectromagneticFields.Solovev.NSTX(xpoint=true)),
+    ("SolovevNSTXwXpoint", ElectromagneticFields.Solovev.NSTX(xpoint = true)),
     ("SolovevNSTXwDoubleXpoint", ElectromagneticFields.Solovev.NSTXdoubleX()),
     ("SolovevSymmetric", ElectromagneticFields.SolovevSymmetric.init()),
     ("SymmetricQuadratic", ElectromagneticFields.SymmetricQuadratic.init()),
-    ("ThetaPinch", ElectromagneticFields.ThetaPinch.init()),
+    ("ThetaPinch", ElectromagneticFields.ThetaPinch.init())
 )
 
 @testset "$(rpad("Common subexpression elimination preserves every value",60))" begin

@@ -15,60 +15,60 @@ import ..SolovevAbstract: AbstractSolovevEquilibrium, X, Y, Z, R, r, θ, ϕ, r²
 
 export SolovevEquilibrium, SolovevXpointEquilibrium
 
-
-function ψ₀(x::AbstractVector{T}, a) where {T<:Number}
+function ψ₀(x::AbstractVector{T}, a) where {T <: Number}
     x[1]^4 / 8 + a * (x[1]^2 * log(x[1]) / 2 - x[1]^4 / 8)
 end
 
-function ψ₁(x::AbstractVector{T}) where {T<:Number}
+function ψ₁(x::AbstractVector{T}) where {T <: Number}
     one(T)
 end
 
-function ψ₂(x::AbstractVector{T}) where {T<:Number}
+function ψ₂(x::AbstractVector{T}) where {T <: Number}
     x[1]^2
 end
 
-function ψ₃(x::AbstractVector{T}) where {T<:Number}
+function ψ₃(x::AbstractVector{T}) where {T <: Number}
     x[2]^2 - x[1]^2 * log(x[1])
 end
 
-function ψ₄(x::AbstractVector{T}) where {T<:Number}
+function ψ₄(x::AbstractVector{T}) where {T <: Number}
     x[1]^4 - 4 * x[1]^2 * x[2]^2
 end
 
-function ψ₅(x::AbstractVector{T}) where {T<:Number}
-    2 * x[2]^4 - 9 * x[2]^2 * x[1]^2 + 3 * x[1]^4 * log(x[1]) - 12 * x[1]^2 * x[2]^2 * log(x[1])
+function ψ₅(x::AbstractVector{T}) where {T <: Number}
+    2 * x[2]^4 - 9 * x[2]^2 * x[1]^2 + 3 * x[1]^4 * log(x[1]) -
+    12 * x[1]^2 * x[2]^2 * log(x[1])
 end
 
-function ψ₆(x::AbstractVector{T}) where {T<:Number}
+function ψ₆(x::AbstractVector{T}) where {T <: Number}
     x[1]^6 - 12 * x[1]^4 * x[2]^2 + 8 * x[1]^2 * x[2]^4
 end
 
-function ψ₇(x::AbstractVector{T}) where {T<:Number}
+function ψ₇(x::AbstractVector{T}) where {T <: Number}
     8 * x[2]^6 - 140 * x[2]^4 * x[1]^2 + 75 * x[2]^2 * x[1]^4 - 15 * x[1]^6 * log(x[1]) +
     180 * x[1]^4 * x[2]^2 * log(x[1]) - 120 * x[1]^2 * x[2]^4 * log(x[1])
 end
 
-function ψ₈(x::AbstractVector{T}) where {T<:Number}
+function ψ₈(x::AbstractVector{T}) where {T <: Number}
     x[2]
 end
 
-function ψ₉(x::AbstractVector{T}) where {T<:Number}
+function ψ₉(x::AbstractVector{T}) where {T <: Number}
     x[2] * x[1]^2
 end
 
-function ψ₁₀(x::AbstractVector{T}) where {T<:Number}
+function ψ₁₀(x::AbstractVector{T}) where {T <: Number}
     x[2]^3 - 3 * x[2] * x[1]^2 * log(x[1])
 end
 
-function ψ₁₁(x::AbstractVector{T}) where {T<:Number}
+function ψ₁₁(x::AbstractVector{T}) where {T <: Number}
     3 * x[2] * x[1]^4 - 4 * x[2]^3 * x[1]^2
 end
 
-function ψ₁₂(x::AbstractVector{T}) where {T<:Number}
-    8 * x[2]^5 - 45 * x[2] * x[1]^4 - 80 * x[2]^3 * x[1]^2 * log(x[1]) + 60 * x[2] * x[1]^4 * log(x[1])
+function ψ₁₂(x::AbstractVector{T}) where {T <: Number}
+    8 * x[2]^5 - 45 * x[2] * x[1]^4 - 80 * x[2]^3 * x[1]^2 * log(x[1]) +
+    60 * x[2] * x[1]^4 * log(x[1])
 end
-
 
 @doc raw"""
 Axisymmetric Solov'ev equilibra in (R/R₀,Z/R₀,ϕ) coordinates.
@@ -154,7 +154,7 @@ Parameters:
 * `δ`:  triangularity
 * `α`:  free constant, determined to match a given beta value
 """
-struct SolovevEquilibrium{T<:Number} <: AbstractSolovevEquilibrium
+struct SolovevEquilibrium{T <: Number} <: AbstractSolovevEquilibrium
     name::String
     R₀::T
     B₀::T
@@ -164,13 +164,13 @@ struct SolovevEquilibrium{T<:Number} <: AbstractSolovevEquilibrium
     α::T
     c::Vector{T}
 
-    function SolovevEquilibrium{T}(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, α::T, c::Vector{T}) where {T<:Number}
+    function SolovevEquilibrium{T}(
+            R₀::T, B₀::T, ϵ::T, κ::T, δ::T, α::T, c::Vector{T}) where {T <: Number}
         new("Solovev Equilibrium", R₀, B₀, ϵ, κ, δ, α, c)
     end
 end
 
-function SolovevEquilibrium(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, α::T) where {T<:Number}
-
+function SolovevEquilibrium(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, α::T) where {T <: Number}
     n = 7
     A = zeros(n, n + 1)
 
@@ -183,12 +183,18 @@ function SolovevEquilibrium(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, α::T) where 
         A[2, i] = N(subs(ψ[i], x[1] => 1 - ϵ, x[2] => 0))
         A[3, i] = N(subs(ψ[i], x[1] => 1 - δ * ϵ, x[2] => κ * ϵ))
         A[4, i] = N(subs(diff(ψ[i], x[1]), x[1] => 1 - δ * ϵ, x[2] => κ * ϵ))
-        A[5, i] = N(subs(diff(ψ[i], x[2], 2), x[1] => 1 + ϵ, x[2] => 0) - (1 + asin(δ))^2 / (ϵ * κ^2) * subs(diff(ψ[i], x[1]), x[1] => 1 + ϵ, x[2] => 0))
-        A[6, i] = N(subs(diff(ψ[i], x[2], 2), x[1] => 1 - ϵ, x[2] => 0) + (1 - asin(δ))^2 / (ϵ * κ^2) * subs(diff(ψ[i], x[1]), x[1] => 1 - ϵ, x[2] => 0))
-        A[7, i] = N(subs(diff(ψ[i], x[1], 2), x[1] => 1 - δ * ϵ, x[2] => κ * ϵ) - κ / (ϵ * (1 - δ^2)) * subs(diff(ψ[i], x[2]), x[1] => 1 - δ * ϵ, x[2] => κ * ϵ))
+        A[5, i] = N(subs(diff(ψ[i], x[2], 2), x[1] => 1 + ϵ, x[2] => 0) -
+                    (1 + asin(δ))^2 / (ϵ * κ^2) *
+                    subs(diff(ψ[i], x[1]), x[1] => 1 + ϵ, x[2] => 0))
+        A[6, i] = N(subs(diff(ψ[i], x[2], 2), x[1] => 1 - ϵ, x[2] => 0) +
+                    (1 - asin(δ))^2 / (ϵ * κ^2) *
+                    subs(diff(ψ[i], x[1]), x[1] => 1 - ϵ, x[2] => 0))
+        A[7, i] = N(subs(diff(ψ[i], x[1], 2), x[1] => 1 - δ * ϵ, x[2] => κ * ϵ) -
+                    κ / (ϵ * (1 - δ^2)) *
+                    subs(diff(ψ[i], x[2]), x[1] => 1 - δ * ϵ, x[2] => κ * ϵ))
     end
 
-    c = A[1:n, 1:n] \ A[1:n, n+1]
+    c = A[1:n, 1:n] \ A[1:n, n + 1]
 
     SolovevEquilibrium{T}(R₀, B₀, ϵ, κ, δ, α, c)
 end
@@ -199,9 +205,8 @@ end
 
 macro code(args...)
     parameters, options = code_arguments(args)
-    code(init(parameters...); escape=true, options...)
+    code(init(parameters...); escape = true, options...)
 end
-
 
 SolovevEquilibriumITER() = SolovevEquilibrium(6.2, 5.3, 0.32, 1.7, 0.33, -0.155)
 # SolovevEquilibriumTFTR() = SolovevEquilibrium(2.5, 5.6, 0.345, 1.0, 0.0,  )
@@ -219,7 +224,6 @@ SolovevEquilibriumFRC() = SolovevEquilibrium(1.0, 0.0, 0.99, 10.0, 0.7, 0.0)
 # diverges — so it stays out until those are implemented.
 # SolovevEquilibriumFRC2() = SolovevEquilibrium(1.0, 0.0, 1.00, 10., 1.0, 0.0)
 
-
 function Base.show(io::IO, equ::SolovevEquilibrium)
     print(io, "SolovevEquilibrium Equilibrium with\n")
     print(io, "  R₀ = ", equ.R₀, "\n")
@@ -230,8 +234,8 @@ function Base.show(io::IO, equ::SolovevEquilibrium)
     print(io, "  α  = ", equ.α)
 end
 
-
-function ElectromagneticFields.A₃(x::AbstractArray{T,1}, equ::SolovevEquilibrium) where {T<:Number}
+function ElectromagneticFields.A₃(x::AbstractArray{T, 1}, equ::SolovevEquilibrium) where {T <:
+                                                                                          Number}
     (ψ₀(x, equ.α) + equ.c[1] * ψ₁(x)
      + equ.c[2] * ψ₂(x)
      + equ.c[3] * ψ₃(x)
@@ -240,7 +244,6 @@ function ElectromagneticFields.A₃(x::AbstractArray{T,1}, equ::SolovevEquilibri
      + equ.c[6] * ψ₆(x)
      + equ.c[7] * ψ₇(x))
 end
-
 
 @doc raw"""
 Axisymmetric Solov'ev equilibra with X-point in (R/R₀,Z/R₀,phi) coordinates.
@@ -341,7 +344,7 @@ Parameters:
 * `xsep`: x position of the X point
 * `ysep`: y position of the X point
 """
-struct SolovevXpointEquilibrium{T<:Number} <: AbstractSolovevEquilibrium
+struct SolovevXpointEquilibrium{T <: Number} <: AbstractSolovevEquilibrium
     name::String
     R₀::T
     B₀::T
@@ -353,19 +356,21 @@ struct SolovevXpointEquilibrium{T<:Number} <: AbstractSolovevEquilibrium
     ysep::T
     c::Vector{T}
 
-    function SolovevXpointEquilibrium{T}(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, α::T, xsep::T, ysep::T, c::Vector{T}) where {T<:Number}
+    function SolovevXpointEquilibrium{T}(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, α::T, xsep::T,
+            ysep::T, c::Vector{T}) where {T <: Number}
         new("Solovev Equilibrium with X-point", R₀, B₀, ϵ, κ, δ, α, xsep, ysep, c)
     end
 end
 
-function SolovevXpointEquilibrium(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, α::T, xsep::T, ysep::T) where {T<:Number}
-
+function SolovevXpointEquilibrium(
+        R₀::T, B₀::T, ϵ::T, κ::T, δ::T, α::T, xsep::T, ysep::T) where {T <: Number}
     n = 12
     A = zeros(n, n + 1)
 
     x₁, x₂, x₃ = symbols("x₁, x₂, x₃")
     x = [x₁, x₂, x₃]
-    ψ = [ψ₁(x), ψ₂(x), ψ₃(x), ψ₄(x), ψ₅(x), ψ₆(x), ψ₇(x), ψ₈(x), ψ₉(x), ψ₁₀(x), ψ₁₁(x), ψ₁₂(x), -ψ₀(x, α)]
+    ψ = [ψ₁(x), ψ₂(x), ψ₃(x), ψ₄(x), ψ₅(x), ψ₆(x), ψ₇(x),
+        ψ₈(x), ψ₉(x), ψ₁₀(x), ψ₁₁(x), ψ₁₂(x), -ψ₀(x, α)]
 
     for i in axes(A, 2)
         A[1, i] = N(subs(ψ[i], x[1] => 1 + ϵ, x[2] => 0))
@@ -377,19 +382,24 @@ function SolovevXpointEquilibrium(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, α::T, 
         A[7, i] = N(subs(diff(ψ[i], x[1]), x[1] => 1 - δ * ϵ, x[2] => κ * ϵ))
         A[8, i] = N(subs(diff(ψ[i], x[1]), x[1] => xsep, x[2] => ysep))
         A[9, i] = N(subs(diff(ψ[i], x[2]), x[1] => xsep, x[2] => ysep))
-        A[10, i] = N(subs(diff(ψ[i], x[2], 2), x[1] => 1 + ϵ, x[2] => 0) - (1 + asin(δ))^2 / (ϵ * κ^2) * subs(diff(ψ[i], x[1]), x[1] => 1 + ϵ, x[2] => 0))
-        A[11, i] = N(subs(diff(ψ[i], x[2], 2), x[1] => 1 - ϵ, x[2] => 0) + (1 - asin(δ))^2 / (ϵ * κ^2) * subs(diff(ψ[i], x[1]), x[1] => 1 - ϵ, x[2] => 0))
-        A[12, i] = N(subs(diff(ψ[i], x[1], 2), x[1] => 1 - δ * ϵ, x[2] => κ * ϵ) - κ / (ϵ * (1 - δ^2)) * subs(diff(ψ[i], x[2]), x[1] => 1 - δ * ϵ, x[2] => κ * ϵ))
+        A[10, i] = N(subs(diff(ψ[i], x[2], 2), x[1] => 1 + ϵ, x[2] => 0) -
+                     (1 + asin(δ))^2 / (ϵ * κ^2) *
+                     subs(diff(ψ[i], x[1]), x[1] => 1 + ϵ, x[2] => 0))
+        A[11, i] = N(subs(diff(ψ[i], x[2], 2), x[1] => 1 - ϵ, x[2] => 0) +
+                     (1 - asin(δ))^2 / (ϵ * κ^2) *
+                     subs(diff(ψ[i], x[1]), x[1] => 1 - ϵ, x[2] => 0))
+        A[12, i] = N(subs(diff(ψ[i], x[1], 2), x[1] => 1 - δ * ϵ, x[2] => κ * ϵ) -
+                     κ / (ϵ * (1 - δ^2)) *
+                     subs(diff(ψ[i], x[2]), x[1] => 1 - δ * ϵ, x[2] => κ * ϵ))
     end
 
-    c = A[1:n, 1:n] \ A[1:n, n+1]
+    c = A[1:n, 1:n] \ A[1:n, n + 1]
 
     SolovevXpointEquilibrium{T}(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, c)
 end
 
-
-function SolovevDoubleXpointEquilibrium(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, α::T, xsep::T, ysep::T) where {T<:Number}
-
+function SolovevDoubleXpointEquilibrium(
+        R₀::T, B₀::T, ϵ::T, κ::T, δ::T, α::T, xsep::T, ysep::T) where {T <: Number}
     n = 7
     A = zeros(n, n + 1)
 
@@ -403,16 +413,20 @@ function SolovevDoubleXpointEquilibrium(R₀::T, B₀::T, ϵ::T, κ::T, δ::T, �
         A[3, i] = N(subs(ψ[i], x[1] => xsep, x[2] => ysep))
         A[4, i] = N(subs(diff(ψ[i], x[1]), x[1] => xsep, x[2] => ysep))
         A[5, i] = N(subs(diff(ψ[i], x[2]), x[1] => xsep, x[2] => ysep))
-        A[6, i] = N(subs(diff(ψ[i], x[2], 2), x[1] => 1 + ϵ, x[2] => 0) - (1 + asin(δ))^2 / (ϵ * κ^2) * subs(diff(ψ[i], x[1]), x[1] => 1 + ϵ, x[2] => 0))
-        A[7, i] = N(subs(diff(ψ[i], x[2], 2), x[1] => 1 - ϵ, x[2] => 0) + (1 - asin(δ))^2 / (ϵ * κ^2) * subs(diff(ψ[i], x[1]), x[1] => 1 - ϵ, x[2] => 0))
+        A[6, i] = N(subs(diff(ψ[i], x[2], 2), x[1] => 1 + ϵ, x[2] => 0) -
+                    (1 + asin(δ))^2 / (ϵ * κ^2) *
+                    subs(diff(ψ[i], x[1]), x[1] => 1 + ϵ, x[2] => 0))
+        A[7, i] = N(subs(diff(ψ[i], x[2], 2), x[1] => 1 - ϵ, x[2] => 0) +
+                    (1 - asin(δ))^2 / (ϵ * κ^2) *
+                    subs(diff(ψ[i], x[1]), x[1] => 1 - ϵ, x[2] => 0))
     end
 
-    c = vcat(A[1:n, 1:n] \ A[1:n, n+1], zeros(5))
+    c = vcat(A[1:n, 1:n] \ A[1:n, n + 1], zeros(5))
 
     SolovevXpointEquilibrium{T}(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, c)
 end
 
-function init(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, doublex=false)
+function init(R₀, B₀, ϵ, κ, δ, α, xsep, ysep, doublex = false)
     if doublex
         return SolovevDoubleXpointEquilibrium(R₀, B₀, ϵ, κ, δ, α, xsep, ysep)
     else
@@ -422,14 +436,18 @@ end
 
 macro code_xpoint(args...)
     parameters, options = code_arguments(args)
-    code(init(parameters...); escape=true, options...)
+    code(init(parameters...); escape = true, options...)
 end
 
-
-SolovevXpointEquilibriumITER() = SolovevXpointEquilibrium(6.2, 5.3, 0.32, 1.7, 0.33, -0.155, 0.88, -0.60)
-SolovevXpointEquilibriumNSTX() = SolovevXpointEquilibrium(0.85, 0.3, 0.78, 2.0, 0.35, -0.05, 0.70, -1.71)
-SolovevDoubleXpointEquilibriumNSTX() = SolovevDoubleXpointEquilibrium(0.85, 0.3, 0.78, 2.0, 0.35, 0.0, 0.70, -1.71)
-
+function SolovevXpointEquilibriumITER()
+    SolovevXpointEquilibrium(6.2, 5.3, 0.32, 1.7, 0.33, -0.155, 0.88, -0.60)
+end
+function SolovevXpointEquilibriumNSTX()
+    SolovevXpointEquilibrium(0.85, 0.3, 0.78, 2.0, 0.35, -0.05, 0.70, -1.71)
+end
+function SolovevDoubleXpointEquilibriumNSTX()
+    SolovevDoubleXpointEquilibrium(0.85, 0.3, 0.78, 2.0, 0.35, 0.0, 0.70, -1.71)
+end
 
 function Base.show(io::IO, equ::SolovevXpointEquilibrium)
     print(io, "Solovev Xpoint Equilibrium with\n")
@@ -443,8 +461,8 @@ function Base.show(io::IO, equ::SolovevXpointEquilibrium)
     print(io, "  ysep  = ", equ.ysep)
 end
 
-
-function ElectromagneticFields.A₃(x::AbstractArray{T,1}, equ::SolovevXpointEquilibrium) where {T<:Number}
+function ElectromagneticFields.A₃(x::AbstractArray{T, 1}, equ::SolovevXpointEquilibrium) where {T <:
+                                                                                                Number}
     (ψ₀(x, equ.α) + equ.c[1] * ψ₁(x)
      + equ.c[2] * ψ₂(x)
      + equ.c[3] * ψ₃(x)
@@ -459,8 +477,7 @@ function ElectromagneticFields.A₃(x::AbstractArray{T,1}, equ::SolovevXpointEqu
      + equ.c[12] * ψ₁₂(x))
 end
 
-
-function ITER(; xpoint=false)
+function ITER(; xpoint = false)
     if xpoint
         return SolovevXpointEquilibriumITER()
     else
@@ -468,7 +485,7 @@ function ITER(; xpoint=false)
     end
 end
 
-function NSTX(; xpoint=false)
+function NSTX(; xpoint = false)
     if xpoint
         return SolovevXpointEquilibriumNSTX()
     else
@@ -484,20 +501,19 @@ function FRC()
     SolovevEquilibriumFRC()
 end
 
-
 macro code_iter(args...)
     parameters, options = code_arguments(args)
-    code(ITER(xpoint=get(parameters, 1, false)); escape=true, options...)
+    code(ITER(xpoint = get(parameters, 1, false)); escape = true, options...)
 end
 
 macro code_iter_xpoint(args...)
     _, options = code_arguments(args)
-    code(ITER(xpoint=true); escape=true, options...)
+    code(ITER(xpoint = true); escape = true, options...)
 end
 
 macro code_nstx(args...)
     parameters, options = code_arguments(args)
-    code(NSTX(xpoint=get(parameters, 1, false)); escape=true, options...)
+    code(NSTX(xpoint = get(parameters, 1, false)); escape = true, options...)
 end
 
 macro code_nstx_xpoint(args...)
@@ -505,24 +521,22 @@ macro code_nstx_xpoint(args...)
     if get(parameters, 1, false)
         equilibrium = NSTXdoubleX()
     else
-        equilibrium = NSTX(xpoint=true)
+        equilibrium = NSTX(xpoint = true)
     end
-    code(equilibrium; escape=true, options...)
+    code(equilibrium; escape = true, options...)
 end
 
 macro code_nstx_double_xpoint(args...)
     _, options = code_arguments(args)
-    code(NSTXdoubleX(); escape=true, options...)
+    code(NSTXdoubleX(); escape = true, options...)
 end
 
 macro code_frc(args...)
     _, options = code_arguments(args)
-    code(FRC(); escape=true, options...)
+    code(FRC(); escape = true, options...)
 end
 
-
 end
-
 
 module SolovevFRC
 import ..Solovev: @code_frc, FRC
@@ -542,7 +556,7 @@ module SolovevITERwXpoint
 import ..Solovev: @code_iter_xpoint, ITER
 export @code, init
 var"@code" = var"@code_iter_xpoint"
-init() = ITER(xpoint=true)
+init() = ITER(xpoint = true)
 end
 
 module SolovevNSTX
@@ -556,7 +570,7 @@ module SolovevNSTXwXpoint
 import ..Solovev: @code_nstx_xpoint, NSTX
 export @code, init
 var"@code" = var"@code_nstx_xpoint"
-init() = NSTX(xpoint=true)
+init() = NSTX(xpoint = true)
 end
 
 module SolovevNSTXwDoubleXpoint

@@ -10,15 +10,29 @@ abstract type AnalyticPerturbation <: AnalyticField end
 function get_functions end
 function get_parameters end
 
-x¹(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("x¹() not implemented for ", ET)
-x²(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("x²() not implemented for ", ET)
-x³(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("x³() not implemented for ", ET)
+function x¹(::AbstractVector, ::ET) where {ET <: AnalyticField}
+    error("x¹() not implemented for ", ET)
+end
+function x²(::AbstractVector, ::ET) where {ET <: AnalyticField}
+    error("x²() not implemented for ", ET)
+end
+function x³(::AbstractVector, ::ET) where {ET <: AnalyticField}
+    error("x³() not implemented for ", ET)
+end
 
-ξ¹(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("ξ¹() not implemented for ", ET)
-ξ²(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("ξ²() not implemented for ", ET)
-ξ³(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("ξ³() not implemented for ", ET)
+function ξ¹(::AbstractVector, ::ET) where {ET <: AnalyticField}
+    error("ξ¹() not implemented for ", ET)
+end
+function ξ²(::AbstractVector, ::ET) where {ET <: AnalyticField}
+    error("ξ²() not implemented for ", ET)
+end
+function ξ³(::AbstractVector, ::ET) where {ET <: AnalyticField}
+    error("ξ³() not implemented for ", ET)
+end
 
-J(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("J() not implemented for ", ET)
+function J(::AbstractVector, ::ET) where {ET <: AnalyticField}
+    error("J() not implemented for ", ET)
+end
 
 @doc raw"""
     orientation(equ)
@@ -85,15 +99,22 @@ maxx¹(ξ::AbstractVector{T}, equ::AnalyticField) where {T} = +T(Inf)
 maxx²(ξ::AbstractVector{T}, equ::AnalyticField) where {T} = +T(Inf)
 maxx³(ξ::AbstractVector{T}, equ::AnalyticField) where {T} = +T(Inf)
 
-
-periodicity(x::AbstractVector{T}, ::AnalyticField) where {T} = (-Inf * ones(T, 4), +Inf * ones(T, 4))
+function periodicity(x::AbstractVector{T}, ::AnalyticField) where {T}
+    (-Inf * ones(T, 4), +Inf * ones(T, 4))
+end
 
 from_cartesian(x::AbstractVector, equ::AnalyticField) = [ξ¹(x, equ), ξ²(x, equ), ξ³(x, equ)]
 to_cartesian(ξ::AbstractVector, equ::AnalyticField) = [x¹(ξ, equ), x²(ξ, equ), x³(ξ, equ)]
 
-A₁(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("A₁() not implemented for ", ET)
-A₂(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("A₂() not implemented for ", ET)
-A₃(::AbstractVector, ::ET) where {ET<:AnalyticField} = error("A₃() not implemented for ", ET)
+function A₁(::AbstractVector, ::ET) where {ET <: AnalyticField}
+    error("A₁() not implemented for ", ET)
+end
+function A₂(::AbstractVector, ::ET) where {ET <: AnalyticField}
+    error("A₂() not implemented for ", ET)
+end
+function A₃(::AbstractVector, ::ET) where {ET <: AnalyticField}
+    error("A₃() not implemented for ", ET)
+end
 
 φ(::AbstractVector{T}, ::AnalyticField) where {T} = zero(T)
 
@@ -103,10 +124,9 @@ end
 
 function g(x, equ)
     [g₁₁(x, equ) g₁₂(x, equ) g₁₃(x, equ);
-        g₂₁(x, equ) g₂₂(x, equ) g₂₃(x, equ);
-        g₃₁(x, equ) g₃₂(x, equ) g₃₃(x, equ)]
+     g₂₁(x, equ) g₂₂(x, equ) g₂₃(x, equ);
+     g₃₁(x, equ) g₃₂(x, equ) g₃₃(x, equ)]
 end
-
 
 struct ZeroPerturbation <: AnalyticPerturbation
     name::String
@@ -116,7 +136,6 @@ end
 A₁(::AbstractVector{T}, ::AnalyticPerturbation) where {T} = zero(T)
 A₂(::AbstractVector{T}, ::AnalyticPerturbation) where {T} = zero(T)
 A₃(::AbstractVector{T}, ::AnalyticPerturbation) where {T} = zero(T)
-
 
 "Returns the i-th component of the vector corresponding to the one-form α"
 function covariant_to_contravariant(α, g̅, i)
@@ -165,7 +184,6 @@ function Γ(g, g̅, x, j, k, l)
     end
     return 1 // 2 * γ
 end
-
 
 "Returns the l-th component of the Levi-Civita connection"
 function connection(u, v, x, g, g̅, l)
@@ -216,11 +234,10 @@ function normalize!(v, g)
     v ./= magnitude(v, g)
 end
 
-
 """
 Generate functions for evaluating analytic equilibria.
 """
-function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::AnalyticPerturbation; output=0)
+function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::AnalyticPerturbation; output = 0)
     # define symbols for time t and coordinates x = (x₁, x₂, x₃),
     # positive=true is set so that sqrt(x^2) does not become |x^2|
     t, x₁, x₂, x₃, ξ₁, ξ₂, ξ₃ = symbols("t, x₁, x₂, x₃, ξ₁, ξ₂, ξ₃")#, real=true, positive=true)
@@ -249,7 +266,8 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     DF = [diff(x̂[i], ξ[j]) for i in 1:3, j in 1:3]
     symprint("DF", DF, output, 2)
 
-    DF̄ = [subs(diff(ξ̂[i], x[j]), x₁ => x¹(ξ, equ), x₂ => x²(ξ, equ), x₃ => x³(ξ, equ)) for i in 1:3, j in 1:3]
+    DF̄ = [subs(diff(ξ̂[i], x[j]), x₁ => x¹(ξ, equ), x₂ => x²(ξ, equ), x₃ => x³(ξ, equ))
+          for i in 1:3, j in 1:3]
     symprint("DF̄", DF̄, output, 2)
 
     # obtain metric
@@ -310,8 +328,8 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
 
     # compute magnetic field two-form B²
     B² = [0 +Bᶜ[3] -Bᶜ[2];
-        -Bᶜ[3] 0 +Bᶜ[1];
-        +Bᶜ[2] -Bᶜ[1] 0] .* 1 // 2
+          -Bᶜ[3] 0 +Bᶜ[1];
+          +Bᶜ[2] -Bᶜ[1] 0] .* 1 // 2
     symprint("B²", B², output, 2)
 
     # compute magnetic field one-form B¹ = ⋆B²
@@ -368,7 +386,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
 
     # compute unit vectors perpendicular to magnetic field
     avec = [Basic(0), Basic(0), Basic(0)]
-    for tvec ∈ ([Basic(1), Basic(0), Basic(0)],
+    for tvec in ([Basic(1), Basic(0), Basic(0)],
         [Basic(0), Basic(1), Basic(0)],
         [Basic(0), Basic(0), Basic(1)])
         avec .= [crossproduct(tvec, bvec, ginv, Jsgn, i) for i in 1:3]
@@ -405,7 +423,7 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     symprint("Evec", Evec, output, 2)
 
     # collect all functions to generate code for
-    functions = Dict{String,Any}()
+    functions = Dict{String, Any}()
     indices = ["₁", "₂", "₃"]
     indicesup = ["¹", "²", "³"]
     indicesph = ["₍₁₎", "₍₂₎", "₍₃₎"]
@@ -440,58 +458,60 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
     functions["φ"] = φ⁰
 
     for i in 1:3
-        functions["A"*indices[i]] = A¹[i]
-        functions["B"*indices[i]] = B¹[i]
-        functions["a"*indices[i]] = a¹[i]
-        functions["b"*indices[i]] = b¹[i]
-        functions["c"*indices[i]] = c¹[i]
-        functions["E"*indices[i]] = E¹[i]
+        functions["A" * indices[i]] = A¹[i]
+        functions["B" * indices[i]] = B¹[i]
+        functions["a" * indices[i]] = a¹[i]
+        functions["b" * indices[i]] = b¹[i]
+        functions["c" * indices[i]] = c¹[i]
+        functions["E" * indices[i]] = E¹[i]
 
-        functions["B"*indicesph[i]] = Bphys[i]
-        functions["a"*indicesph[i]] = aphys[i]
-        functions["b"*indicesph[i]] = bphys[i]
-        functions["c"*indicesph[i]] = cphys[i]
+        functions["B" * indicesph[i]] = Bphys[i]
+        functions["a" * indicesph[i]] = aphys[i]
+        functions["b" * indicesph[i]] = bphys[i]
+        functions["c" * indicesph[i]] = cphys[i]
 
-        functions["A"*indicesup[i]] = Avec[i]
-        functions["B"*indicesup[i]] = Bvec[i]
-        functions["a"*indicesup[i]] = avec[i]
-        functions["b"*indicesup[i]] = bvec[i]
-        functions["c"*indicesup[i]] = cvec[i]
-        functions["E"*indicesup[i]] = Evec[i]
+        functions["A" * indicesup[i]] = Avec[i]
+        functions["B" * indicesup[i]] = Bvec[i]
+        functions["a" * indicesup[i]] = avec[i]
+        functions["b" * indicesup[i]] = bvec[i]
+        functions["c" * indicesup[i]] = cvec[i]
+        functions["E" * indicesup[i]] = Evec[i]
 
-        functions["dBdx"*indices[i]] = DBabs[i]
+        functions["dBdx" * indices[i]] = DBabs[i]
     end
 
     for i in 1:3
         for j in 1:3
-            functions["g"*indices[i]*indices[j]] = gmat[i, j]
-            functions["g"*indicesup[i]*indicesup[j]] = ginv[i, j]
+            functions["g" * indices[i] * indices[j]] = gmat[i, j]
+            functions["g" * indicesup[i] * indicesup[j]] = ginv[i, j]
 
-            functions["DF"*indices[i]*indices[j]] = DF[i, j]
-            functions["DF̄"*indices[i]*indices[j]] = DF̄[i, j]
+            functions["DF" * indices[i] * indices[j]] = DF[i, j]
+            functions["DF̄" * indices[i] * indices[j]] = DF̄[i, j]
 
-            functions["B"*indices[i]*indices[j]] = B²[i, j]
+            functions["B" * indices[i] * indices[j]] = B²[i, j]
 
-            functions["dA"*indices[i]*"dx"*indices[j]] = DA[i, j]
-            functions["dB"*indices[i]*"dx"*indices[j]] = DB[i, j]
-            functions["db"*indices[i]*"dx"*indices[j]] = Db[i, j]
-            functions["db"*indicesph[i]*"dx"*indices[j]] = Dbphys[i, j]
-            functions["dE"*indices[i]*"dx"*indices[j]] = DE[i, j]
+            functions["dA" * indices[i] * "dx" * indices[j]] = DA[i, j]
+            functions["dB" * indices[i] * "dx" * indices[j]] = DB[i, j]
+            functions["db" * indices[i] * "dx" * indices[j]] = Db[i, j]
+            functions["db" * indicesph[i] * "dx" * indices[j]] = Dbphys[i, j]
+            functions["dE" * indices[i] * "dx" * indices[j]] = DE[i, j]
 
-            functions["d²B"*"dx"*indices[i]*"dx"*indices[j]] = DDBabs[i, j]
+            functions["d²B" * "dx" * indices[i] * "dx" * indices[j]] = DDBabs[i, j]
         end
     end
 
     for i in 1:3
         for j in 1:3
             for k in 1:3
-                functions["d²A"*indices[i]*"dx"*indices[j]*"dx"*indices[k]] = DDA[i, j, k]
-                functions["d²b"*indices[i]*"dx"*indices[j]*"dx"*indices[k]] = DDb[i, j, k]
-                functions["dg"*indices[i]*indices[j]*"dx"*indices[k]] = Dg[i, j, k]
-                functions["dg"*indicesup[i]*indicesup[j]*"dx"*indices[k]] = Dḡ[i, j, k]
+                functions["d²A" * indices[i] * "dx" * indices[j] * "dx" * indices[k]] = DDA[i, j, k]
+                functions["d²b" * indices[i] * "dx" * indices[j] * "dx" * indices[k]] = DDb[i, j, k]
+                functions["dg" * indices[i] * indices[j] * "dx" * indices[k]] = Dg[i, j, k]
+                functions["dg" * indicesup[i] * indicesup[j] * "dx" * indices[k]] = Dḡ[i, j, k]
                 for l in 1:3
-                    functions["d²g"*indices[i]*indices[j]*"dx"*indices[k]*"dx"*indices[l]] = DDg[i, j, k, l]
-                    functions["d²g"*indicesup[i]*indicesup[j]*"dx"*indices[k]*"dx"*indices[l]] = DDḡ[i, j, k, l]
+                    functions["d²g" * indices[i] * indices[j] * "dx" * indices[k] * "dx" * indices[l]] = DDg[
+                        i, j, k, l]
+                    functions["d²g" * indicesup[i] * indicesup[j] * "dx" * indices[k] * "dx" * indices[l]] = DDḡ[
+                        i, j, k, l]
                 end
             end
         end
@@ -499,7 +519,6 @@ function generate_equilibrium_functions(equ::AnalyticEquilibrium, pert::Analytic
 
     functions
 end
-
 
 function replace_expr!(e, old, new)
     for (i, a) in enumerate(e.args)
@@ -511,7 +530,6 @@ function replace_expr!(e, old, new)
     end
     e
 end
-
 
 #
 # Common subexpression elimination for the generated field code.
@@ -540,7 +558,7 @@ end
 #
 
 function _hashcons(body)
-    ids = Dict{Any,Int}()
+    ids = Dict{Any, Int}()
     keys = Vector{Any}()
     counts = Vector{Int}()
 
@@ -580,7 +598,7 @@ locals are named `prefix * n`.
 
 Value-preserving to the last bit: subexpressions are named, not rewritten.
 """
-function eliminate_common_subexpressions(body::Expr; prefix="_cse")
+function eliminate_common_subexpressions(body::Expr; prefix = "_cse")
     keys, counts, root = _hashcons(body)
 
     name = Vector{Any}(undef, length(keys))
@@ -613,9 +631,7 @@ function eliminate_common_subexpressions(body::Expr; prefix="_cse")
     Expr(:block, stmts...)
 end
 
-
 fnesc(name, escape) = escape ? esc(name) : name
-
 
 """
     code_arguments(args)
@@ -628,7 +644,7 @@ Macros cannot take keyword arguments, so an option is written as `key = value` a
 """
 function code_arguments(args)
     parameters = Any[]
-    options = Pair{Symbol,Any}[]
+    options = Pair{Symbol, Any}[]
 
     for arg in args
         if arg isa Expr && arg.head === :parameters
@@ -645,7 +661,6 @@ function code_arguments(args)
 
     (parameters, options)
 end
-
 
 """
     code(equ, pert = ZeroPerturbation(); export_parameters = true, escape = false, output = 0, cse = true)
@@ -669,8 +684,8 @@ Every generated function takes `(t, ξ₁, ξ₂, ξ₃)` and `(t, ξ)`, except 
 no arguments: it is the sign of the chart's handedness, constant in both `t` and `ξ`. See
 [`orientation`](@ref) for what it means and why `J` alone is not enough.
 """
-function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false, output=0, cse=true)
-
+function code(equ, pert = ZeroPerturbation(); export_parameters = true,
+        escape = false, output = 0, cse = true)
     if output ≥ 1
         println("Generating code for ")
         println(equ)
@@ -681,9 +696,10 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
         println()
     end
 
-    functions = generate_equilibrium_functions(equ, pert; output=output)
+    functions = generate_equilibrium_functions(equ, pert; output = output)
 
-    equ_code = quote end
+    equ_code = quote
+    end
 
     # generate Julia code and export parameters
     if export_parameters
@@ -789,28 +805,27 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
 
     functions["DF"] = quote
         [$(fnesc(:DF₁₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF₁₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF₁₃, escape))(t, ξ₁, ξ₂, ξ₃);
-            $(fnesc(:DF₂₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF₂₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF₂₃, escape))(t, ξ₁, ξ₂, ξ₃);
-            $(fnesc(:DF₃₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF₃₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF₃₃, escape))(t, ξ₁, ξ₂, ξ₃)]
+         $(fnesc(:DF₂₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF₂₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF₂₃, escape))(t, ξ₁, ξ₂, ξ₃);
+         $(fnesc(:DF₃₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF₃₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF₃₃, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
     functions["DF̄"] = quote
         [$(fnesc(:DF̄₁₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF̄₁₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF̄₁₃, escape))(t, ξ₁, ξ₂, ξ₃);
-            $(fnesc(:DF̄₂₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF̄₂₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF̄₂₃, escape))(t, ξ₁, ξ₂, ξ₃);
-            $(fnesc(:DF̄₃₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF̄₃₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF̄₃₃, escape))(t, ξ₁, ξ₂, ξ₃)]
+         $(fnesc(:DF̄₂₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF̄₂₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF̄₂₃, escape))(t, ξ₁, ξ₂, ξ₃);
+         $(fnesc(:DF̄₃₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF̄₃₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:DF̄₃₃, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
     functions["g"] = quote
         [$(fnesc(:g₁₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g₁₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g₁₃, escape))(t, ξ₁, ξ₂, ξ₃);
-            $(fnesc(:g₂₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g₂₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g₂₃, escape))(t, ξ₁, ξ₂, ξ₃);
-            $(fnesc(:g₃₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g₃₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g₃₃, escape))(t, ξ₁, ξ₂, ξ₃)]
+         $(fnesc(:g₂₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g₂₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g₂₃, escape))(t, ξ₁, ξ₂, ξ₃);
+         $(fnesc(:g₃₁, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g₃₂, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g₃₃, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
 
     functions["ḡ"] = quote
         [$(fnesc(:g¹¹, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g¹², escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g¹³, escape))(t, ξ₁, ξ₂, ξ₃);
-            $(fnesc(:g²¹, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g²², escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g²³, escape))(t, ξ₁, ξ₂, ξ₃);
-            $(fnesc(:g³¹, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g³², escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g³³, escape))(t, ξ₁, ξ₂, ξ₃)]
+         $(fnesc(:g²¹, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g²², escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g²³, escape))(t, ξ₁, ξ₂, ξ₃);
+         $(fnesc(:g³¹, escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g³², escape))(t, ξ₁, ξ₂, ξ₃) $(fnesc(:g³³, escape))(t, ξ₁, ξ₂, ξ₃)]
     end
-
 
     # generate Julia code and export functions
     for (key, value) in functions
@@ -884,7 +899,6 @@ function code(equ, pert=ZeroPerturbation(); export_parameters=true, escape=false
     return equ_code
 end
 
-
 """
     load_equilibrium(equ, pert = ZeroPerturbation(); target_module = Main, output = 0, cse = true)
     load_equilibrium(f, equ, pert = ZeroPerturbation(); target_module = Main, output = 0, cse = true)
@@ -919,8 +933,9 @@ does the same thing one call at a time.
 The `@code` macros are not affected either way: they splice the same definitions in at expansion
 time, so they are already there when the surrounding code is compiled.
 """
-function load_equilibrium(equ, pert=ZeroPerturbation(); target_module=Main, output=0, cse=true)
-    equ_code = code(equ, pert; output=output, cse=cse)
+function load_equilibrium(
+        equ, pert = ZeroPerturbation(); target_module = Main, output = 0, cse = true)
+    equ_code = code(equ, pert; output = output, cse = cse)
     Core.eval(target_module, equ_code)
     target_module
 end
@@ -928,12 +943,14 @@ end
 # `f::Function` is what keeps this from replacing the method above: unannotated, its two-argument
 # form would have the identical `(Any, Any)` signature. No equilibrium is a `Function`, so the two
 # never compete for a call. Same shape as `open(f::Function, ...)`.
-function load_equilibrium(f::Function, equ, pert=ZeroPerturbation(); target_module=Main, output=0, cse=true)
-    target = load_equilibrium(equ, pert; target_module=target_module, output=output, cse=cse)
+function load_equilibrium(f::Function, equ, pert = ZeroPerturbation();
+        target_module = Main, output = 0, cse = true)
+    target = load_equilibrium(
+        equ, pert; target_module = target_module, output = output, cse = cse)
     Base.invokelatest(f, target)
 end
 
-function symprint(name, symexpr, output=1, detail_level=0)
+function symprint(name, symexpr, output = 1, detail_level = 0)
     if output ≥ detail_level
         println(name, " = ", symexpr, "\n")
     end

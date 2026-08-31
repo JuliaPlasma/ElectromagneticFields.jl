@@ -26,48 +26,54 @@ Parameters:
 """
 module PenningTrapUniform
 
-    import ..ElectromagneticFields
-    import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
-    import ..AnalyticCartesianField: X, Y, Z
+import ..ElectromagneticFields
+import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
+import ..AnalyticCartesianField: X, Y, Z
 
-    export  PenningTrapUniformEquilibrium
+export PenningTrapUniformEquilibrium
 
-    const DEFAULT_B₀ = 100.0
-    const DEFAULT_E₀ = 10.0
+const DEFAULT_B₀ = 100.0
+const DEFAULT_E₀ = 10.0
 
-    struct PenningTrapUniformEquilibrium{T <: Number} <: CartesianEquilibrium
-        name::String
-        B₀::T
-        E₀::T
+struct PenningTrapUniformEquilibrium{T <: Number} <: CartesianEquilibrium
+    name::String
+    B₀::T
+    E₀::T
 
-        function PenningTrapUniformEquilibrium{T}(B₀::T, E₀::T) where T <: Number
-            new("PenningTrapUniformEquilibrium", B₀, E₀)
-        end
+    function PenningTrapUniformEquilibrium{T}(B₀::T, E₀::T) where {T <: Number}
+        new("PenningTrapUniformEquilibrium", B₀, E₀)
     end
+end
 
-    PenningTrapUniformEquilibrium(B₀::T=DEFAULT_B₀, E₀::T=DEFAULT_E₀) where T <: Number = PenningTrapUniformEquilibrium{T}(B₀, E₀)
+PenningTrapUniformEquilibrium(B₀::T = DEFAULT_B₀,
+    E₀::T = DEFAULT_E₀) where {T <: Number} = PenningTrapUniformEquilibrium{T}(B₀, E₀)
 
-    function init(B₀=DEFAULT_B₀, E₀=DEFAULT_E₀)
-        PenningTrapUniformEquilibrium(B₀, E₀)
-    end
-    
-    macro code(args...)
-        parameters, options = code_arguments(args)
-        code(init(parameters...); escape=true, options...)
-    end
+function init(B₀ = DEFAULT_B₀, E₀ = DEFAULT_E₀)
+    PenningTrapUniformEquilibrium(B₀, E₀)
+end
 
-    function Base.show(io::IO, equ::PenningTrapUniformEquilibrium)
-        print(io, "Penning trap with uniform magnetic field in (x,y,z) coordinates with\n")
-        print(io, "  B₀ = ", equ.B₀, "\n")
-        print(io, "  E₀ = ", equ.E₀)
-    end
+macro code(args...)
+    parameters, options = code_arguments(args)
+    code(init(parameters...); escape = true, options...)
+end
 
+function Base.show(io::IO, equ::PenningTrapUniformEquilibrium)
+    print(io, "Penning trap with uniform magnetic field in (x,y,z) coordinates with\n")
+    print(io, "  B₀ = ", equ.B₀, "\n")
+    print(io, "  E₀ = ", equ.E₀)
+end
 
-    ElectromagneticFields.A₁(x::AbstractVector, equ::PenningTrapUniformEquilibrium) = zero(eltype(x))
-    ElectromagneticFields.A₂(x::AbstractVector, equ::PenningTrapUniformEquilibrium) = equ.B₀ * X(x,equ)
-    ElectromagneticFields.A₃(x::AbstractVector, equ::PenningTrapUniformEquilibrium) = zero(eltype(x))
-    ElectromagneticFields.φ(x::AbstractVector, equ::PenningTrapUniformEquilibrium) = - equ.E₀ * (X(x,equ)^2 / 2 + Y(x,equ)^2 / 2 - Z(x,equ)^2)
+ElectromagneticFields.A₁(x::AbstractVector, equ::PenningTrapUniformEquilibrium) = zero(eltype(x))
+ElectromagneticFields.A₂(x::AbstractVector, equ::PenningTrapUniformEquilibrium) = equ.B₀ *
+                                                                                  X(x, equ)
+ElectromagneticFields.A₃(x::AbstractVector, equ::PenningTrapUniformEquilibrium) = zero(eltype(x))
+ElectromagneticFields.φ(x::AbstractVector, equ::PenningTrapUniformEquilibrium) = - equ.E₀ *
+                                                                                 (X(x, equ)^2 /
+                                                                                  2 +
+                                                                                  Y(x, equ)^2 /
+                                                                                  2 -
+                                                                                  Z(x, equ)^2)
 
-    ElectromagneticFields.get_functions(::PenningTrapUniformEquilibrium) = (X=X, Y=Y, Z=Z)
+ElectromagneticFields.get_functions(::PenningTrapUniformEquilibrium) = (X = X, Y = Y, Z = Z)
 
 end

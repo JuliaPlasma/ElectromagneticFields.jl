@@ -16,14 +16,14 @@ include("analytic/cartesian_equilibrium.jl")
 using .AnalyticCartesianField
 
 export ABC, Dipole, EzCosZ,
-    AxisymmetricTokamakCartesian,
-    AxisymmetricTokamakCylindrical,
-    AxisymmetricTokamakToroidal,
-    AxisymmetricTokamakToroidalRegularization,
-    Solovev, SolovevXpoint, SolovevSymmetric,
-    Singular, SymmetricQuadratic, ThetaPinch,
-    PenningTrapUniform, PenningTrapBottle, PenningTrapAsymmetric,
-    QuadraticPotentials
+       AxisymmetricTokamakCartesian,
+       AxisymmetricTokamakCylindrical,
+       AxisymmetricTokamakToroidal,
+       AxisymmetricTokamakToroidalRegularization,
+       Solovev, SolovevXpoint, SolovevSymmetric,
+       Singular, SymmetricQuadratic, ThetaPinch,
+       PenningTrapUniform, PenningTrapBottle, PenningTrapAsymmetric,
+       QuadraticPotentials
 
 include("analytic/abc.jl")
 include("analytic/axisymmetric_tokamak_cartesian.jl")

@@ -1,14 +1,14 @@
 using Documenter, ElectromagneticFields
 using CairoMakie
 
-CairoMakie.activate!(type="svg")
+CairoMakie.activate!(type = "svg")
 
 makedocs(
-    sitename="ElectromagneticFields.jl",
-    format=Documenter.HTML(
-        prettyurls=get(ENV, "CI", nothing) == "true",
-        assets=[asset("assets/style.css", class=:css, islocal=true)]),
-    pages=["Home" => "index.md",
+    sitename = "ElectromagneticFields.jl",
+    format = Documenter.HTML(
+        prettyurls = get(ENV, "CI", nothing) == "true",
+        assets = [asset("assets/style.css", class = :css, islocal = true)]),
+    pages = ["Home" => "index.md",
         "Usage" => "usage.md",
         "Coordinates" => "coordinates.md",
         "Fields" => "fields.md",
@@ -26,12 +26,12 @@ makedocs(
             "Solov'ev Equilibrium" => "analytic/solovev.md",
             "Symmetric Solov'ev Equilibrium" => "analytic/solovev_symmetric.md",
             "Symmetric Quadratic Field" => "analytic/symmetric_quadratic.md",
-            "Theta Pinch" => "analytic/theta_pinch.md",
+            "Theta Pinch" => "analytic/theta_pinch.md"
         ],
-        "Modules" => "modules.md",
+        "Modules" => "modules.md"
     ]
 )
 
 deploydocs(
-    repo="github.com/JuliaPlasma/ElectromagneticFields.jl"
+    repo = "github.com/JuliaPlasma/ElectromagneticFields.jl"
 )

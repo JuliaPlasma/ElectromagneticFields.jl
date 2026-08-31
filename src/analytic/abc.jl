@@ -10,51 +10,53 @@ Parameters: `a`, `b`, `c`
 """
 module ABC
 
-    import ..ElectromagneticFields
-    import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
-    import ..ElectromagneticFields: A₁, A₂, A₃
-    import ..AnalyticCartesianField: X, Y, Z
+import ..ElectromagneticFields
+import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
+import ..ElectromagneticFields: A₁, A₂, A₃
+import ..AnalyticCartesianField: X, Y, Z
 
-    export ABCEquilibrium
+export ABCEquilibrium
 
-    const DEFAULT_A = 1
-    const DEFAULT_B = 1
-    const DEFAULT_C = 1
+const DEFAULT_A = 1
+const DEFAULT_B = 1
+const DEFAULT_C = 1
 
-    struct ABCEquilibrium{T <: Number} <: CartesianEquilibrium
-        name::String
-        a₀::T
-        b₀::T
-        c₀::T
+struct ABCEquilibrium{T <: Number} <: CartesianEquilibrium
+    name::String
+    a₀::T
+    b₀::T
+    c₀::T
 
-        ABCEquilibrium{T}(a::T, b::T, c::T) where T <: Number = new("ABCEquilibrium", a, b, c)
-    end
+    ABCEquilibrium{T}(a::T, b::T, c::T) where {T <: Number} = new("ABCEquilibrium", a, b, c)
+end
 
-    ABCEquilibrium(a::T=DEFAULT_A, b::T=DEFAULT_B, c::T=DEFAULT_C) where T <: Number = ABCEquilibrium{T}(a, b, c)
+ABCEquilibrium(a::T = DEFAULT_A, b::T = DEFAULT_B, c::T = DEFAULT_C) where {T <:
+                                                                            Number} = ABCEquilibrium{T}(a, b, c)
 
-    function init(a=DEFAULT_A, b=DEFAULT_B, c=DEFAULT_C)
-        ABCEquilibrium(a, b, c)
-    end
+function init(a = DEFAULT_A, b = DEFAULT_B, c = DEFAULT_C)
+    ABCEquilibrium(a, b, c)
+end
 
-    macro code(args...)
-        parameters, options = code_arguments(args)
-        code(init(parameters...); escape=true, options...)
-    end
+macro code(args...)
+    parameters, options = code_arguments(args)
+    code(init(parameters...); escape = true, options...)
+end
 
-    function Base.show(io::IO, equ::ABCEquilibrium)
-        print(io, "ABC Equilibrium with\n")
-        print(io, "  A = ", equ.a₀, "\n")
-        print(io, "  B = ", equ.b₀, "\n")
-        print(io, "  C = ", equ.c₀)
-    end
+function Base.show(io::IO, equ::ABCEquilibrium)
+    print(io, "ABC Equilibrium with\n")
+    print(io, "  A = ", equ.a₀, "\n")
+    print(io, "  B = ", equ.b₀, "\n")
+    print(io, "  C = ", equ.c₀)
+end
 
+ElectromagneticFields.A₁(x::AbstractVector, equ::ABCEquilibrium) = equ.a₀ * sin(x[3]) +
+                                                                   equ.c₀ * cos(x[2])
+ElectromagneticFields.A₂(x::AbstractVector, equ::ABCEquilibrium) = equ.b₀ * sin(x[1]) +
+                                                                   equ.a₀ * cos(x[3])
+ElectromagneticFields.A₃(x::AbstractVector, equ::ABCEquilibrium) = equ.c₀ * sin(x[2]) +
+                                                                   equ.b₀ * cos(x[1])
+B(x::AbstractVector, equ::ABCEquilibrium) = sqrt(A₁(x, equ)^2 + A₂(x, equ)^2 + A₃(x, equ)^2)
 
-    ElectromagneticFields.A₁(x::AbstractVector, equ::ABCEquilibrium) = equ.a₀ * sin(x[3]) + equ.c₀ * cos(x[2])
-    ElectromagneticFields.A₂(x::AbstractVector, equ::ABCEquilibrium) = equ.b₀ * sin(x[1]) + equ.a₀ * cos(x[3])
-    ElectromagneticFields.A₃(x::AbstractVector, equ::ABCEquilibrium) = equ.c₀ * sin(x[2]) + equ.b₀ * cos(x[1])
-    B(x::AbstractVector, equ::ABCEquilibrium) = sqrt(A₁(x,equ)^2 + A₂(x,equ)^2 + A₃(x,equ)^2)
-
-    ElectromagneticFields.get_functions(::ABCEquilibrium) = (X=X, Y=Y, Z=Z)
-
+ElectromagneticFields.get_functions(::ABCEquilibrium) = (X = X, Y = Y, Z = Z)
 
 end

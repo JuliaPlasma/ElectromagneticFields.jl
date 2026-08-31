@@ -32,20 +32,22 @@ const ITER_R₀ = 6.2
 const ITER_B₀ = 5.3
 const ITER_q₀ = √2
 
-struct AxisymmetricTokamakCylindricalEquilibrium{T<:Number} <: AnalyticEquilibrium
+struct AxisymmetricTokamakCylindricalEquilibrium{T <: Number} <: AnalyticEquilibrium
     name::String
     R₀::T
     B₀::T
     q₀::T
 
-    function AxisymmetricTokamakCylindricalEquilibrium{T}(R₀::T, B₀::T, q₀::T) where {T<:Number}
+    function AxisymmetricTokamakCylindricalEquilibrium{T}(R₀::T, B₀::T, q₀::T) where {T <:
+                                                                                      Number}
         new("AxisymmetricTokamakCylindricalEquilibrium", R₀, B₀, q₀)
     end
 end
 
-AxisymmetricTokamakCylindricalEquilibrium(R₀::T=DEFAULT_R₀, B₀::T=DEFAULT_B₀, q₀::T=DEFAULT_q₀) where {T<:Number} = AxisymmetricTokamakCylindricalEquilibrium{T}(R₀, B₀, q₀)
+AxisymmetricTokamakCylindricalEquilibrium(R₀::T = DEFAULT_R₀, B₀::T = DEFAULT_B₀,
+    q₀::T = DEFAULT_q₀) where {T <: Number} = AxisymmetricTokamakCylindricalEquilibrium{T}(R₀, B₀, q₀)
 
-function init(R₀=DEFAULT_R₀, B₀=DEFAULT_B₀, q₀=DEFAULT_q₀)
+function init(R₀ = DEFAULT_R₀, B₀ = DEFAULT_B₀, q₀ = DEFAULT_q₀)
     AxisymmetricTokamakCylindricalEquilibrium(R₀, B₀, q₀)
 end
 
@@ -55,12 +57,12 @@ end
 
 macro code(args...)
     parameters, options = code_arguments(args)
-    code(init(parameters...); escape=true, options...)
+    code(init(parameters...); escape = true, options...)
 end
 
 macro code_iter(args...)
     parameters, options = code_arguments(args)
-    code(ITER(parameters...); escape=true, options...)
+    code(ITER(parameters...); escape = true, options...)
 end
 
 function Base.show(io::IO, equ::AxisymmetricTokamakCylindricalEquilibrium)
@@ -70,29 +72,45 @@ function Base.show(io::IO, equ::AxisymmetricTokamakCylindricalEquilibrium)
     print(io, "  q₀ = ", equ.q₀)
 end
 
-
 R(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = x[1]
 Z(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = x[2]
 ϕ(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = x[3]
-r²(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = (R(x, equ) - equ.R₀)^2 + Z(x, equ)^2
+r²(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = (R(x, equ) -
+                                                                         equ.R₀)^2 +
+                                                                        Z(x, equ)^2
 r(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = sqrt(r²(x, equ))
-X(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = R(x, equ) * cos(ϕ(x, equ))
-Y(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = R(x, equ) * sin(ϕ(x, equ))
-θ(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = atan(Z(x, equ), R(x, equ) - equ.R₀)
+X(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = R(x, equ) *
+                                                                       cos(ϕ(x, equ))
+Y(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = R(x, equ) *
+                                                                       sin(ϕ(x, equ))
+θ(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = atan(Z(x, equ), R(x, equ) -
+                                                                                       equ.R₀)
 
 ElectromagneticFields.J(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = R(x, equ)
 # (R, Z, ϕ) is left-handed; the right-handed ordering would be (R, ϕ, Z). See `orientation`.
 ElectromagneticFields.orientation(::AxisymmetricTokamakCylindricalEquilibrium) = -1
 
-ElectromagneticFields.A₁(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = +equ.B₀ * equ.R₀ * Z(x, equ) / R(x, equ) / 2
-ElectromagneticFields.A₂(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = -equ.B₀ * equ.R₀ * log(R(x, equ) / equ.R₀) / 2
-ElectromagneticFields.A₃(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = +equ.B₀ * r²(x, equ) / equ.q₀ / 2
+ElectromagneticFields.A₁(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = +equ.B₀ *
+                                                                                              equ.R₀ *
+                                                                                              Z(x, equ) /
+                                                                                              R(x, equ) /
+                                                                                              2
+ElectromagneticFields.A₂(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = -equ.B₀ *
+                                                                                              equ.R₀ *
+                                                                                              log(R(x, equ) /
+                                                                                                  equ.R₀) /
+                                                                                              2
+ElectromagneticFields.A₃(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = +equ.B₀ *
+                                                                                              r²(x, equ) /
+                                                                                              equ.q₀ /
+                                                                                              2
 
 ElectromagneticFields.x¹(ξ::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = X(ξ, equ)
 ElectromagneticFields.x²(ξ::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = Y(ξ, equ)
 ElectromagneticFields.x³(ξ::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = Z(ξ, equ)
 
-ElectromagneticFields.ξ¹(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = sqrt(x[1]^2 + x[2]^2)
+ElectromagneticFields.ξ¹(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = sqrt(x[1]^2 +
+                                                                                                   x[2]^2)
 ElectromagneticFields.ξ²(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = x[3]
 ElectromagneticFields.ξ³(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = atan(x[2], x[1])
 
@@ -100,10 +118,12 @@ ElectromagneticFields.g₁₁(x::AbstractVector, equ::AxisymmetricTokamakCylindr
 ElectromagneticFields.g₂₂(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = one(eltype(x))
 ElectromagneticFields.g₃₃(x::AbstractVector, equ::AxisymmetricTokamakCylindricalEquilibrium) = R(x, equ)^2
 
-ElectromagneticFields.get_functions(::AxisymmetricTokamakCylindricalEquilibrium) = (X=X, Y=Y, Z=Z, R=R, r=r, θ=θ, ϕ=ϕ, r²=r²)
+ElectromagneticFields.get_functions(::AxisymmetricTokamakCylindricalEquilibrium) = (
+    X = X, Y = Y, Z = Z, R = R, r = r, θ = θ, ϕ = ϕ, r² = r²)
 
-ElectromagneticFields.minx³(ξ::AbstractVector{T}, equ::AxisymmetricTokamakCylindricalEquilibrium) where {T} = T(0)
-ElectromagneticFields.maxx³(ξ::AbstractVector{T}, equ::AxisymmetricTokamakCylindricalEquilibrium) where {T} = T(2π)
-
+ElectromagneticFields.minx³(
+    ξ::AbstractVector{T}, equ::AxisymmetricTokamakCylindricalEquilibrium) where {T} = T(0)
+ElectromagneticFields.maxx³(
+    ξ::AbstractVector{T}, equ::AxisymmetricTokamakCylindricalEquilibrium) where {T} = T(2π)
 
 end
