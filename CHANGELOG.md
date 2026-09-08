@@ -14,9 +14,18 @@ not covered here; see the git history for those.
 - `src/analytic/analytic_equilibrium.jl` and `test/test_analytic.jl` are now Unicode
   NFC-normalised. They stored `ḡ` (21 times), `â` (3) and `ĉ` (3) as a base letter plus a combining
   mark, inherited from macOS rather than chosen, which makes no difference to the compiled code —
-  Julia's parser normalises
-  identifiers to NFC — but defeats every byte-matching tool: a `grep` pattern or an editor search
-  typed in NFC matches nothing in such a file, silently.
+  Julia's parser normalises identifiers to NFC — but defeats every byte-matching tool: a `grep`
+  pattern or an editor search typed in NFC matches nothing in such a file, silently.
+
+  Worth naming, because it is the hazard this removes: the file already spelled the same glyph
+  both ways. `functions["ḡ"]` was precomposed while the `ḡ` identifiers around it were decomposed,
+  and that worked only because the parser normalises the identifier side and not the string. No
+  non-NFC string literal remains under `src/`. `DF̄` is safe either way — a macron over `F` has no
+  precomposed codepoint.
+
+  A separate note for a reader of this file: `g̅` elsewhere in the same source is a *different*
+  binding, `g` plus a combining overline rather than a macron. It is unchanged, and
+  indistinguishable from `ḡ` on screen.
 
   The only bytes that change at runtime are the `"Dḡ"` and `"DDḡ"` labels passed to `symprint`,
   which prints them; string literals are not parser-normalised. Nothing reads that output back.
