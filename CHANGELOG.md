@@ -7,6 +7,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Releases 
 not covered here; see the git history for those.
 
 
+## [Unreleased]
+
+### Changed
+
+- `src/analytic/analytic_equilibrium.jl` and `test/test_analytic.jl` are now Unicode
+  NFC-normalised. They stored `ḡ` as a base letter plus a combining mark, inherited from macOS
+  rather than chosen, which makes no difference to the compiled code — Julia's parser normalises
+  identifiers to NFC — but defeats every byte-matching tool: a `grep` pattern or an editor search
+  typed in NFC matches nothing in such a file, silently.
+
+  The only bytes that change at runtime are the `"Dḡ"` and `"DDḡ"` labels passed to `symprint`,
+  which prints them; string literals are not parser-normalised. Nothing reads that output back.
+
 ## [0.8.0] - 2026-08-10
 
 ### Changed

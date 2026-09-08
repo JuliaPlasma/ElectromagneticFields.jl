@@ -409,9 +409,9 @@ macro test_equilibrium(equilibrium_module, equilibrium_rangemin, equilibrium_ran
                 @test @allocated(DF(t, ξ)) ≤ bound
             end
 
-            let g = g(t, ξ), ḡ = ḡ(t, ξ), DF = DF(t, ξ), DF̄ = DF̄(t, ξ), a = a(t, ξ),
+            let g = g(t, ξ), ḡ = ḡ(t, ξ), DF = DF(t, ξ), DF̄ = DF̄(t, ξ), a = a(t, ξ),
                 b = b(t, ξ), c = c(t, ξ), a⃗ = a⃗(t, ξ), b⃗ = b⃗(t, ξ), c⃗ = c⃗(t, ξ),
-                â = aₚ(t, ξ), b̂ = bₚ(t, ξ), ĉ = cₚ(t, ξ)
+                â = aₚ(t, ξ), b̂ = bₚ(t, ξ), ĉ = cₚ(t, ξ)
 
                 @test J(t, ξ) ≈ sqrt(det(DF' * DF)) atol = 1E-12
 
@@ -423,20 +423,20 @@ macro test_equilibrium(equilibrium_module, equilibrium_rangemin, equilibrium_ran
                 @test orientation() ∈ (-1, +1)
                 # the generated function must agree with the trait it was generated from
                 @test orientation() == ElectromagneticFields.orientation(equ)
-                @test ḡ ≈ inv(g) atol = 1E-12
+                @test ḡ ≈ inv(g) atol = 1E-12
                 @test DF̄ ≈ inv(DF) atol = 1E-12
                 @test DF' * DF ≈ g atol = 1E-12
                 @test DF * DF̄ ≈ Array(I, 3, 3) atol = 1E-12
-                @test DF̄ * DF̄' ≈ ḡ atol = 1E-12
+                @test DF̄ * DF̄' ≈ ḡ atol = 1E-12
 
                 if $equilibrium_module != ElectromagneticFields.Singular
                     @test g * a⃗ ≈ a atol = 1E-14
                     @test g * b⃗ ≈ b atol = 1E-14
                     @test g * c⃗ ≈ c atol = 1E-14
 
-                    @test ḡ * a ≈ a⃗ atol = 1E-14
-                    @test ḡ * b ≈ b⃗ atol = 1E-14
-                    @test ḡ * c ≈ c⃗ atol = 1E-14
+                    @test ḡ * a ≈ a⃗ atol = 1E-14
+                    @test ḡ * b ≈ b⃗ atol = 1E-14
+                    @test ḡ * c ≈ c⃗ atol = 1E-14
 
                     @test â ≈ DF * a⃗ atol = 1E-14
                     @test b̂ ≈ DF * b⃗ atol = 1E-14
@@ -454,17 +454,17 @@ macro test_equilibrium(equilibrium_module, equilibrium_rangemin, equilibrium_ran
                     @test b̂' * b̂ ≈ 1 atol = 1E-14
                     @test ĉ' * ĉ ≈ 1 atol = 1E-14
 
-                    @test â' * b̂ ≈ 0 atol = 1E-14
-                    @test b̂' * ĉ ≈ 0 atol = 1E-14
-                    @test ĉ' * â ≈ 0 atol = 1E-14
+                    @test â' * b̂ ≈ 0 atol = 1E-14
+                    @test b̂' * ĉ ≈ 0 atol = 1E-14
+                    @test ĉ' * â ≈ 0 atol = 1E-14
 
-                    @test a' * ḡ * a ≈ 1 atol = 1E-14
-                    @test b' * ḡ * b ≈ 1 atol = 1E-14
-                    @test c' * ḡ * c ≈ 1 atol = 1E-14
+                    @test a' * ḡ * a ≈ 1 atol = 1E-14
+                    @test b' * ḡ * b ≈ 1 atol = 1E-14
+                    @test c' * ḡ * c ≈ 1 atol = 1E-14
 
-                    @test a' * ḡ * b ≈ 0 atol = 1E-14
-                    @test b' * ḡ * c ≈ 0 atol = 1E-14
-                    @test c' * ḡ * a ≈ 0 atol = 1E-14
+                    @test a' * ḡ * b ≈ 0 atol = 1E-14
+                    @test b' * ḡ * c ≈ 0 atol = 1E-14
+                    @test c' * ḡ * a ≈ 0 atol = 1E-14
 
                     @test a⃗' * g * a⃗ ≈ 1 atol = 1E-14
                     @test b⃗' * g * b⃗ ≈ 1 atol = 1E-14
