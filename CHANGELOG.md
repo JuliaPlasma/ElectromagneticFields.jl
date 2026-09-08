@@ -12,8 +12,9 @@ not covered here; see the git history for those.
 ### Changed
 
 - `src/analytic/analytic_equilibrium.jl` and `test/test_analytic.jl` are now Unicode
-  NFC-normalised. They stored `ḡ` as a base letter plus a combining mark, inherited from macOS
-  rather than chosen, which makes no difference to the compiled code — Julia's parser normalises
+  NFC-normalised. They stored `ḡ` (21 times), `â` (3) and `ĉ` (3) as a base letter plus a combining
+  mark, inherited from macOS rather than chosen, which makes no difference to the compiled code —
+  Julia's parser normalises
   identifiers to NFC — but defeats every byte-matching tool: a `grep` pattern or an editor search
   typed in NFC matches nothing in such a file, silently.
 
