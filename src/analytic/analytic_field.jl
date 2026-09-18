@@ -8,7 +8,30 @@ abstract type AnalyticField <: ElectromagneticField end
 abstract type AnalyticEquilibrium <: AnalyticField end
 abstract type AnalyticPerturbation <: AnalyticField end
 
+"""
+    get_functions(equ)
+
+The equilibrium's own coordinate helpers, as a `NamedTuple` mapping each name to a method taking
+`(x, equ)` — `(X = X, Y = Y, Z = Z, R = R, r = r, θ = θ, ϕ = ϕ, r² = r²)` for the axisymmetric
+equilibria. They are generated alongside the field and reached through `coordinates(field)`.
+
+Which names an equilibrium offers is its own business, which is why these are a `NamedTuple`
+rather than accessors of their own. Defining no method means the field has none.
+"""
 function get_functions end
+
+"""
+    get_parameters(equ)
+
+The fields of `equ` that are parameters of the electromagnetic field, in the order its
+constructor takes them.
+
+Defining no method means every field but `name`, which is what all the equilibria here want.
+Define one for a type with a field that is not a parameter — a cache, say — bearing in mind that
+the generated code takes exactly these as its argument, so anything the `A₁`, `φ` or metric
+methods read and this does not list is frozen into the code as a literal. See
+[`parameter_names`](@ref), which applies the default.
+"""
 function get_parameters end
 
 # Coordinate helpers an equilibrium may define for its own chart, each as a method taking

@@ -76,6 +76,8 @@ The consequence is that **the generated code depends on the equilibrium's type, 
 parameters**. Two fields of the same type share it exactly:
 
 ```@example generation
+using ElectromagneticFields
+
 a = FieldFunctions(AxisymmetricTokamakCylindricalEquilibrium(1.0, 1.0, 2.0))
 b = FieldFunctions(AxisymmetricTokamakCylindricalEquilibrium(6.2, 5.3, 1.7))
 
@@ -244,8 +246,10 @@ import ElectromagneticFields: A₁, A₂, A₃, get_functions, X, Y, Z
 struct MyPinch{T <: Number} <: ElectromagneticFields.CartesianEquilibrium
     name::String
     B₀::T
-    MyPinch(B₀::T) where {T} = new{T}("MyPinch", B₀)
+    MyPinch{T}(B₀::T) where {T <: Number} = new("MyPinch", B₀)
 end
+
+MyPinch(B₀::T) where {T <: Number} = MyPinch{T}(B₀)
 
 A₁(x::AbstractVector, equ::MyPinch) = -equ.B₀ * Y(x, equ) / 2
 A₂(x::AbstractVector, equ::MyPinch) = +equ.B₀ * X(x, equ) / 2
@@ -258,6 +262,11 @@ B♭(field, 0.0, [0.5, 0.5, 0.5])
 ```
 
 Three rules govern what those methods may contain.
+
+**Follow the constructor convention.** The inner constructor takes the parameters in order and
+sets `name` itself, and there is an outer one supplying defaults — which is what lets the trace
+build the copy with symbolic parameters. `MyPinch{T}(B₀::T)`, not `MyPinch(B₀::T)`: the trace
+calls `MyPinch{Num}(...)`. A type that cannot be written this way needs a `symbolic_copy` method.
 
 **Write them generically.** The argument is annotated `AbstractVector` and the element type is
 left open, because the generator calls them with a vector of symbolic variables. Annotating
