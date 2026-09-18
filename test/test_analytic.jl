@@ -403,3 +403,52 @@ end
     @test E♭(perturbed, t, ξ)[3] ≈ -2.0 * cos(2π * ξ[3])
     @test E♭(plain, t, ξ) == [0, 0, 0]
 end
+
+# The generated code takes the equilibrium's parameters as an argument instead of having them
+# baked in, which is what lets one compiled function serve every parameter value of a type — and
+# in turn what makes the cache, and the precompilation that fills it, correct.
+
+@testset "$(rpad("Symbolic parameters and the cache", 60))" begin
+    a = FieldFunctions(AxisymmetricTokamakCylindricalEquilibrium(1.0, 1.0, 2.0))
+    b = FieldFunctions(AxisymmetricTokamakCylindricalEquilibrium(6.2, 5.3, 1.7))
+    c = FieldFunctions(AxisymmetricTokamakToroidalEquilibrium())
+
+    # same type, different parameters: the very same generated function, different answers
+    for name in ElectromagneticFields.FIELD_FUNCTION_NAMES
+        @test functions(a)[name].f === functions(b)[name].f
+    end
+    @test B♭(a, t, ξ) != B♭(b, t, ξ)
+
+    # a different equilibrium type must not share it
+    @test functions(c).B♭.f !== functions(a).B♭.f
+
+    # the parameters are the equilibrium's own, and the values travel with the field
+    @test parameters(b) == (R₀ = 6.2, B₀ = 5.3, q₀ = 1.7)
+    @test functions(b).B♭.p == SVector(6.2, 5.3, 1.7)
+
+    # `c` is derived rather than chosen, but `A₃` reads it, so it is a parameter like the rest
+    @test :c ∈ keys(parameters(FIELDS["SolovevITER"]))
+
+    # Note what the identity above does and does not witness. A `RuntimeGeneratedFunction` is
+    # identified by a hash of its body, so two built independently from the same expression are
+    # `===` whether or not either came from the cache — which is exactly why the cache can
+    # survive precompilation. It is still evidence that the parameters are arguments: baked in as
+    # literals they would give `a` and `b` different bodies, and so different objects.
+    #
+    # Whether the cache was used is therefore observed through the cache itself.
+    clear_field_cache!()
+    @test isempty(ElectromagneticFields.FIELD_CACHE)
+
+    uncached = FieldFunctions(AxisymmetricTokamakCylindricalEquilibrium(6.2, 5.3, 1.7);
+        cache = false)
+    @test isempty(ElectromagneticFields.FIELD_CACHE)
+    @test B♭(uncached, t, ξ) == B♭(b, t, ξ)
+
+    # a cached build fills it, and a field rebuilt after a clear agrees with the one it replaces
+    rebuilt = FieldFunctions(AxisymmetricTokamakCylindricalEquilibrium(6.2, 5.3, 1.7))
+    @test !isempty(ElectromagneticFields.FIELD_CACHE)
+    for name in ElectromagneticFields.FIELD_FUNCTION_NAMES
+        f = getfield(ElectromagneticFields, name)
+        @test f(rebuilt, t, ξ) == f(b, t, ξ)
+    end
+end

@@ -42,7 +42,10 @@ g₃₃(x::AbstractVector, equ::AbstractSolovevEquilibrium) = R(x, equ)^2
 function get_functions(::AbstractSolovevEquilibrium)
     (X = X, Y = Y, Z = Z, R = R, r = r, θ = θ, ϕ = ϕ, r² = r²)
 end
-get_parameters(::AbstractSolovevEquilibrium) = (:R₀, :B₀, :ϵ, :κ, :δ, :α)
+# `c` is deliberately not excluded here, although it is derived from the other six rather than
+# chosen: `A₃` reads it, so it has to reach the generated code as a parameter like the rest. The
+# default — every field but `name` — is therefore what this type wants, and no `get_parameters`
+# method is defined for it.
 
 minx³(ξ::AbstractVector{T}, equ::AbstractSolovevEquilibrium) where {T} = T(0)
 maxx³(ξ::AbstractVector{T}, equ::AbstractSolovevEquilibrium) where {T} = T(2π)

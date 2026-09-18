@@ -229,6 +229,91 @@ function normalize!(v, g)
 end
 
 """
+    parameter_names(field)
+
+The fields of an equilibrium or perturbation that are parameters of the electromagnetic field, in
+the order its constructor takes them.
+
+Every field of the struct except `name` by default, which is what the equilibria here want.
+Override [`get_parameters`](@ref) for a type with a field that is not a parameter — a cache, say —
+bearing in mind that anything the `A₁`/`φ`/metric methods read must be listed, or the generated
+code will have it baked in as a literal rather than taking it as an argument.
+"""
+function parameter_names(field::AnalyticField)
+    if hasmethod(get_parameters, Tuple{typeof(field)})
+        Tuple(get_parameters(field))
+    else
+        Tuple(name for name in fieldnames(typeof(field)) if name != :name)
+    end
+end
+
+"""
+    parameter_values(field)
+
+The parameters of `field` flattened into a `Tuple` of scalars, which is the form the generated
+code takes them in. A parameter that is itself a vector — the Solov'ev coefficients — contributes
+each of its entries.
+"""
+function parameter_values(field::AnalyticField)
+    vals = Any[]
+    for name in parameter_names(field)
+        value = getfield(field, name)
+        value isa Number ? push!(vals, value) : append!(vals, value)
+    end
+    Tuple(vals)
+end
+
+parameter_values(::ZeroPerturbation) = ()
+
+"""
+    symbolic_copy(field)
+
+A copy of `field` whose parameters are symbolic, so that tracing through it produces expressions
+in the parameters rather than in their values. Returns the copy and the symbols, flattened in the
+order [`parameter_values`](@ref) uses.
+
+The reconstruction assumes the convention every field here follows: a parametric struct whose
+first member is `name` and whose inner constructor takes the remaining members in order. A type
+that departs from it should add a method.
+"""
+function symbolic_copy(field::AnalyticField, prefix::Symbol)
+    names = parameter_names(field)
+    isempty(names) && return field, Num[]
+
+    flat = Num[]
+    members = Any[]
+
+    for name in names
+        value = getfield(field, name)
+        if value isa Number
+            s = Symbolics.variable(Symbol(prefix, :_, name))
+            push!(flat, s)
+            push!(members, s)
+        else
+            ss = [Symbolics.variable(Symbol(prefix, :_, name, :_, i))
+                  for i in eachindex(value)]
+            append!(flat, ss)
+            push!(members, ss)
+        end
+    end
+
+    wrapper = Base.typename(typeof(field)).wrapper
+    constructor = try
+        wrapper{Num}
+    catch
+        error(
+            "cannot build a symbolic copy of $(typeof(field)): the trace needs to construct ",
+            "it with symbolic parameters, which assumes a struct with a single type parameter ",
+            "and an inner constructor taking the parameters in order, as in ",
+            "`ThetaPinchEquilibrium{T}(B₀::T)`. Add a `symbolic_copy` method for this type.")
+    end
+
+    constructor(members...), flat
+end
+
+symbolic_copy(field::ZeroPerturbation, ::Symbol) = (field, Num[])
+
+"""
     generate_field_expressions(equ, pert)
 
 Build the symbolic expression for every quantity [`FieldFunctions`](@ref) stores, returned as a
@@ -239,11 +324,20 @@ a one-form or a vector, `SMatrix{3,3}` for a Jacobian or the metric, `SArray{Tup
 `SArray{Tuple{3,3,3,3}}` for the higher derivatives. The container matters — `build_function`
 builds its output `similarto` what it is given.
 """
-function generate_field_expressions(equ::AnalyticEquilibrium, pert::AnalyticPerturbation)
+function generate_field_expressions(
+        equilibrium::AnalyticEquilibrium, perturbation::AnalyticPerturbation)
     # Symbols for time t and coordinates x = (x₁, x₂, x₃), ξ = (ξ₁, ξ₂, ξ₃).
     Symbolics.@variables t x₁ x₂ x₃ ξ₁ ξ₂ ξ₃
     x = [x₁, x₂, x₃]
     ξ = [ξ₁, ξ₂, ξ₃]
+
+    # The trace runs against copies whose parameters are symbolic, so the expressions below — and
+    # the code built from them — are in terms of R₀, B₀, q₀ … rather than their values. The
+    # values travel separately, and one compiled set therefore serves every parameter value of an
+    # equilibrium type.
+    equ, equ_params = symbolic_copy(equilibrium, :equ)
+    pert, pert_params = symbolic_copy(perturbation, :pert)
+    p = vcat(equ_params, pert_params)
 
     D(f, v) = Symbolics.derivative(f, v)
 
@@ -384,7 +478,7 @@ function generate_field_expressions(equ::AnalyticEquilibrium, pert::AnalyticPert
 
     (
         # symbols the caller needs to build functions of these expressions
-        arguments = (t, ξ),
+        arguments = (t, ξ, p),
         coordinates = coordinates,
 
         # chart

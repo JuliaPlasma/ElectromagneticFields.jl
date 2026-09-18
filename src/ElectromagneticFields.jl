@@ -2,12 +2,18 @@ module ElectromagneticFields
 
 using GeometricBase
 using LinearAlgebra
+using PrecompileTools
+using RuntimeGeneratedFunctions
 using StaticArrays
 using Symbolics
 
 import NaNMath
 
 import GeometricBase: functions, parameters, periodicity
+
+# This module is the default `cache_module` for the code `FieldFunctions` generates, so the bodies
+# built during the precompile workload below land here and survive into the package image.
+RuntimeGeneratedFunctions.init(@__MODULE__)
 
 export ElectromagneticField
 
@@ -25,7 +31,7 @@ const ITER_q₀ = √2
 include("analytic/analytic_field.jl")
 include("analytic/cartesian_field.jl")
 
-export FieldFunction, FieldFunctions
+export FieldFunction, FieldFunctions, @precompilable_fields, clear_field_cache!
 export functions, parameters, periodicity, coordinates, orientation
 export equilibrium, perturbation
 export to_cartesian, from_cartesian, DF, DF̄, J, rangemin, rangemax
@@ -80,5 +86,51 @@ include("analytic/theta_pinch.jl")
 export plot_equilibrium, plot_equilibrium!
 
 include("plots.jl")
+
+# Building the first field in a session used to cost 8.5 s, and almost none of it was this
+# package: it is Julia compiling Symbolics' own machinery for the expression types a trace
+# produces. On the toroidal tokamak the symbolic trace and code generation accounted for 11 of
+# the 12 seconds and compiling the generated code for 0.6. The cost is per expression shape, and
+# because the generated code takes the parameters as an argument rather than baking them in, the
+# shape is fixed by the equilibrium's type alone.
+#
+# So tracing one field of each type here settles it for every parameter value of that type. The
+# specializations land in the package image, and so does `FIELD_CACHE`, which means a fresh
+# session finds the generated functions already built: every equilibrium the package ships now
+# costs nothing to construct, 0.01 s for all twenty together rather than 19 s.
+#
+# The price is this package's own precompilation, 1.5 s → 24.5 s, paid once per version. A
+# downstream package can do the same for a field of its own; see `@precompilable_fields`.
+@setup_workload begin
+    equilibria = (ABCEquilibrium(),
+        AxisymmetricTokamakCartesianEquilibrium(),
+        AxisymmetricTokamakCylindricalEquilibrium(),
+        AxisymmetricTokamakToroidalEquilibrium(),
+        AxisymmetricTokamakToroidalRegularizationEquilibrium(),
+        DipoleField(),
+        PenningTrapUniformEquilibrium(),
+        PenningTrapBottleEquilibrium(),
+        PenningTrapAsymmetricEquilibrium(),
+        QuadraticPotentialsField(),
+        SingularEquilibrium(),
+        SolovevEquilibriumITER(),
+        SolovevXpointEquilibriumITER(),
+        SolovevSymmetricEquilibrium(),
+        SymmetricQuadraticEquilibrium(),
+        ThetaPinchEquilibrium())
+    ξ = [0.5, 0.5, 0.5]
+
+    @compile_workload begin
+        for equ in equilibria
+            field = FieldFunctions(equ)
+            for name in FIELD_FUNCTION_NAMES
+                getfield(@__MODULE__, name)(field, 0.0, ξ)
+            end
+            parameters(field)
+            coordinates(field)
+            orientation(field)
+        end
+    end
+end
 
 end

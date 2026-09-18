@@ -35,12 +35,60 @@ not covered here; see the git history for those.
 
   The generated functions are now RuntimeGeneratedFunctions built at runtime using
   `Symbolics.build_function(...; expression = Val{false})`, with optional common-subexpression
-  elimination. They cannot be precompiled into the package image, so downstream code pays the
-  build cost — typically seconds per session, several for the Solov'ev X-point cases — but the
-  functions themselves are allocation-free and type-stable. A field is now a value: it can be
-  constructed inside a function, stored, and passed to a vector field as part of the `parameters`
-  NamedTuple of a GeometricEquations problem, without the world-age trap the old module-injection
-  approach had.
+  elimination. A field is now a value: it can be constructed inside a function, stored, and passed
+  to a vector field as part of the `parameters` NamedTuple of a GeometricEquations problem,
+  without the world-age trap the old module-injection approach had.
+
+  Building one is not free, and almost none of the cost is what one would guess. On the toroidal
+  tokamak the symbolic trace takes 7.1 s and code generation 4.1 s, while compiling the generated
+  code takes 0.6 s — 5% of the total. The rest is Julia compiling Symbolics' own machinery for the
+  expression shapes a trace produces, which is paid per *shape* rather than per field.
+
+  Being per shape, it is recoverable, and two things now recover it. The generated functions of a
+  type already built are **cached** — keyed on the equilibrium and perturbation types rather than
+  on the parameter values, which the code no longer contains — and a `PrecompileTools` workload
+  **traces one field of every shipped type** during precompilation, so the specializations and
+  the cache both land in the package image.
+
+  The result is that constructing any equilibrium this package ships costs nothing: the first
+  field in a session drops from 8.5 s to 0.00 s, and all twenty together from about 19 s to
+  0.01 s, for any parameter values. The price is this package's own precompilation, 1.5 s →
+  24.5 s, paid once per version. An equilibrium of your own is traced once per session and cached
+  after that.
+
+  The cache is keyed on types, not on the content of the methods behind them, so redefining an
+  `A₁` or a metric coefficient in a running session leaves it stale. `clear_field_cache!()`
+  discards it, and `FieldFunctions(equ; cache = false)` bypasses it for one call.
+
+- **The generated code no longer has the equilibrium's parameters baked into it.** The symbolic
+  trace runs against a copy of the equilibrium whose parameters are symbolic, so the code is
+  written in terms of `R₀`, `B₀`, `q₀` … and takes their values as an argument. The equilibrium
+  struct stays where the values live and the field passes them in on each call.
+
+  What this changes for a caller is mostly that things are faster, but the property is worth
+  knowing: the generated code depends on the equilibrium's *type* and not on its parameters, so
+  two fields of the same type share their compiled functions exactly. That is what makes the
+  precompiled workload above cover parameter values nobody anticipated, rather than only the ones
+  it happened to name.
+
+  It also fixes the meaning of `get_parameters`, which used to select which parameters to export
+  as constants and now selects which are arguments of the generated code. Anything the `A₁`, `φ`
+  or metric methods read and it does not list is frozen into the code as a literal. The default —
+  every field of the struct but `name` — is what all the equilibria here want, so the Solov'ev
+  override that excluded the derived coefficient vector `c` is gone: `A₃` reads `c`, so `c` has to
+  travel with the rest. `parameters(field)` for a Solov'ev equilibrium therefore now includes it.
+
+  A field type of your own must be constructible as `Type{T}(parameters...)` — the convention all
+  of these follow, a parametric struct whose first member is `name` — so that the trace can build
+  the symbolic copy. `symbolic_copy` takes a method for a type that departs from it.
+
+- **A package can build its fields during its own precompilation** and pay nothing at load time.
+  `@precompilable_fields` at the top level of a module, and `cache_module = @__MODULE__` passed to
+  `FieldFunctions`, put the generated bodies in that module's cache so they survive into its
+  package image; a `PrecompileTools.@compile_workload` over the accessors caches their compiled
+  code as well. A field prepared this way evaluates in microseconds on the first call of a fresh
+  session, with no trace, no code generation and no compilation. Without it the field still works
+  and is simply rebuilt on each load.
 
 - **The function API replaces ~450 scalar functions with ~41 generics returning tensors.** Each
   generic now takes the field as its first argument, followed by `t` (time) and `ξ` (coordinates).

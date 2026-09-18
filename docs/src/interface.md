@@ -108,9 +108,10 @@ the same interface `GeometricEquations` uses for the functions of an equation.
 
 Four things are values rather than functions, because they do not depend on ``t`` or ``\xi``.
 
-**`parameters(field)`** gives the equilibrium's scalar parameters. The generated code has these
-baked in as literals, so this is documentation of what was generated, and the place to read a
-parameter back when a script needs it:
+**`parameters(field)`** gives the equilibrium's parameters. The generated code does *not* have
+these baked in — it takes them as an argument, and the field supplies them from the equilibrium
+struct on every call, which is why two fields of the same type share their compiled code. This is
+the place to read a parameter back when a script needs it:
 
 ```@example interface
 parameters(field)
