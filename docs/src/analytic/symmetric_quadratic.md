@@ -1,7 +1,7 @@
 # Symmetric Quadratic Field
 
 ```@docs
-SymmetricQuadratic
+SymmetricQuadraticEquilibrium
 ```
 
 ## Constructing the Field
@@ -10,7 +10,7 @@ SymmetricQuadratic
 using CairoMakie
 using ElectromagneticFields
 
-equ = SymmetricQuadratic.init(1.0)
+equ = SymmetricQuadraticEquilibrium(1.0)
 ```
 
 ## Plotting
@@ -25,14 +25,14 @@ plot_equilibrium(equ)
 ## Evaluating the Field
 
 ```@example symmetric
-SymmetricQuadratic.@code(1.0)
+field = FieldFunctions(equ)
 nothing # hide
 ```
 
 The field is axisymmetric, so ``|B|`` depends on the radius alone:
 
 ```@example symmetric
-axisymmetric = B(0.0, 0.3, 0.4, 0.0) ≈ B(0.0, 0.5, 0.0, 0.0)
+axisymmetric = B(field, 0.0, 0.3, 0.4, 0.0) ≈ B(field, 0.0, 0.5, 0.0, 0.0)
 @assert axisymmetric # hide
 axisymmetric
 ```

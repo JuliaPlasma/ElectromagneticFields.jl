@@ -1,7 +1,7 @@
 # Axisymmetric Tokamak (Cylindrical)
 
 ```@docs
-AxisymmetricTokamakCylindrical
+AxisymmetricTokamakCylindricalEquilibrium
 ```
 
 ## Constructing the Field
@@ -10,7 +10,7 @@ AxisymmetricTokamakCylindrical
 using CairoMakie
 using ElectromagneticFields
 
-equ = AxisymmetricTokamakCylindrical.init()
+equ = AxisymmetricTokamakCylindricalEquilibrium()
 ```
 
 ## Plotting
@@ -26,11 +26,11 @@ plot_equilibrium(equ)
 ## Evaluating the Field
 
 ```@example atcyl
-AxisymmetricTokamakCylindrical.@code()
+field = FieldFunctions(AxisymmetricTokamakCylindricalEquilibrium())
 nothing # hide
 ```
 
-The generated functions take the time followed by the three coordinates ``(R, Z, \phi)``. Here
+The generated functions take the field, the time and the three coordinates ``(R, Z, \phi)``. Here
 the absolute value of the magnetic field and the three components of the vector potential are
 sampled on a poloidal grid that extends well beyond the plasma:
 
@@ -40,12 +40,13 @@ nr, nz = 100, 120
 Rgrid = LinRange(0.25, 2.75, nr)
 Zgrid = LinRange(-2.0, +2.0, nz)
 
-sample(f) = [f(0.0, Rgrid[i], Zgrid[j], 0.0) for i in eachindex(Rgrid), j in eachindex(Zgrid)]
+sample(f) = [f(0.0, Rgrid[i], Zgrid[j], 0.0)
+             for i in eachindex(Rgrid), j in eachindex(Zgrid)]
 
-Bfield = sample(B)
-A_R = sample(A₁)
-A_Z = sample(A₂)
-A_ϕ = sample(A₃)
+Bfield = sample((t, ξ...) -> B(field, t, ξ...))
+A_R = sample((t, ξ...) -> A♭(field, t, ξ...)[1])
+A_Z = sample((t, ξ...) -> A♭(field, t, ξ...)[2])
+A_ϕ = sample((t, ξ...) -> A♭(field, t, ξ...)[3])
 
 extrema(Bfield)
 ```

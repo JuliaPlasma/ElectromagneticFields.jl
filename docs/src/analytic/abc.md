@@ -1,7 +1,7 @@
 # Arnold-Beltrami-Childress Field
 
 ```@docs
-ABC
+ABCEquilibrium
 ```
 
 ## Constructing the Field
@@ -15,7 +15,7 @@ they were first studied ([Dombre et al., 1986](https://doi.org/10.1017/S00221120
 using CairoMakie
 using ElectromagneticFields
 
-equ = ABC.init(1.0, 0.5, 0.5)
+equ = ABCEquilibrium(1.0, 0.5, 0.5)
 ```
 
 ## Plotting
@@ -30,7 +30,7 @@ plot_equilibrium(equ)
 ## Evaluating the Field
 
 ```@example abc
-ABC.@code(1.0, 0.5, 0.5)
+field = FieldFunctions(ABCEquilibrium(1.0, 0.5, 0.5))
 nothing # hide
 ```
 
@@ -44,12 +44,12 @@ xgrid = LinRange(0, 2π, nx)
 ygrid = LinRange(0, 2π, ny)
 zgrid = LinRange(0, 2π, nz)
 
-potential(component) = [component(0.0, xgrid[i], ygrid[j], zgrid[k])
-                        for i in eachindex(xgrid), j in eachindex(ygrid), k in eachindex(zgrid)]
+potential(c) = [A♭(field, 0.0, xgrid[i], ygrid[j], zgrid[k])[c]
+                for i in eachindex(xgrid), j in eachindex(ygrid), k in eachindex(zgrid)]
 
-A_x = potential(A₁)
-A_y = potential(A₂)
-A_z = potential(A₃)
+A_x = potential(1)
+A_y = potential(2)
+A_z = potential(3)
 
 size(A_x)
 ```

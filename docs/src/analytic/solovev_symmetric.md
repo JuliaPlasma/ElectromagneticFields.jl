@@ -1,7 +1,7 @@
 # Symmetric Solov'ev Equilibrium
 
 ```@docs
-SolovevSymmetric
+SolovevSymmetricEquilibrium
 ```
 
 ## Constructing the Field
@@ -15,7 +15,7 @@ the origin:
 using CairoMakie
 using ElectromagneticFields
 
-equ = SolovevSymmetric.init(0.0, 1.0, 2.0, 0.5)
+equ = SolovevSymmetricEquilibrium(0.0, 1.0, 2.0, 0.5)
 ```
 
 ## Plotting
@@ -37,7 +37,7 @@ they get:
 fig = Figure(size = (1200, 400))
 
 for (n, (α, β)) in enumerate(((2.0, 0.5), (1.0, 1.0), (0.5, 2.0)))
-    plot_equilibrium!(fig[1,n], SolovevSymmetric.init(0.0, 1.0, α, β);
+    plot_equilibrium!(fig[1,n], SolovevSymmetricEquilibrium(0.0, 1.0, α, β);
         title = "α = $α, β = $β")
 end
 

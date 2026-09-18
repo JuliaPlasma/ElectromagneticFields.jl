@@ -9,7 +9,7 @@ backends is loaded. For documentation and other static output CairoMakie is the 
 using CairoMakie
 using ElectromagneticFields
 
-plot_equilibrium(Solovev.ITER())
+plot_equilibrium(SolovevEquilibriumITER())
 ```
 
 What is shown depends on the field. For the tokamak and Solov'ev equilibria it is the poloidal flux
@@ -35,7 +35,7 @@ Anything not recognised is forwarded to Makie's `contour!`, so e.g. `colormap` a
 work too:
 
 ```@example plotting
-plot_equilibrium(Solovev.NSTX();
+plot_equilibrium(SolovevEquilibriumNSTX();
     xlims = (0.05, 2.3),
     ylims = (-2.25, +2.25),
     levels = 60,
@@ -48,7 +48,7 @@ The colorbar, off by default, is built from the range of the data, since a line 
 colormap Makie could derive one from:
 
 ```@example plotting
-plot_equilibrium(ThetaPinch.init(); colorbar = true, size = (900, 400))
+plot_equilibrium(ThetaPinchEquilibrium(); colorbar = true, size = (900, 400))
 ```
 
 
@@ -62,11 +62,11 @@ way for the fields that draw a single panel and for those that draw one per comp
 ```@example plotting
 fig = Figure(size = (900, 400))
 
-plot_equilibrium!(fig[1,1], Solovev.ITER();
+plot_equilibrium!(fig[1,1], SolovevEquilibriumITER();
     title = "ITER", xlims = (0.6, 1.4))
-plot_equilibrium!(fig[1,2], Solovev.NSTX();
+plot_equilibrium!(fig[1,2], SolovevEquilibriumNSTX();
     title = "NSTX", xlims = (0.05, 2.3), ylims = (-2.25, +2.25))
-plot_equilibrium!(fig[1,3], Solovev.FRC();
+plot_equilibrium!(fig[1,3], SolovevEquilibriumFRC();
     title = "FRC", xlims = (0.0, 2.0), ylims = (-10.0, +10.0),
     aspect = AxisAspect(0.5))
 
@@ -84,7 +84,7 @@ draw more than one panel — so the axis can be adjusted afterwards:
 ```@example plotting
 fig = Figure(size = (450, 400))
 
-ax = plot_equilibrium!(fig[1,1], AxisymmetricTokamakCylindrical.init())
+ax = plot_equilibrium!(fig[1,1], AxisymmetricTokamakCylindricalEquilibrium())
 scatter!(ax, [1.0], [0.0]; marker = :xcross, color = :red, markersize = 15)
 text!(ax, 1.02, 0.02; text = "magnetic axis", color = :red)
 
@@ -100,7 +100,7 @@ generated functions return plain numbers and the grids are plain arrays, so ther
 special about it:
 
 ```@example plotting
-AxisymmetricTokamakCylindrical.@code()
+field = FieldFunctions(AxisymmetricTokamakCylindricalEquilibrium())
 nothing # hide
 ```
 
@@ -108,7 +108,8 @@ nothing # hide
 Rgrid = LinRange(0.5, 1.5, 100)
 Zgrid = LinRange(-0.5, 0.5, 120)
 
-Bfield = [B(0.0, Rgrid[i], Zgrid[j], 0.0) for i in eachindex(Rgrid), j in eachindex(Zgrid)]
+Bfield = [B(field, 0.0, Rgrid[i], Zgrid[j], 0.0)
+          for i in eachindex(Rgrid), j in eachindex(Zgrid)]
 
 fig = Figure(size = (500, 400))
 ax = Axis(fig[1,1]; xlabel = L"R", ylabel = L"Z", title = L"|B| (R,Z)", aspect = DataAspect())

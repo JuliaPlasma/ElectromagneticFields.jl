@@ -10,6 +10,8 @@ makedocs(
         assets = [asset("assets/style.css", class = :css, islocal = true)]),
     pages = ["Home" => "index.md",
         "Usage" => "usage.md",
+        "Interface" => "interface.md",
+        "Code Generation" => "generation.md",
         "Coordinates" => "coordinates.md",
         "Fields" => "fields.md",
         "Plotting" => "plotting.md",
@@ -26,7 +28,8 @@ makedocs(
             "Solov'ev Equilibrium" => "analytic/solovev.md",
             "Symmetric Solov'ev Equilibrium" => "analytic/solovev_symmetric.md",
             "Symmetric Quadratic Field" => "analytic/symmetric_quadratic.md",
-            "Theta Pinch" => "analytic/theta_pinch.md"
+            "Theta Pinch" => "analytic/theta_pinch.md",
+            "Perturbations" => "analytic/perturbations.md"
         ],
         "Modules" => "modules.md"
     ]

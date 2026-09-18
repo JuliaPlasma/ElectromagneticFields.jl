@@ -1,8 +1,8 @@
 # Analytic Fields
 
 ElectromagneticFields.jl provides a collection of analytically known electromagnetic fields.
-Each of them lives in its own submodule, is constructed by an `init` function taking the
-parameters of the field, and generates its evaluation routines through a `@code` macro — see
+Each of them is a type taking the parameters of the field, from which `FieldFunctions`
+generates the evaluation routines — see
 [Usage](../usage.md) for the general workflow, [Coordinates](../coordinates.md) for the charts
 listed below, [Fields](../fields.md) for the field quantities each of them provides, and
 [Plotting](../plotting.md) for how the figures on the following pages are made.
@@ -21,3 +21,4 @@ listed below, [Fields](../fields.md) for the field quantities each of them provi
 | [Symmetric Solov'ev Equilibrium](@ref) | ``(x,y,z)`` | up/down and left/right symmetric Solov'ev solution |
 | [Symmetric Quadratic Field](@ref) | ``(x,y,z)`` | magnetic field growing quadratically with the radius |
 | [Theta Pinch](@ref) | ``(x,y,z)`` | homogeneous field along the ``z`` axis |
+| [Perturbations](@ref) | ``(x,y,z)`` | fields added to an equilibrium before code generation |

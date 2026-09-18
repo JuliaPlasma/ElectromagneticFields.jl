@@ -1,11 +1,3 @@
-module SolovevAbstract
-
-import NaNMath: log
-
-import ..ElectromagneticFields
-import ..ElectromagneticFields: AnalyticEquilibrium, AnalyticPerturbation
-
-export AbstractSolovevEquilibrium
 
 abstract type AbstractSolovevEquilibrium <: AnalyticEquilibrium end
 
@@ -22,47 +14,35 @@ function r²(x::AbstractVector, equ::AbstractSolovevEquilibrium)
 end
 r(x::AbstractVector, equ::AbstractSolovevEquilibrium) = sqrt(r²(x, equ))
 
-function ElectromagneticFields.J(x::AbstractVector, equ::AbstractSolovevEquilibrium)
-    R(x, equ) * equ.R₀^2
-end
+J(x::AbstractVector, equ::AbstractSolovevEquilibrium) = R(x, equ) * equ.R₀^2
 # (R/R₀, Z/R₀, ϕ) is the same left-handed ordering as the cylindrical chart.
-ElectromagneticFields.orientation(::AbstractSolovevEquilibrium) = -1
+orientation(::AbstractSolovevEquilibrium) = -1
 
-function ElectromagneticFields.A₁(x::AbstractVector, equ::AbstractSolovevEquilibrium)
+function A₁(x::AbstractVector, equ::AbstractSolovevEquilibrium)
     +equ.B₀ * equ.R₀ * x[2] / x[1] / 2
 end
-function ElectromagneticFields.A₂(x::AbstractVector, equ::AbstractSolovevEquilibrium)
-    -equ.B₀ * equ.R₀ * log(x[1]) / 2
+function A₂(x::AbstractVector, equ::AbstractSolovevEquilibrium)
+    -equ.B₀ * equ.R₀ * NaNMath.log(x[1]) / 2
 end
 
-ElectromagneticFields.x¹(ξ::AbstractVector, equ::AbstractSolovevEquilibrium) = X(ξ, equ)
-ElectromagneticFields.x²(ξ::AbstractVector, equ::AbstractSolovevEquilibrium) = Y(ξ, equ)
-ElectromagneticFields.x³(ξ::AbstractVector, equ::AbstractSolovevEquilibrium) = Z(ξ, equ)
+x¹(ξ::AbstractVector, equ::AbstractSolovevEquilibrium) = X(ξ, equ)
+x²(ξ::AbstractVector, equ::AbstractSolovevEquilibrium) = Y(ξ, equ)
+x³(ξ::AbstractVector, equ::AbstractSolovevEquilibrium) = Z(ξ, equ)
 
-function ElectromagneticFields.ξ¹(x::AbstractVector, equ::AbstractSolovevEquilibrium)
+function ξ¹(x::AbstractVector, equ::AbstractSolovevEquilibrium)
     sqrt(x[1]^2 + x[2]^2) / equ.R₀
 end
-ElectromagneticFields.ξ²(x::AbstractVector, equ::AbstractSolovevEquilibrium) = x[3] / equ.R₀
-function ElectromagneticFields.ξ³(x::AbstractVector, equ::AbstractSolovevEquilibrium)
-    atan(x[2], x[1])
-end
+ξ²(x::AbstractVector, equ::AbstractSolovevEquilibrium) = x[3] / equ.R₀
+ξ³(x::AbstractVector, equ::AbstractSolovevEquilibrium) = atan(x[2], x[1])
 
-ElectromagneticFields.g₁₁(x::AbstractVector, equ::AbstractSolovevEquilibrium) = equ.R₀^2
-ElectromagneticFields.g₂₂(x::AbstractVector, equ::AbstractSolovevEquilibrium) = equ.R₀^2
-ElectromagneticFields.g₃₃(x::AbstractVector, equ::AbstractSolovevEquilibrium) = R(x, equ)^2
+g₁₁(x::AbstractVector, equ::AbstractSolovevEquilibrium) = equ.R₀^2
+g₂₂(x::AbstractVector, equ::AbstractSolovevEquilibrium) = equ.R₀^2
+g₃₃(x::AbstractVector, equ::AbstractSolovevEquilibrium) = R(x, equ)^2
 
-function ElectromagneticFields.get_functions(::AbstractSolovevEquilibrium)
+function get_functions(::AbstractSolovevEquilibrium)
     (X = X, Y = Y, Z = Z, R = R, r = r, θ = θ, ϕ = ϕ, r² = r²)
 end
-function ElectromagneticFields.get_parameters(::AbstractSolovevEquilibrium)
-    (:R₀, :B₀, :ϵ, :κ, :δ, :α)
-end
+get_parameters(::AbstractSolovevEquilibrium) = (:R₀, :B₀, :ϵ, :κ, :δ, :α)
 
-function ElectromagneticFields.minx³(ξ::AbstractVector{T}, equ::AbstractSolovevEquilibrium) where {T}
-    T(0)
-end
-function ElectromagneticFields.maxx³(ξ::AbstractVector{T}, equ::AbstractSolovevEquilibrium) where {T}
-    T(2π)
-end
-
-end
+minx³(ξ::AbstractVector{T}, equ::AbstractSolovevEquilibrium) where {T} = T(0)
+maxx³(ξ::AbstractVector{T}, equ::AbstractSolovevEquilibrium) where {T} = T(2π)

@@ -1,3 +1,8 @@
+
+const DEFAULT_PENNING_BOTTLE_B₀ = 100.0
+const DEFAULT_PENNING_BOTTLE_Bₚ = 200.0
+const DEFAULT_PENNING_BOTTLE_E₀ = 10.0
+
 @doc raw"""
 Penning trap with magnetic bottle in (x,y,z) coordinates.
 Based on Yanyan Shi, Yajuan Sun, Yulei Wang, Jian Liu, Study of adaptive symplectic methods for
@@ -25,18 +30,6 @@ Parameters:
 * `Bₚ`: B-field perturbation strength
 * `E₀`: E-field strength
 """
-module PenningTrapBottle
-
-import ..ElectromagneticFields
-import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
-import ..AnalyticCartesianField: X, Y, Z
-
-export PenningTrapBottleEquilibrium
-
-const DEFAULT_B₀ = 100.0
-const DEFAULT_Bₚ = 200.0
-const DEFAULT_E₀ = 10.0
-
 struct PenningTrapBottleEquilibrium{T <: Number} <: CartesianEquilibrium
     name::String
     B₀::T
@@ -48,16 +41,11 @@ struct PenningTrapBottleEquilibrium{T <: Number} <: CartesianEquilibrium
     end
 end
 
-PenningTrapBottleEquilibrium(B₀::T = DEFAULT_B₀, Bₚ::T = DEFAULT_Bₚ,
-    E₀::T = DEFAULT_E₀) where {T <: Number} = PenningTrapBottleEquilibrium{T}(B₀, Bₚ, E₀)
-
-function init(B₀ = DEFAULT_B₀, Bₚ = DEFAULT_Bₚ, E₀ = DEFAULT_E₀)
-    PenningTrapBottleEquilibrium(B₀, Bₚ, E₀)
-end
-
-macro code(args...)
-    parameters, options = code_arguments(args)
-    code(init(parameters...); escape = true, options...)
+function PenningTrapBottleEquilibrium(
+        B₀::T = DEFAULT_PENNING_BOTTLE_B₀,
+        Bₚ::T = DEFAULT_PENNING_BOTTLE_Bₚ,
+        E₀::T = DEFAULT_PENNING_BOTTLE_E₀) where {T <: Number}
+    PenningTrapBottleEquilibrium{T}(B₀, Bₚ, E₀)
 end
 
 function Base.show(io::IO, equ::PenningTrapBottleEquilibrium)
@@ -67,31 +55,18 @@ function Base.show(io::IO, equ::PenningTrapBottleEquilibrium)
     print(io, "  E₀ = ", equ.E₀)
 end
 
-ElectromagneticFields.A₁(x::AbstractVector, equ::PenningTrapBottleEquilibrium) = - equ.B₀ /
-                                                                                 2 *
-                                                                                 Y(x, equ) -
-                                                                                 equ.Bₚ *
-                                                                                 (Y(x, equ) *
-                                                                                  Z(x, equ)^2 -
-                                                                                  Y(x, equ)^3 /
-                                                                                  6)
-ElectromagneticFields.A₂(x::AbstractVector, equ::PenningTrapBottleEquilibrium) = + equ.B₀ /
-                                                                                 2 *
-                                                                                 X(x, equ) -
-                                                                                 equ.Bₚ *
-                                                                                 X(x, equ)^3 /
-                                                                                 6
-ElectromagneticFields.A₃(x::AbstractVector, equ::PenningTrapBottleEquilibrium) = - equ.Bₚ *
-                                                                                 X(x, equ) *
-                                                                                 Y(x, equ) *
-                                                                                 Z(x, equ)
-ElectromagneticFields.φ(x::AbstractVector, equ::PenningTrapBottleEquilibrium) = - equ.E₀ *
-                                                                                (X(x, equ)^2 /
-                                                                                 2 +
-                                                                                 Y(x, equ)^2 /
-                                                                                 2 -
-                                                                                 Z(x, equ)^2)
-
-ElectromagneticFields.get_functions(::PenningTrapBottleEquilibrium) = (X = X, Y = Y, Z = Z)
-
+function A₁(x::AbstractVector, equ::PenningTrapBottleEquilibrium)
+    -equ.B₀ / 2 * Y(x, equ) - equ.Bₚ * (Y(x, equ) * Z(x, equ)^2 - Y(x, equ)^3 / 6)
 end
+function A₂(x::AbstractVector, equ::PenningTrapBottleEquilibrium)
+    +equ.B₀ / 2 * X(x, equ) - equ.Bₚ * X(x, equ)^3 / 6
+end
+function A₃(x::AbstractVector, equ::PenningTrapBottleEquilibrium)
+    -equ.Bₚ * X(x, equ) * Y(x, equ) * Z(x, equ)
+end
+
+function φ(x::AbstractVector, equ::PenningTrapBottleEquilibrium)
+    -equ.E₀ * (X(x, equ)^2 / 2 + Y(x, equ)^2 / 2 - Z(x, equ)^2)
+end
+
+get_functions(::PenningTrapBottleEquilibrium) = (X = X, Y = Y, Z = Z)

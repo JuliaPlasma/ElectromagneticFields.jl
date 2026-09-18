@@ -1,164 +1,158 @@
 # Usage
 
 Working with ElectromagneticFields.jl has two steps. First an equilibrium is constructed, which
-is a small immutable object holding nothing but the parameters of the field. Then Julia code for
-evaluating that field is generated from it, and the generated functions are what the actual
-computation uses.
+is a small immutable object holding nothing but the parameters of the field. Then the code for
+evaluating that field is generated from it into a [`FieldFunctions`](@ref) object, and that is
+what the actual computation uses.
 
 
 ## Constructing an Equilibrium
 
-Every field lives in its own submodule and provides an `init` function with sensible defaults, so
-the shortest way to get an equilibrium is
+Every field is a type with sensible defaults, so the shortest way to get an equilibrium is
 
 ```@example usage
 using ElectromagneticFields
 
-equ = AxisymmetricTokamakCylindrical.init()
+equ = AxisymmetricTokamakCylindricalEquilibrium()
 ```
 
 All parameters can be passed explicitly, here the major radius ``R_0``, the magnetic field
 strength ``B_0`` at the magnetic axis, and the safety factor ``q_0``:
 
 ```@example usage
-equ = AxisymmetricTokamakCylindrical.init(6.2, 5.3, 2.0)
+equ = AxisymmetricTokamakCylindricalEquilibrium(6.2, 5.3, 2.0)
 ```
 
-Some fields ship named configurations in addition to `init`, e.g. the Solov'ev equilibrium comes
-with parameter sets for ITER, NSTX and a field reversed configuration:
+Some fields ship named configurations as well, e.g. the Solov'ev equilibrium comes with parameter
+sets for ITER, NSTX and a field reversed configuration:
 
 ```@example usage
-Solovev.ITER()
+SolovevEquilibriumITER()
 ```
 
 
 ## Generating the Evaluation Code
 
-An equilibrium object on its own cannot be evaluated. The evaluation routines are generated from
-it symbolically, differentiated where necessary, and then spliced into a module as plain Julia
-functions. There are three ways of doing that.
-
-The most convenient one is the `@code` macro that every field module provides. It takes the same
-arguments as `init`, and splices the generated functions into the current module:
+An equilibrium object on its own cannot be evaluated. The evaluation routines are traced
+symbolically from its chart, metric and vector potential, differentiated where necessary, and
+compiled. [`FieldFunctions`](@ref) does all of that and returns the result as a value:
 
 ```@example usage
-AxisymmetricTokamakCylindrical.@code(6.2, 5.3, 2.0)
+field = FieldFunctions(equ)
 nothing # hide
 ```
 
-The functions are now available directly. They all take the time as their first argument,
-followed by the three coordinates of the evaluation point, which for this equilibrium are
-``(R, Z, \phi)``:
+This is an ordinary object. It can be built inside a function, stored in a `Dict`, or passed to a
+vector field that depends on the field — typically through a `GeometricEquations` problem's
+`parameters`, from which the equation function evaluates the components it needs.
+
+Every quantity is reached through a generic that takes the field first. They all take the time as
+their second argument, followed by the coordinates of the evaluation point, which for this
+equilibrium are ``(R, Z, \phi)``:
 
 ```@example usage
 t = 0.0
 x = [6.5, 0.5, 0.0]
 
-B(t, x)
+B(field, t, x)
 ```
 
-Both a splatted and a vector call are defined, so `B(t, x)` and `B(t, x...)` are the same thing:
+Both a vector and a splatted call are defined, so `B(field, t, x)` and `B(field, t, x...)` are the
+same thing:
 
 ```@example usage
-same = B(t, x...) == B(t, x)
+same = B(field, t, x...) == B(field, t, x)
 @assert same # hide
 same
 ```
 
-### `load_equilibrium`
-
-Where the generated functions should end up in a module of their own rather than in the current
-one, use [`load_equilibrium`](@ref):
-
-```julia
-module Tokamak end
-
-load_equilibrium(equ; target_module = Tokamak)
-
-Tokamak.B(t, x)
-```
-
-There is a catch: the methods `load_equilibrium` defines live in a world age newer than the frame
-that called it, so that frame cannot call them. At the top level this is invisible, because the
-world age advances between statements, but inside a function the freshly defined `B` is "too new"
-and Julia reports a `MethodError` on a name that plainly exists. For those cases pass a function,
-which is run through `Base.invokelatest` and receives the target module:
+A perturbation is combined with the equilibrium before any code is generated, so a perturbed field
+is a `FieldFunctions` like any other:
 
 ```@example usage
-module Tokamak end
-
-load_equilibrium(equ; target_module = Tokamak) do mod
-    mod.B(0.0, [6.5, 0.5, 0.0])
-end
-```
-
-The do-block form returns whatever the function returns.
-
-### `code`
-
-Finally, [`code`](@ref) returns the generated code as an expression instead of evaluating it,
-which is what to reach for when the code should be inspected or written to a file:
-
-```@example usage
-expr = code(equ)
-typeof(expr)
+perturbed = FieldFunctions(ThetaPinchEquilibrium(), EzCosZPerturbation())
+φ(perturbed, t, [0.5, 0.5, 0.25])
 ```
 
 
 ## What Gets Generated
 
-Rather more than just the magnetic field. The naming follows the usual conventions of
-differential geometry: subscripts denote covariant components, superscripts contravariant ones,
-and parenthesised subscripts the components in the physical (orthonormal) frame. See
-[Coordinates](coordinates.md) for what those three representations are and
-[Fields](fields.md) for how the field quantities below are derived from the vector potential.
+Rather more than just the magnetic field, and each quantity comes as a whole tensor rather than
+one function per component. A vector-valued quantity returns an `SVector{3}`, a Jacobian or the
+metric an `SMatrix{3,3}`, and the higher derivatives an `SArray` of the matching rank, so a single
+component is an ordinary index:
+
+```@example usage
+B♭(field, t, x)[1]
+```
+
+The naming follows the musical isomorphisms of differential geometry: `♭` lowers an index and
+gives the covariant components, `♯` raises one and gives the contravariant components, and `♮`
+gives the components in the physical (orthonormal) frame. They are typed `\flat`, `\sharp` and
+`\natural`. The bare letter is the magnitude, so `B` is ``|B|``. See [Coordinates](coordinates.md)
+for what the three representations are and [Fields](fields.md) for how the quantities below are
+derived from the vector potential.
+
+| | covariant | contravariant | physical | derivatives |
+|:--|:--|:--|:--|:--|
+| vector potential | `A♭` | `A♯` | | `DA♭`, `DDA♭` |
+| magnetic field | `B♭` | `B♯` | `B♮` | `DB♭`; two-form `B♭♭` |
+| magnitude of the magnetic field | `B` | | | `DB`, `DDB` |
+| unit magnetic field | `b♭` | `b♯` | `b♮` | `Db♭`, `Db♮`, `DDb♭` |
+| perpendicular frame | `a♭`, `c♭` | `a♯`, `c♯` | `a♮`, `c♮` | |
+| electric field | `E♭` | `E♯` | | `DE♭` |
+| metric | `g♭` | `g♯` | | `Dg♭`, `Dg♯`, `DDg♭`, `DDg♯` |
 
 | | |
 |---|---|
-| `A₁, A₂, A₃` / `A¹, A², A³` | components of the vector potential |
-| `B` | absolute value of the magnetic field |
-| `B₁, B₂, B₃` / `B¹, B², B³` / `B₍₁₎, B₍₂₎, B₍₃₎` | components of the magnetic field |
-| `b₁, b₂, b₃`, … | components of the unit vector along the magnetic field |
-| `E₁, E₂, E₃` / `E¹, E², E³` | components of the electric field |
 | `φ` | electrostatic potential |
-| `g`, `ḡ` and `gᵢⱼ`, `gⁱʲ` | metric and its inverse |
 | `J` | volume element of the chart, ``\sqrt{\|g\|} = \|\det DF\|`` |
 | `DF`, `DF̄` | Jacobian matrix of the chart and its inverse |
 | `from_cartesian`, `to_cartesian` | coordinate transformations |
 | `rangemin`, `rangemax` | bounds of the coordinate domain |
-| `orientation` | handedness of the chart, `+1` or `-1` |
 
-In addition, derivatives of most of these quantities are generated, e.g. `dBdx₁`, `dA₂dx₃` or
-`d²Bdx₁dx₂`, and the parameters of the equilibrium are spliced in as constants, here `R₀`, `B₀`
-and `q₀`:
+Four things are data rather than functions. The parameters of the equilibrium, which the
+generated code has baked in as literals:
 
 ```@example usage
-R₀, B₀, q₀
+parameters(field)
 ```
 
-The chart itself is available as well. `J` is the volume element, `DF` the Jacobian matrix, and the
-two are related through the orientation of the chart — this equilibrium uses a left-handed
-``(R, Z, \phi)`` chart, so the determinant of `DF` is `-J`:
+the equilibrium's own coordinate helpers, whose names vary from field to field:
+
+```@example usage
+keys(coordinates(field))
+```
+
+the periodic domain, `periodicity(field)`, and the handedness of the chart. `J` is the volume
+element and `DF` the Jacobian matrix; the two are related through `orientation`, and this
+equilibrium uses a left-handed ``(R, Z, \phi)`` chart, so the determinant of `DF` is `-J`:
 
 ```@example usage
 using LinearAlgebra
 
-signed = det(DF(t, x)) ≈ orientation() * J(t, x)
+signed = det(DF(field, t, x)) ≈ orientation(field) * J(field, t, x)
 @assert signed # hide
-orientation(), signed
+orientation(field), signed
 ```
+
+`functions(field)` returns all of the generated functions at once, as a `NamedTuple` keyed by the
+names in the tables above.
 
 
 ## Evaluating on a Grid
 
-Since the generated functions are ordinary Julia functions, sampling a field is just a
+Since the generated functions are ordinary compiled Julia functions, sampling a field is just a
 comprehension:
 
 ```@example usage
+R₀ = parameters(field).R₀
+
 Rgrid = LinRange(0.5 * R₀, 1.5 * R₀, 100)
 Zgrid = LinRange(-0.5 * R₀, 0.5 * R₀, 120)
 
-Bfield = [B(t, Rgrid[i], Zgrid[j], 0.0) for i in eachindex(Rgrid), j in eachindex(Zgrid)]
+Bfield = [B(field, t, Rgrid[i], Zgrid[j], 0.0)
+          for i in eachindex(Rgrid), j in eachindex(Zgrid)]
 
 size(Bfield)
 ```

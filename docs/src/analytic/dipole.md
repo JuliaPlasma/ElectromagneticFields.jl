@@ -1,7 +1,7 @@
 # Dipole
 
 ```@docs
-Dipole
+DipoleField
 ```
 
 ## Constructing the Field
@@ -12,7 +12,7 @@ The only parameter is the field strength ``B_0``, which defaults to `1000.0`:
 using CairoMakie
 using ElectromagneticFields
 
-equ = Dipole.init()
+equ = DipoleField()
 ```
 
 ## Plotting

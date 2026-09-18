@@ -11,17 +11,17 @@ code includes `φ` and the components of the electric field.
 ## Uniform Magnetic Field
 
 ```@docs
-PenningTrapUniform
+PenningTrapUniformEquilibrium
 ```
 
 ```@example penning
 using ElectromagneticFields
 
-equ = PenningTrapUniform.init()
+equ = PenningTrapUniformEquilibrium()
 ```
 
 ```@example penning
-PenningTrapUniform.@code()
+field = FieldFunctions(equ)
 nothing # hide
 ```
 
@@ -32,29 +32,29 @@ coordinates and pulls the particle back towards the mid-plane:
 t = 0.0
 x = [0.1, 0.2, 0.3]
 
-B(t, x), [E₁(t, x), E₂(t, x), E₃(t, x)]
+B(field, t, x), E♭(field, t, x)
 ```
 
 
 ## Magnetic Bottle
 
 ```@docs
-PenningTrapBottle
+PenningTrapBottleEquilibrium
 ```
 
 ```@example penning
-PenningTrapBottle.init()
+PenningTrapBottleEquilibrium()
 ```
 
 
 ## Asymmetric Magnetic Field
 
 ```@docs
-PenningTrapAsymmetric
+PenningTrapAsymmetricEquilibrium
 ```
 
 ```@example penning
-PenningTrapAsymmetric.init()
+PenningTrapAsymmetricEquilibrium()
 ```
 
 

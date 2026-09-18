@@ -1,29 +1,63 @@
 module ElectromagneticFields
 
+using GeometricBase
 using LinearAlgebra
+using StaticArrays
+using Symbolics
+
+import NaNMath
+
+import GeometricBase: functions, parameters, periodicity
 
 export ElectromagneticField
 
 include("field.jl")
 
 export AnalyticField, AnalyticEquilibrium, AnalyticPerturbation, ZeroPerturbation
+export CartesianField, CartesianEquilibrium, CartesianPerturbation
 
-export load_equilibrium, code, periodicity
+# The ITER parameters shared by the three axisymmetric tokamak charts, which describe the same
+# device in different coordinates.
+const ITER_R₀ = 6.2
+const ITER_B₀ = 5.3
+const ITER_q₀ = √2
 
-include("analytic/analytic_equilibrium.jl")
-include("analytic/cartesian_equilibrium.jl")
+include("analytic/analytic_field.jl")
+include("analytic/cartesian_field.jl")
 
-using .AnalyticCartesianField
+export FieldFunction, FieldFunctions
+export functions, parameters, periodicity, coordinates, orientation
+export equilibrium, perturbation
+export to_cartesian, from_cartesian, DF, DF̄, J, rangemin, rangemax
+export g♭, g♯, Dg♭, Dg♯, DDg♭, DDg♯
+export A♭, A♯, DA♭, DDA♭, φ
+export B, DB, DDB, B♭, B♯, B♮, B♭♭, DB♭
+export b♭, b♯, b♮, Db♭, Db♮, DDb♭
+export a♭, a♯, a♮, c♭, c♯, c♮
+export E♭, E♯, DE♭
 
-export ABC, Dipole, EzCosZ,
-       AxisymmetricTokamakCartesian,
-       AxisymmetricTokamakCylindrical,
-       AxisymmetricTokamakToroidal,
-       AxisymmetricTokamakToroidalRegularization,
-       Solovev, SolovevXpoint, SolovevSymmetric,
-       Singular, SymmetricQuadratic, ThetaPinch,
-       PenningTrapUniform, PenningTrapBottle, PenningTrapAsymmetric,
-       QuadraticPotentials
+include("analytic/field_functions.jl")
+
+export ABCEquilibrium
+export AxisymmetricTokamakCartesianEquilibrium, AxisymmetricTokamakCartesianITER
+export AxisymmetricTokamakCylindricalEquilibrium, AxisymmetricTokamakCylindricalITER
+export AxisymmetricTokamakToroidalEquilibrium, AxisymmetricTokamakToroidalITER
+export AxisymmetricTokamakToroidalRegularizationEquilibrium
+export DipoleField
+export EzCosZPerturbation
+export PenningTrapAsymmetricEquilibrium
+export PenningTrapBottleEquilibrium
+export PenningTrapUniformEquilibrium
+export QuadraticPotentialsField
+export AbstractSolovevEquilibrium
+export SolovevEquilibrium, SolovevEquilibriumITER, SolovevEquilibriumNSTX,
+       SolovevEquilibriumFRC
+export SolovevXpointEquilibrium, SolovevXpointEquilibriumITER, SolovevXpointEquilibriumNSTX
+export SolovevDoubleXpointEquilibrium, SolovevDoubleXpointEquilibriumNSTX
+export SolovevSymmetricEquilibrium
+export SingularEquilibrium
+export SymmetricQuadraticEquilibrium
+export ThetaPinchEquilibrium
 
 include("analytic/abc.jl")
 include("analytic/axisymmetric_tokamak_cartesian.jl")

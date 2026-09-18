@@ -1,3 +1,6 @@
+
+const DEFAULT_THETA_PINCH_B₀ = 1.0
+
 @doc raw"""
 θ-pinch equilibrium in (x,y,z) coordinates with covariant components of
 the vector potential given by
@@ -12,16 +15,6 @@ B (x,y,z) = \big( 0 , \, 0 , \, B_0 \big)^T .
 Parameters:
     B₀: B-field at magnetic axis
 """
-module ThetaPinch
-
-import ..ElectromagneticFields
-import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
-import ..AnalyticCartesianField: X, Y, Z
-
-export ThetaPinchEquilibrium
-
-const DEFAULT_B₀ = 1.0
-
 struct ThetaPinchEquilibrium{T <: Number} <: CartesianEquilibrium
     name::String
     B₀::T
@@ -31,15 +24,8 @@ struct ThetaPinchEquilibrium{T <: Number} <: CartesianEquilibrium
     end
 end
 
-ThetaPinchEquilibrium(B₀::T = DEFAULT_B₀) where {T <: Number} = ThetaPinchEquilibrium{T}(B₀)
-
-function init(B₀ = DEFAULT_B₀)
-    ThetaPinchEquilibrium(B₀)
-end
-
-macro code(args...)
-    parameters, options = code_arguments(args)
-    code(init(parameters...); escape = true, options...)
+function ThetaPinchEquilibrium(B₀::T = DEFAULT_THETA_PINCH_B₀) where {T <: Number}
+    ThetaPinchEquilibrium{T}(B₀)
 end
 
 function Base.show(io::IO, equ::ThetaPinchEquilibrium)
@@ -53,13 +39,10 @@ R(x::AbstractVector, equ::ThetaPinchEquilibrium) = r(x, equ)
 θ(x::AbstractVector, equ::ThetaPinchEquilibrium) = atan(Y(x, equ), X(x, equ))
 ϕ(x::AbstractVector, equ::ThetaPinchEquilibrium) = θ(x, equ)
 
-ElectromagneticFields.A₁(x::AbstractVector, equ::ThetaPinchEquilibrium) = - equ.B₀ *
-                                                                          Y(x, equ) / 2
-ElectromagneticFields.A₂(x::AbstractVector, equ::ThetaPinchEquilibrium) = + equ.B₀ *
-                                                                          X(x, equ) / 2
-ElectromagneticFields.A₃(x::AbstractVector, equ::ThetaPinchEquilibrium) = zero(eltype(x))
+A₁(x::AbstractVector, equ::ThetaPinchEquilibrium) = -equ.B₀ * Y(x, equ) / 2
+A₂(x::AbstractVector, equ::ThetaPinchEquilibrium) = +equ.B₀ * X(x, equ) / 2
+A₃(x::AbstractVector, equ::ThetaPinchEquilibrium) = zero(eltype(x))
 
-ElectromagneticFields.get_functions(::ThetaPinchEquilibrium) = (
-    X = X, Y = Y, Z = Z, R = R, r = r, θ = θ, ϕ = ϕ, r² = r²)
-
+function get_functions(::ThetaPinchEquilibrium)
+    (X = X, Y = Y, Z = Z, R = R, r = r, θ = θ, ϕ = ϕ, r² = r²)
 end
