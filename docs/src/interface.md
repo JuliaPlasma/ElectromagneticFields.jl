@@ -38,9 +38,8 @@ quantity the rest of the name denotes. `DA♭` is ``\partial_j A_i``, a matrix; 
 the scalar `B`.
 
 !!! note
-    The `x` of the old component names — `dA₁dx₂` — always meant the chart coordinates ``\xi``,
-    never cartesian ones, and the same is true of `DA♭` here. Differentiation is with respect to
-    whatever coordinates the chart uses.
+    Differentiation is always with respect to the chart's own coordinates ``\xi``, never the
+    cartesian ones.
 
 
 ## The Quantities
@@ -163,13 +162,16 @@ Nothing is captured in a closure and nothing is looked up in a global, so the sa
 works for every equilibrium, and switching fields is a change of `parameters` rather than a
 recompilation of the problem.
 
-Two properties make this practical, and both are asserted by the test suite for every
-equilibrium:
+Two properties make this practical:
 
 * **No allocations.** Every generic returns a `StaticArray` or a scalar, whatever container the
   coordinates arrive in.
 * **Type stability.** Every quantity of one field returns the same element type, `float` of the
   coordinates' own type, whether or not its expression happens to mention the coordinates.
+
+For every equilibrium the test suite measures the first, and for the second compares the element
+type of each value returned. Neither bullet is asserted through inference: `@inferred` appears
+nowhere in the suite.
 
 Measuring the first is worth a word of warning: `@allocated` charges for the lookup of a
 non-`const` global, so it has to be done behind a function barrier or it reports the boxing of

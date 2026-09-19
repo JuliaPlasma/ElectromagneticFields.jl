@@ -112,9 +112,8 @@ considerably slower.
 
 ## Reading the Generated Code
 
-There is no equivalent of printing the generated module, because there is no module. To see what
-was generated for one quantity, take the symbolic expressions and ask `build_function` for an
-expression instead of a function:
+To see what was generated for one quantity, take the symbolic expressions and ask `build_function`
+for an expression instead of a function:
 
 ```@example generation
 using ElectromagneticFields: generate_field_expressions
@@ -306,6 +305,6 @@ undefined. `NaNMath` variants are used where a domain error would otherwise prop
 finite-difference curl of the vector potential in cartesian coordinates, which is what
 `test_curl` in the test suite does.
 
-**A disagreement with an earlier version** can be checked against
+**A disagreement with the reference values** can be checked against
 `scripts/verify_against_symengine.jl`, which evaluates every quantity for all twenty equilibria
-and compares them with values recorded from the SymEngine-based implementation this one replaced.
+and compares them with the recorded values in `scripts/reference-symengine.tsv`.
