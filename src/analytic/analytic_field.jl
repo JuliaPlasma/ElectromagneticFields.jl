@@ -477,8 +477,8 @@ function generate_field_expressions(
         [Num(0), Num(1), Num(0)],
         [Num(0), Num(0), Num(1)])
         avec .= [crossproduct(tvec, bvec, ginv, Jsgn, i) for i in 1:3]
-        # `iszero` alone decides whether the cross product vanishes. `simplify` must not come
-        # back here: it cancels fractions through a polynomial gcd over `Rational{Int64}` that
+        # `iszero` alone decides whether the cross product vanishes. `simplify` must not be
+        # used here: it cancels fractions through a polynomial gcd over `Rational{Int64}` that
         # overflows on the coefficients some of these fields carry, and it leaves state on the
         # shared subexpressions that makes a later rebuild of the same field generate a
         # differently ordered — and so not bitwise equal — function.
