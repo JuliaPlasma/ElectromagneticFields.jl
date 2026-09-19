@@ -454,11 +454,12 @@ function generate_field_expressions(
         [Num(0), Num(1), Num(0)],
         [Num(0), Num(0), Num(1)])
         avec .= [crossproduct(tvec, bvec, ginv, Jsgn, i) for i in 1:3]
-        # `simplify_fractions` cancels numerator against denominator through a polynomial gcd
-        # over `Rational{Int64}`, which overflows on the coefficients some of these fields
-        # carry. The test only asks whether the cross product vanishes, and the rewriting
-        # simplifier decides that without it.
-        if !all(iszero, Symbolics.simplify.(avec; simplify_fractions = false))
+        # `expand` is enough to decide whether the cross product vanishes, and it is the
+        # strongest rewrite this test can use. `simplify` cancels fractions through a polynomial
+        # gcd over `Rational{Int64}` that overflows on the coefficients some of these fields
+        # carry, and it leaves state on the shared subexpressions that makes a later rebuild of
+        # the same field generate a differently ordered — and so not bitwise equal — function.
+        if !all(iszero, Symbolics.expand.(avec))
             break
         end
     end
