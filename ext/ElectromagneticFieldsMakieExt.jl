@@ -1,7 +1,7 @@
 module ElectromagneticFieldsMakieExt
 
 using Makie
-using Makie: AxisAspect, DataAspect, Figure, GridLayout, GridPosition, GridSubposition
+using Makie: DataAspect, Figure, GridLayout, GridPosition, GridSubposition
 
 using ElectromagneticFields
 using ElectromagneticFields: A₁, A₂, A₃, ξ¹, ξ²

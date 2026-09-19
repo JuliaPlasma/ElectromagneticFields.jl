@@ -10,11 +10,11 @@ Based on Yanyan Shi, Yajuan Sun, Yulei Wang, Jian Liu, Study of adaptive symplec
 
 The covariant components of the vector potential are given by
 ```math
-A (x,y,z) = B_0 / 2 \, ( -y , x, 0)^T - B_1 \, (xz, yz, (x^2 + y^2)/2 - z^2)^T,
+A (x,y,z) = B_0 / 2 \, ( -y , x, 0)^T - B_p \, ( yz^2 - y^3 / 6, x^3 / 6, xyz )^T,
 ```
 resulting in the magnetic field with covariant components
 ```math
-B (x,y,z) = B_0 \, ( 0, 0, 1)^T - B_1 \, ( yz^2 - y^3 / 6, x^3 / 6, xyz )^T ,
+B (x,y,z) = B_0 \, ( 0, 0, 1)^T - B_p \, (xz, yz, (x^2 + y^2)/2 - z^2)^T ,
 ```
 and the electrostatic potential given by
 ```math

@@ -141,7 +141,30 @@ function GeometricBase.periodicity(x::AbstractVector{T}, ::AnalyticField) where 
     (-Inf * ones(T, 4), +Inf * ones(T, 4))
 end
 
+"""
+    from_cartesian(x, equ::AnalyticField)
+
+Evaluate the inverse chart map ``ξ(x)`` of an equilibrium directly, without generating any code.
+
+This two-argument method shares its name with the [`FieldFunctions`](@ref) accessor
+`from_cartesian(field, t, x)`, and the number of arguments is what picks between them.
+`from_cartesian(x, equ)` reaches this method, which returns an allocating `Vector`; the accessor
+is the three-argument one and returns an `SVector{3}`. Prefer the accessor unless the equilibrium
+is all you have.
+"""
 from_cartesian(x::AbstractVector, equ::AnalyticField) = [ξ¹(x, equ), ξ²(x, equ), ξ³(x, equ)]
+
+"""
+    to_cartesian(ξ, equ::AnalyticField)
+
+Evaluate the chart map ``x(ξ)`` of an equilibrium directly, without generating any code.
+
+This two-argument method shares its name with the [`FieldFunctions`](@ref) accessor
+`to_cartesian(field, t, ξ)`, and the number of arguments is what picks between them.
+`to_cartesian(ξ, equ)` reaches this method, which returns an allocating `Vector`; the accessor is
+the three-argument one and returns an `SVector{3}`. Prefer the accessor unless the equilibrium is
+all you have.
+"""
 to_cartesian(ξ::AbstractVector, equ::AnalyticField) = [x¹(ξ, equ), x²(ξ, equ), x³(ξ, equ)]
 
 function A₁(::AbstractVector, ::ET) where {ET <: AnalyticField}
@@ -190,7 +213,7 @@ function covariant_to_physical(α, DF̄, i)
     DF̄[1, i] * α[1] + DF̄[2, i] * α[2] + DF̄[3, i] * α[3]
 end
 
-"Returns the i-th component of the physical coordinate representation of the one-form α"
+"Returns the i-th component of the physical coordinate representation of the vector v"
 function contravariant_to_physical(v, DF, i)
     DF[i, 1] * v[1] + DF[i, 2] * v[2] + DF[i, 3] * v[3]
 end
@@ -319,7 +342,7 @@ function symbolic_copy(field::AnalyticField, prefix::Symbol)
         end
     end
 
-    wrapper = Base.typename(typeof(field)).wrapper
+    wrapper = ConstructionBase.constructorof(typeof(field))
     constructor = try
         wrapper{Num}
     catch
@@ -454,12 +477,12 @@ function generate_field_expressions(
         [Num(0), Num(1), Num(0)],
         [Num(0), Num(0), Num(1)])
         avec .= [crossproduct(tvec, bvec, ginv, Jsgn, i) for i in 1:3]
-        # `expand` is enough to decide whether the cross product vanishes, and it is the
-        # strongest rewrite this test can use. `simplify` cancels fractions through a polynomial
-        # gcd over `Rational{Int64}` that overflows on the coefficients some of these fields
-        # carry, and it leaves state on the shared subexpressions that makes a later rebuild of
-        # the same field generate a differently ordered — and so not bitwise equal — function.
-        if !all(iszero, Symbolics.expand.(avec))
+        # `iszero` alone decides whether the cross product vanishes. `simplify` must not come
+        # back here: it cancels fractions through a polynomial gcd over `Rational{Int64}` that
+        # overflows on the coefficients some of these fields carry, and it leaves state on the
+        # shared subexpressions that makes a later rebuild of the same field generate a
+        # differently ordered — and so not bitwise equal — function.
+        if !all(iszero, avec)
             break
         end
     end

@@ -12,7 +12,8 @@ not covered here; see the git history for those.
 ### Changed
 
 - **The symbolic engine is replaced from SymEngine.jl to Symbolics.jl.** Dependencies change:
-  SymEngine is removed, Symbolics, StaticArrays and GeometricBase are added. Julia floor stays 1.10.
+  SymEngine is removed, Symbolics, StaticArrays, GeometricBase and ConstructionBase are added.
+  Julia floor stays 1.10.
   GeometricBase is there for the generic names `functions`, `parameters` and `periodicity`, which
   this package now extends rather than defining its own — it previously exported a `periodicity`
   of its own, which collided with GeometricEquations' in any package using both.
@@ -149,12 +150,6 @@ not covered here; see the git history for those.
   per equilibrium type, not exported (to avoid collisions), and are accessible as
   `ElectromagneticFields.R` or via the `coordinates(field)` NamedTuple.
 
-- Internal helpers removed in the SymEngine → Symbolics transition: the hand-rolled common-
-  subexpression elimination pass (made redundant by `Symbolics.build_function(...; cse = true)`),
-  `code_arguments`, `fnesc`, `replace_expr!`, `symprint`, and the dead `Γ` (Christoffel symbol)
-  and `connection` routines. The `@code` macros are removed; code generation is now done by calling
-  `FieldFunctions`, which returns a struct holding the functions.
-
 - Documentation restructured with new "Interface" and "Code Generation" pages; Usage, Coordinates,
   Fields, Plotting and the twelve analytic field pages rewritten for the new API.
 
@@ -210,6 +205,30 @@ not covered here; see the git history for those.
   made it a lottery over the platform: red on aarch64 macOS, green elsewhere for no better reason
   than rounding. It now compares the parameters exactly, and the values at `rtol = 1e-12`, four
   orders tighter than `≈` alone and far tighter than any real error in a formula.
+
+- **Both Penning trap docstrings disagreed with their code, and had done since the fields were
+  added.** `PenningTrapBottleEquilibrium` had its two `Bₚ` terms swapped between the vector
+  potential and the magnetic field, so both formulas were wrong; at `(0.3, 0.4, 0.5)` with the
+  defaults the docstring's `A` gave `[-50, -25, 25]` where the code gives
+  `[-37.87, 14.10, -12.00]`. `PenningTrapAsymmetricEquilibrium` gave the first component of `B`
+  as `B₀/3` where the curl of its own `A` is `B₀/6`. Both docstrings also named the perturbation
+  parameter `B₁` where the struct field is `Bₚ`. The code was right in every case; only the
+  documentation changes.
+
+- `contravariant_to_physical` carried `covariant_to_physical`'s docstring verbatim, describing a
+  one-form where it takes a vector.
+
+### Removed
+
+- The `@code` macros — `@code` and the per-preset variants `@code_iter`, `@code_nstx`,
+  `@code_frc`, `@code_xpoint`, `@code_iter_xpoint`, `@code_nstx_xpoint` and
+  `@code_nstx_double_xpoint`. Code generation is now done by calling `FieldFunctions`, which
+  returns a struct holding the functions.
+
+- Internal helpers dropped in the SymEngine → Symbolics transition: the hand-rolled common-
+  subexpression elimination pass (made redundant by `Symbolics.build_function(...; cse = true)`),
+  `code_arguments`, `fnesc`, `replace_expr!`, `symprint`, and the dead `Γ` (Christoffel symbol)
+  and `connection` routines.
 
 ## [0.8.0] - 2026-08-10
 

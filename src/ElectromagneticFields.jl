@@ -7,6 +7,7 @@ using RuntimeGeneratedFunctions
 using StaticArrays
 using Symbolics
 
+import ConstructionBase
 import NaNMath
 
 import GeometricBase: functions, parameters, periodicity
