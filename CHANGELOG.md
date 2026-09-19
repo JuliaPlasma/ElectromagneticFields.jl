@@ -154,7 +154,7 @@ not covered here; see the git history for those.
   `Base.typename(T).wrapper`, at the two places that strip a struct's type parameter: the symbolic
   copy the trace builds, and the generated-function cache key. Neither `Base.typename` nor the
   `.wrapper` field of `Core.TypeName` is public. ConstructionBase exists for this and defines the
-  same thing, so nothing about either behaviour changes.
+  same thing, so the behaviour is unchanged for this package's types.
 
 - Documentation restructured with new "Interface" and "Code Generation" pages; Usage, Coordinates,
   Fields, Plotting and the twelve analytic field pages rewritten for the new API.

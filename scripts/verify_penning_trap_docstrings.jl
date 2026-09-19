@@ -72,7 +72,11 @@ end
 
 rng = Random.MersenneTwister(0)
 
-# φ and E are stated identically in all three docstrings.
+# All three docstrings state φ and E identically, so both are transcribed once here. That the three
+# docstring texts do agree is an assumption read by eye: this script compares a transcription
+# against the code, and never one docstring against another, so a φ that diverged in one of the
+# three would go unnoticed. The code side is covered, because each trap defines its own `φ` method
+# and the three comparisons below therefore exercise three distinct ones.
 φ_doc = -E₀ * (x^2 / 2 + y^2 / 2 - z^2)
 E_doc = E₀ * [x, y, -2z]
 
