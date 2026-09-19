@@ -150,7 +150,7 @@ function test_curl(field, t, ξ; h = 1E-5)
 end
 
 # equilibrium, sample point, rangemin, rangemax, and whether the perpendicular frame is checked.
-# `Singular` diverges on the axis and its frame is left out, as it was before the rewrite.
+# `Singular` diverges on the axis, so its frame is left out.
 const EQUILIBRIA = [
     ("ABC", ABCEquilibrium(), ξ,
         [-Inf, -Inf, -Inf], [+Inf, +Inf, +Inf], true),

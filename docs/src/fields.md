@@ -179,8 +179,7 @@ uniform Penning trap, with
 \varphi (x,y,z) = - E_0 \left( \frac{x^2}{2} + \frac{y^2}{2} - z^2 \right) ,
 ```
 
-a second field alongside the tokamak — which is no longer a difficulty, since each one is a value
-of its own rather than a set of names spliced into the module:
+a second field stands alongside the tokamak, because each field is a value of its own:
 
 ```@example fields
 trap = FieldFunctions(PenningTrapUniformEquilibrium(100.0, 10.0))

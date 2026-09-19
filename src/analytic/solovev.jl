@@ -65,7 +65,7 @@ function ψ₁₂(x::AbstractVector{T}) where {T <: Number}
     60 * x[2] * x[1]^4 * NaNMath.log(x[1])
 end
 
-# Evaluate a symbolic expression at a point, as a Float — SymEngine's `N`.
+# Evaluate a symbolic expression at a point, as a Float.
 #
 # `substitute` folds arithmetic but not `log`, so the result still carries an unevaluated
 # `NaNMath.log(1.32)` and cannot simply be converted. `symbolic_to_float` evaluates the remaining
@@ -74,7 +74,7 @@ function _solovev_eval(expr, pairs...)
     Symbolics.symbolic_to_float(Symbolics.substitute(expr, Dict(pairs...)))
 end
 
-# ∂ⁿ/∂vⁿ, the `diff(expr, v, n)` SymEngine offered and Symbolics does not.
+# ∂ⁿ/∂vⁿ. `Symbolics.derivative` takes no order argument, so apply it n times.
 function _solovev_derivative(expr, v, n::Int = 1)
     for _ in 1:n
         expr = Symbolics.derivative(expr, v)

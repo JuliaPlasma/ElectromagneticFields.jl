@@ -35,10 +35,9 @@ methods read and this does not list is frozen into the code as a literal. See
 function get_parameters end
 
 # Coordinate helpers an equilibrium may define for its own chart, each as a method taking
-# `(x, equ)`. They were module-local in every field module before the modules were flattened, so
-# the same name now carries one method per equilibrium. `get_functions` lists which of them to
-# generate into `coordinates(field)`. They are deliberately not exported — `r`, `θ` and `ϕ` would
-# collide with practically any caller.
+# `(x, equ)`, so one name carries one method per equilibrium. `get_functions` lists which of them
+# to generate into `coordinates(field)`. They are deliberately not exported — `r`, `θ` and `ϕ`
+# would collide with practically any caller.
 function X end
 function Y end
 function Z end
