@@ -1,3 +1,6 @@
+
+const DEFAULT_SYMMETRIC_QUADRATIC_B₀ = 1.0
+
 @doc raw"""
 Symmetric quadratic mangetic field in (x,y,z) coordinates with covariant components of
 the vector potential given by
@@ -15,33 +18,17 @@ B(x,y,z) = B_0 \, \begin{pmatrix}
 
 Parameters: `B₀`
 """
-module SymmetricQuadratic
-
-import ..ElectromagneticFields
-import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
-import ..ElectromagneticFields: A₁, A₂, A₃
-import ..AnalyticCartesianField: X, Y, Z
-
-export SymmetricQuadraticEquilibrium
-
-const DEFAULT_B₀ = 1.0
-
 struct SymmetricQuadraticEquilibrium{T <: Number} <: CartesianEquilibrium
     name::String
     B₀::T
-    SymmetricQuadraticEquilibrium{T}(B₀::T) where {T <: Number} = new("Symmetric Quadratic Magnetic Field", B₀)
+    function SymmetricQuadraticEquilibrium{T}(B₀::T) where {T <: Number}
+        new("Symmetric Quadratic Magnetic Field", B₀)
+    end
 end
 
-SymmetricQuadraticEquilibrium(B₀::T = DEFAULT_B₀) where {T <:
-                                                         Number} = SymmetricQuadraticEquilibrium{T}(B₀)
-
-function init(B₀ = DEFAULT_B₀)
-    SymmetricQuadraticEquilibrium(B₀)
-end
-
-macro code(args...)
-    parameters, options = code_arguments(args)
-    code(init(parameters...); escape = true, options...)
+function SymmetricQuadraticEquilibrium(
+        B₀::T = DEFAULT_SYMMETRIC_QUADRATIC_B₀) where {T <: Number}
+    SymmetricQuadraticEquilibrium{T}(B₀)
 end
 
 function Base.show(io::IO, equ::SymmetricQuadraticEquilibrium)
@@ -54,22 +41,16 @@ R(x::AbstractVector, equ::SymmetricQuadraticEquilibrium) = r(x, equ)
 θ(x::AbstractVector, equ::SymmetricQuadraticEquilibrium) = atan(Y(x, equ), X(x, equ))
 ϕ(x::AbstractVector, equ::SymmetricQuadraticEquilibrium) = θ(x, equ)
 
-ElectromagneticFields.A₁(x::AbstractVector, equ::SymmetricQuadraticEquilibrium) = - equ.B₀ *
-                                                                                  x[2] *
-                                                                                  (2 +
-                                                                                   x[1]^2 +
-                                                                                   x[2]^2) /
-                                                                                  4
-ElectromagneticFields.A₂(x::AbstractVector, equ::SymmetricQuadraticEquilibrium) = + equ.B₀ *
-                                                                                  x[1] *
-                                                                                  (2 +
-                                                                                   x[1]^2 +
-                                                                                   x[2]^2) /
-                                                                                  4
-ElectromagneticFields.A₃(x::AbstractVector, equ::SymmetricQuadraticEquilibrium) = zero(eltype(x))
+function A₁(x::AbstractVector, equ::SymmetricQuadraticEquilibrium)
+    -equ.B₀ * x[2] * (2 + x[1]^2 + x[2]^2) / 4
+end
+function A₂(x::AbstractVector, equ::SymmetricQuadraticEquilibrium)
+    +equ.B₀ * x[1] * (2 + x[1]^2 + x[2]^2) / 4
+end
+A₃(x::AbstractVector, equ::SymmetricQuadraticEquilibrium) = zero(eltype(x))
+
 B(x::AbstractVector, equ::SymmetricQuadraticEquilibrium) = equ.B₀ * (1 + x[1]^2 + x[2]^2)
 
-ElectromagneticFields.get_functions(::SymmetricQuadraticEquilibrium) = (
-    X = X, Y = Y, Z = Z, R = R, r = r, θ = θ, ϕ = ϕ, r² = r²)
-
+function get_functions(::SymmetricQuadraticEquilibrium)
+    (X = X, Y = Y, Z = Z, R = R, r = r, θ = θ, ϕ = ϕ, r² = r²)
 end

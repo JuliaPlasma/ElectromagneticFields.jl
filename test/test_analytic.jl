@@ -1,882 +1,465 @@
 
-# some convenience functions
-function structname(equ)
-    if occursin('.', equ)
-        return equ[(findlast(isequal('.'), equ) + 1):end]
-    else
-        return equ
-    end
-end
+using ElectromagneticFields
+using LinearAlgebra
+using StaticArrays
+using Test
 
-teststring(equ) = structname(string(equ))
-teststring(equ, pert) = structname(string(equ)) * " + " * structname(string(pert))
+using ElectromagneticFields: FIELD_FUNCTION_NAMES
 
 # testing parameters
 const t = 1.0
 const ξ = [1.05, 0.5, 0.5]
 
-macro test_equilibrium(equilibrium_module, equilibrium_rangemin, equilibrium_rangemax)
-    module_name = string(equilibrium_module)
-    module_test = Symbol(module_name * "Test")
-
-    quote
-        @eval module $module_test
-        using Test
-        using LinearAlgebra
-
-        # import analytic field module
-        import ElectromagneticFields
-        import ElectromagneticFields.$equilibrium_module
-
-        # inject code
-        $equilibrium_module.@code
-
-        # The equilibrium object itself, so that the generated `orientation()` can be checked
-        # against the trait it is generated from.
-        const equ = $equilibrium_module.init()
-
-        """
-        `A` in cartesian components, as a function of a cartesian point.
-
-        `A₁, A₂, A₃` are the covariant components in the chart's own coordinates; `DF̄[j,i] =
-        ∂ξⱼ/∂xᵢ` pulls them back onto the cartesian frame, which is orthonormal, so the result is
-        both the covariant and the contravariant cartesian representation.
-        """
-        function A_cartesian(t, x)
-            η = from_cartesian(t, x)
-            Aη = [A₁(t, η...), A₂(t, η...), A₃(t, η...)]
-            D = DF̄(t, η)
-            [D[1, i] * Aη[1] + D[2, i] * Aη[2] + D[3, i] * Aη[3] for i in 1:3]
-        end
-
-        """
-        `B = ∇ × A`, checked in cartesian coordinates.
-
-        This is the one statement about the magnetic field that does not depend on the chart, so it
-        is the check that catches an orientation error: a left-handed chart whose Hodge star is
-        handed `|det DF|` instead of `det DF` produces a `B` that is exactly antiparallel to the
-        curl of its own vector potential, and nothing else in this file notices.
-        """
-        function test_curl(t, ξ; h = 1E-5)
-            x = to_cartesian(t, ξ)
-            ê(i) = [k == i ? one(eltype(x)) : zero(eltype(x)) for k in 1:3]
-            ∂(i, j) = (A_cartesian(t, x .+ h .* ê(i))[j] -
-                       A_cartesian(t, x .- h .* ê(i))[j]) / (2h)
-
-            curlA = [∂(2, 3) - ∂(3, 2), ∂(3, 1) - ∂(1, 3), ∂(1, 2) - ∂(2, 1)]
-            Bcar = [B₍₁₎(t, ξ...), B₍₂₎(t, ξ...), B₍₃₎(t, ξ...)]
-
-            # central differences on an O(1) field carry an O(h²) truncation error; the tolerance is
-            # scaled by |B| so that it means the same thing for the Dipole as for the ThetaPinch
-            @test norm(curlA - Bcar) ≤ 1E-6 * max(norm(Bcar), 1)
-        end
-
-        function test_equilibrium(t, ξ)
-            @test ξ¹(t, ξ...) == ξ¹(t, ξ)
-            @test ξ²(t, ξ...) == ξ²(t, ξ)
-            @test ξ³(t, ξ...) == ξ³(t, ξ)
-
-            @test x¹(t, ξ...) == x¹(t, ξ)
-            @test x²(t, ξ...) == x²(t, ξ)
-            @test x³(t, ξ...) == x³(t, ξ)
-
-            @test g₁₁(t, ξ...) == g₁₁(t, ξ)
-            @test g₁₂(t, ξ...) == g₁₂(t, ξ)
-            @test g₁₃(t, ξ...) == g₁₃(t, ξ)
-            @test g₂₁(t, ξ...) == g₂₁(t, ξ)
-            @test g₂₂(t, ξ...) == g₂₂(t, ξ)
-            @test g₂₃(t, ξ...) == g₂₃(t, ξ)
-            @test g₃₁(t, ξ...) == g₃₁(t, ξ)
-            @test g₃₂(t, ξ...) == g₃₂(t, ξ)
-            @test g₃₃(t, ξ...) == g₃₃(t, ξ)
-
-            @test g¹¹(t, ξ...) == g¹¹(t, ξ)
-            @test g¹²(t, ξ...) == g¹²(t, ξ)
-            @test g¹³(t, ξ...) == g¹³(t, ξ)
-            @test g²¹(t, ξ...) == g²¹(t, ξ)
-            @test g²²(t, ξ...) == g²²(t, ξ)
-            @test g²³(t, ξ...) == g²³(t, ξ)
-            @test g³¹(t, ξ...) == g³¹(t, ξ)
-            @test g³²(t, ξ...) == g³²(t, ξ)
-            @test g³³(t, ξ...) == g³³(t, ξ)
-
-            @test DF₁₁(t, ξ...) == DF₁₁(t, ξ)
-            @test DF₁₂(t, ξ...) == DF₁₂(t, ξ)
-            @test DF₁₃(t, ξ...) == DF₁₃(t, ξ)
-            @test DF₂₁(t, ξ...) == DF₂₁(t, ξ)
-            @test DF₂₂(t, ξ...) == DF₂₂(t, ξ)
-            @test DF₂₃(t, ξ...) == DF₂₃(t, ξ)
-            @test DF₃₁(t, ξ...) == DF₃₁(t, ξ)
-            @test DF₃₂(t, ξ...) == DF₃₂(t, ξ)
-            @test DF₃₃(t, ξ...) == DF₃₃(t, ξ)
-
-            @test DF̄₁₁(t, ξ...) == DF̄₁₁(t, ξ)
-            @test DF̄₁₂(t, ξ...) == DF̄₁₂(t, ξ)
-            @test DF̄₁₃(t, ξ...) == DF̄₁₃(t, ξ)
-            @test DF̄₂₁(t, ξ...) == DF̄₂₁(t, ξ)
-            @test DF̄₂₂(t, ξ...) == DF̄₂₂(t, ξ)
-            @test DF̄₂₃(t, ξ...) == DF̄₂₃(t, ξ)
-            @test DF̄₃₁(t, ξ...) == DF̄₃₁(t, ξ)
-            @test DF̄₃₂(t, ξ...) == DF̄₃₂(t, ξ)
-            @test DF̄₃₃(t, ξ...) == DF̄₃₃(t, ξ)
-
-            @test dg₁₁dx₁(t, ξ...) == dg₁₁dx₁(t, ξ)
-            @test dg₁₂dx₁(t, ξ...) == dg₁₂dx₁(t, ξ)
-            @test dg₁₃dx₁(t, ξ...) == dg₁₃dx₁(t, ξ)
-            @test dg₂₁dx₁(t, ξ...) == dg₂₁dx₁(t, ξ)
-            @test dg₂₂dx₁(t, ξ...) == dg₂₂dx₁(t, ξ)
-            @test dg₂₃dx₁(t, ξ...) == dg₂₃dx₁(t, ξ)
-            @test dg₃₁dx₁(t, ξ...) == dg₃₁dx₁(t, ξ)
-            @test dg₃₂dx₁(t, ξ...) == dg₃₂dx₁(t, ξ)
-            @test dg₃₃dx₁(t, ξ...) == dg₃₃dx₁(t, ξ)
-
-            @test dg₁₁dx₂(t, ξ...) == dg₁₁dx₂(t, ξ)
-            @test dg₁₂dx₂(t, ξ...) == dg₁₂dx₂(t, ξ)
-            @test dg₁₃dx₂(t, ξ...) == dg₁₃dx₂(t, ξ)
-            @test dg₂₁dx₂(t, ξ...) == dg₂₁dx₂(t, ξ)
-            @test dg₂₂dx₂(t, ξ...) == dg₂₂dx₂(t, ξ)
-            @test dg₂₃dx₂(t, ξ...) == dg₂₃dx₂(t, ξ)
-            @test dg₃₁dx₂(t, ξ...) == dg₃₁dx₂(t, ξ)
-            @test dg₃₂dx₂(t, ξ...) == dg₃₂dx₂(t, ξ)
-            @test dg₃₃dx₂(t, ξ...) == dg₃₃dx₂(t, ξ)
-
-            @test dg₁₁dx₃(t, ξ...) == dg₁₁dx₃(t, ξ)
-            @test dg₁₂dx₃(t, ξ...) == dg₁₂dx₃(t, ξ)
-            @test dg₁₃dx₃(t, ξ...) == dg₁₃dx₃(t, ξ)
-            @test dg₂₁dx₃(t, ξ...) == dg₂₁dx₃(t, ξ)
-            @test dg₂₂dx₃(t, ξ...) == dg₂₂dx₃(t, ξ)
-            @test dg₂₃dx₃(t, ξ...) == dg₂₃dx₃(t, ξ)
-            @test dg₃₁dx₃(t, ξ...) == dg₃₁dx₃(t, ξ)
-            @test dg₃₂dx₃(t, ξ...) == dg₃₂dx₃(t, ξ)
-            @test dg₃₃dx₃(t, ξ...) == dg₃₃dx₃(t, ξ)
-
-            @test dg¹¹dx₁(t, ξ...) == dg¹¹dx₁(t, ξ)
-            @test dg¹²dx₁(t, ξ...) == dg¹²dx₁(t, ξ)
-            @test dg¹³dx₁(t, ξ...) == dg¹³dx₁(t, ξ)
-            @test dg²¹dx₁(t, ξ...) == dg²¹dx₁(t, ξ)
-            @test dg²²dx₁(t, ξ...) == dg²²dx₁(t, ξ)
-            @test dg²³dx₁(t, ξ...) == dg²³dx₁(t, ξ)
-            @test dg³¹dx₁(t, ξ...) == dg³¹dx₁(t, ξ)
-            @test dg³²dx₁(t, ξ...) == dg³²dx₁(t, ξ)
-            @test dg³³dx₁(t, ξ...) == dg³³dx₁(t, ξ)
-
-            @test dg¹¹dx₂(t, ξ...) == dg¹¹dx₂(t, ξ)
-            @test dg¹²dx₂(t, ξ...) == dg¹²dx₂(t, ξ)
-            @test dg¹³dx₂(t, ξ...) == dg¹³dx₂(t, ξ)
-            @test dg²¹dx₂(t, ξ...) == dg²¹dx₂(t, ξ)
-            @test dg²²dx₂(t, ξ...) == dg²²dx₂(t, ξ)
-            @test dg²³dx₂(t, ξ...) == dg²³dx₂(t, ξ)
-            @test dg³¹dx₂(t, ξ...) == dg³¹dx₂(t, ξ)
-            @test dg³²dx₂(t, ξ...) == dg³²dx₂(t, ξ)
-            @test dg³³dx₂(t, ξ...) == dg³³dx₂(t, ξ)
-
-            @test dg¹¹dx₃(t, ξ...) == dg¹¹dx₃(t, ξ)
-            @test dg¹²dx₃(t, ξ...) == dg¹²dx₃(t, ξ)
-            @test dg¹³dx₃(t, ξ...) == dg¹³dx₃(t, ξ)
-            @test dg²¹dx₃(t, ξ...) == dg²¹dx₃(t, ξ)
-            @test dg²²dx₃(t, ξ...) == dg²²dx₃(t, ξ)
-            @test dg²³dx₃(t, ξ...) == dg²³dx₃(t, ξ)
-            @test dg³¹dx₃(t, ξ...) == dg³¹dx₃(t, ξ)
-            @test dg³²dx₃(t, ξ...) == dg³²dx₃(t, ξ)
-            @test dg³³dx₃(t, ξ...) == dg³³dx₃(t, ξ)
-
-            @test X(t, ξ...) == X(t, ξ)
-            @test Y(t, ξ...) == Y(t, ξ)
-            @test Z(t, ξ...) == Z(t, ξ)
-
-            @test J(t, ξ...) == J(t, ξ)
-            @test B(t, ξ...) == B(t, ξ)
-            @test φ(t, ξ...) == φ(t, ξ)
-
-            @test A₁(t, ξ...) == A₁(t, ξ)
-            @test A₂(t, ξ...) == A₂(t, ξ)
-            @test A₃(t, ξ...) == A₃(t, ξ)
-
-            @test B₁(t, ξ...) == B₁(t, ξ)
-            @test B₂(t, ξ...) == B₂(t, ξ)
-            @test B₃(t, ξ...) == B₃(t, ξ)
-
-            @test a₁(t, ξ...) == a₁(t, ξ)
-            @test a₂(t, ξ...) == a₂(t, ξ)
-            @test a₃(t, ξ...) == a₃(t, ξ)
-
-            @test b₁(t, ξ...) == b₁(t, ξ)
-            @test b₂(t, ξ...) == b₂(t, ξ)
-            @test b₃(t, ξ...) == b₃(t, ξ)
-
-            @test c₁(t, ξ...) == c₁(t, ξ)
-            @test c₂(t, ξ...) == c₂(t, ξ)
-            @test c₃(t, ξ...) == c₃(t, ξ)
-
-            @test E₁(t, ξ...) == E₁(t, ξ)
-            @test E₂(t, ξ...) == E₂(t, ξ)
-            @test E₃(t, ξ...) == E₃(t, ξ)
-
-            @test A¹(t, ξ...) == A¹(t, ξ)
-            @test A²(t, ξ...) == A²(t, ξ)
-            @test A³(t, ξ...) == A³(t, ξ)
-
-            @test B¹(t, ξ...) == B¹(t, ξ)
-            @test B²(t, ξ...) == B²(t, ξ)
-            @test B³(t, ξ...) == B³(t, ξ)
-
-            @test a¹(t, ξ...) == a¹(t, ξ)
-            @test a²(t, ξ...) == a²(t, ξ)
-            @test a³(t, ξ...) == a³(t, ξ)
-
-            @test b¹(t, ξ...) == b¹(t, ξ)
-            @test b²(t, ξ...) == b²(t, ξ)
-            @test b³(t, ξ...) == b³(t, ξ)
-
-            @test c¹(t, ξ...) == c¹(t, ξ)
-            @test c²(t, ξ...) == c²(t, ξ)
-            @test c³(t, ξ...) == c³(t, ξ)
-
-            @test E¹(t, ξ...) == E¹(t, ξ)
-            @test E²(t, ξ...) == E²(t, ξ)
-            @test E³(t, ξ...) == E³(t, ξ)
-
-            @test B₍₁₎(t, ξ...) == B₍₁₎(t, ξ)
-            @test B₍₂₎(t, ξ...) == B₍₂₎(t, ξ)
-            @test B₍₃₎(t, ξ...) == B₍₃₎(t, ξ)
-
-            @test a₍₁₎(t, ξ...) == a₍₁₎(t, ξ)
-            @test a₍₂₎(t, ξ...) == a₍₂₎(t, ξ)
-            @test a₍₃₎(t, ξ...) == a₍₃₎(t, ξ)
-
-            @test b₍₁₎(t, ξ...) == b₍₁₎(t, ξ)
-            @test b₍₂₎(t, ξ...) == b₍₂₎(t, ξ)
-            @test b₍₃₎(t, ξ...) == b₍₃₎(t, ξ)
-
-            @test c₍₁₎(t, ξ...) == c₍₁₎(t, ξ)
-            @test c₍₂₎(t, ξ...) == c₍₂₎(t, ξ)
-            @test c₍₃₎(t, ξ...) == c₍₃₎(t, ξ)
-
-            @test dA₁dx₁(t, ξ...) == dA₁dx₁(t, ξ)
-            @test dA₁dx₂(t, ξ...) == dA₁dx₂(t, ξ)
-            @test dA₁dx₃(t, ξ...) == dA₁dx₃(t, ξ)
-
-            @test dA₂dx₁(t, ξ...) == dA₂dx₁(t, ξ)
-            @test dA₂dx₂(t, ξ...) == dA₂dx₂(t, ξ)
-            @test dA₂dx₃(t, ξ...) == dA₂dx₃(t, ξ)
-
-            @test dA₃dx₁(t, ξ...) == dA₃dx₁(t, ξ)
-            @test dA₃dx₂(t, ξ...) == dA₃dx₂(t, ξ)
-            @test dA₃dx₃(t, ξ...) == dA₃dx₃(t, ξ)
-
-            @test dB₁dx₁(t, ξ...) == dB₁dx₁(t, ξ)
-            @test dB₁dx₂(t, ξ...) == dB₁dx₂(t, ξ)
-            @test dB₁dx₃(t, ξ...) == dB₁dx₃(t, ξ)
-
-            @test dB₂dx₁(t, ξ...) == dB₂dx₁(t, ξ)
-            @test dB₂dx₂(t, ξ...) == dB₂dx₂(t, ξ)
-            @test dB₂dx₃(t, ξ...) == dB₂dx₃(t, ξ)
-
-            @test dB₃dx₁(t, ξ...) == dB₃dx₁(t, ξ)
-            @test dB₃dx₂(t, ξ...) == dB₃dx₂(t, ξ)
-            @test dB₃dx₃(t, ξ...) == dB₃dx₃(t, ξ)
-
-            @test db₁dx₁(t, ξ...) == db₁dx₁(t, ξ)
-            @test db₁dx₂(t, ξ...) == db₁dx₂(t, ξ)
-            @test db₁dx₃(t, ξ...) == db₁dx₃(t, ξ)
-
-            @test db₂dx₁(t, ξ...) == db₂dx₁(t, ξ)
-            @test db₂dx₂(t, ξ...) == db₂dx₂(t, ξ)
-            @test db₂dx₃(t, ξ...) == db₂dx₃(t, ξ)
-
-            @test db₃dx₁(t, ξ...) == db₃dx₁(t, ξ)
-            @test db₃dx₂(t, ξ...) == db₃dx₂(t, ξ)
-            @test db₃dx₃(t, ξ...) == db₃dx₃(t, ξ)
-
-            @test dBdx₁(t, ξ...) == dBdx₁(t, ξ)
-            @test dBdx₂(t, ξ...) == dBdx₂(t, ξ)
-            @test dBdx₃(t, ξ...) == dBdx₃(t, ξ)
-
-            @test d²A₁dx₁dx₁(t, ξ...) == d²A₁dx₁dx₁(t, ξ)
-            @test d²A₁dx₁dx₂(t, ξ...) == d²A₁dx₁dx₂(t, ξ)
-            @test d²A₁dx₁dx₃(t, ξ...) == d²A₁dx₁dx₃(t, ξ)
-
-            @test d²A₁dx₂dx₁(t, ξ...) == d²A₁dx₂dx₁(t, ξ)
-            @test d²A₁dx₂dx₂(t, ξ...) == d²A₁dx₂dx₂(t, ξ)
-            @test d²A₁dx₂dx₃(t, ξ...) == d²A₁dx₂dx₃(t, ξ)
-
-            @test d²A₁dx₃dx₁(t, ξ...) == d²A₁dx₃dx₁(t, ξ)
-            @test d²A₁dx₃dx₂(t, ξ...) == d²A₁dx₃dx₂(t, ξ)
-            @test d²A₁dx₃dx₃(t, ξ...) == d²A₁dx₃dx₃(t, ξ)
-
-            @test d²A₂dx₁dx₁(t, ξ...) == d²A₂dx₁dx₁(t, ξ)
-            @test d²A₂dx₁dx₂(t, ξ...) == d²A₂dx₁dx₂(t, ξ)
-            @test d²A₂dx₁dx₃(t, ξ...) == d²A₂dx₁dx₃(t, ξ)
-
-            @test d²A₂dx₂dx₁(t, ξ...) == d²A₂dx₂dx₁(t, ξ)
-            @test d²A₂dx₂dx₂(t, ξ...) == d²A₂dx₂dx₂(t, ξ)
-            @test d²A₂dx₂dx₃(t, ξ...) == d²A₂dx₂dx₃(t, ξ)
-
-            @test d²A₂dx₃dx₁(t, ξ...) == d²A₂dx₃dx₁(t, ξ)
-            @test d²A₂dx₃dx₂(t, ξ...) == d²A₂dx₃dx₂(t, ξ)
-            @test d²A₂dx₃dx₃(t, ξ...) == d²A₂dx₃dx₃(t, ξ)
-
-            @test d²A₃dx₁dx₁(t, ξ...) == d²A₃dx₁dx₁(t, ξ)
-            @test d²A₃dx₁dx₂(t, ξ...) == d²A₃dx₁dx₂(t, ξ)
-            @test d²A₃dx₁dx₃(t, ξ...) == d²A₃dx₁dx₃(t, ξ)
-
-            @test d²A₃dx₂dx₁(t, ξ...) == d²A₃dx₂dx₁(t, ξ)
-            @test d²A₃dx₂dx₂(t, ξ...) == d²A₃dx₂dx₂(t, ξ)
-            @test d²A₃dx₂dx₃(t, ξ...) == d²A₃dx₂dx₃(t, ξ)
-
-            @test d²A₃dx₃dx₁(t, ξ...) == d²A₃dx₃dx₁(t, ξ)
-            @test d²A₃dx₃dx₂(t, ξ...) == d²A₃dx₃dx₂(t, ξ)
-            @test d²A₃dx₃dx₃(t, ξ...) == d²A₃dx₃dx₃(t, ξ)
-
-            @test d²b₁dx₁dx₁(t, ξ...) == d²b₁dx₁dx₁(t, ξ)
-            @test d²b₁dx₁dx₂(t, ξ...) == d²b₁dx₁dx₂(t, ξ)
-            @test d²b₁dx₁dx₃(t, ξ...) == d²b₁dx₁dx₃(t, ξ)
-
-            @test d²b₁dx₂dx₁(t, ξ...) == d²b₁dx₂dx₁(t, ξ)
-            @test d²b₁dx₂dx₂(t, ξ...) == d²b₁dx₂dx₂(t, ξ)
-            @test d²b₁dx₂dx₃(t, ξ...) == d²b₁dx₂dx₃(t, ξ)
-
-            @test d²b₁dx₃dx₁(t, ξ...) == d²b₁dx₃dx₁(t, ξ)
-            @test d²b₁dx₃dx₂(t, ξ...) == d²b₁dx₃dx₂(t, ξ)
-            @test d²b₁dx₃dx₃(t, ξ...) == d²b₁dx₃dx₃(t, ξ)
-
-            @test d²b₂dx₁dx₁(t, ξ...) == d²b₂dx₁dx₁(t, ξ)
-            @test d²b₂dx₁dx₂(t, ξ...) == d²b₂dx₁dx₂(t, ξ)
-            @test d²b₂dx₁dx₃(t, ξ...) == d²b₂dx₁dx₃(t, ξ)
-
-            @test d²b₂dx₂dx₁(t, ξ...) == d²b₂dx₂dx₁(t, ξ)
-            @test d²b₂dx₂dx₂(t, ξ...) == d²b₂dx₂dx₂(t, ξ)
-            @test d²b₂dx₂dx₃(t, ξ...) == d²b₂dx₂dx₃(t, ξ)
-
-            @test d²b₂dx₃dx₁(t, ξ...) == d²b₂dx₃dx₁(t, ξ)
-            @test d²b₂dx₃dx₂(t, ξ...) == d²b₂dx₃dx₂(t, ξ)
-            @test d²b₂dx₃dx₃(t, ξ...) == d²b₂dx₃dx₃(t, ξ)
-
-            @test d²b₃dx₁dx₁(t, ξ...) == d²b₃dx₁dx₁(t, ξ)
-            @test d²b₃dx₁dx₂(t, ξ...) == d²b₃dx₁dx₂(t, ξ)
-            @test d²b₃dx₁dx₃(t, ξ...) == d²b₃dx₁dx₃(t, ξ)
-
-            @test d²b₃dx₂dx₁(t, ξ...) == d²b₃dx₂dx₁(t, ξ)
-            @test d²b₃dx₂dx₂(t, ξ...) == d²b₃dx₂dx₂(t, ξ)
-            @test d²b₃dx₂dx₃(t, ξ...) == d²b₃dx₂dx₃(t, ξ)
-
-            @test d²b₃dx₃dx₁(t, ξ...) == d²b₃dx₃dx₁(t, ξ)
-            @test d²b₃dx₃dx₂(t, ξ...) == d²b₃dx₃dx₂(t, ξ)
-            @test d²b₃dx₃dx₃(t, ξ...) == d²b₃dx₃dx₃(t, ξ)
-
-            @test d²Bdx₁dx₁(t, ξ...) == d²Bdx₁dx₁(t, ξ)
-            @test d²Bdx₁dx₂(t, ξ...) == d²Bdx₁dx₂(t, ξ)
-            @test d²Bdx₁dx₃(t, ξ...) == d²Bdx₁dx₃(t, ξ)
-
-            @test d²Bdx₂dx₁(t, ξ...) == d²Bdx₂dx₁(t, ξ)
-            @test d²Bdx₂dx₂(t, ξ...) == d²Bdx₂dx₂(t, ξ)
-            @test d²Bdx₂dx₃(t, ξ...) == d²Bdx₂dx₃(t, ξ)
-
-            @test d²Bdx₃dx₁(t, ξ...) == d²Bdx₃dx₁(t, ξ)
-            @test d²Bdx₃dx₂(t, ξ...) == d²Bdx₃dx₂(t, ξ)
-            @test d²Bdx₃dx₃(t, ξ...) == d²Bdx₃dx₃(t, ξ)
-
-            @test rangemin(t, ξ...) == $equilibrium_rangemin
-            @test rangemin(t, ξ) == $equilibrium_rangemin
-            @test rangemin(ξ...) == $equilibrium_rangemin
-            @test rangemin(ξ) == $equilibrium_rangemin
-
-            @test rangemax(t, ξ...) == $equilibrium_rangemax
-            @test rangemax(t, ξ) == $equilibrium_rangemax
-            @test rangemax(ξ...) == $equilibrium_rangemax
-            @test rangemax(ξ) == $equilibrium_rangemax
-
-            # check internal consistency
-            @test from_cartesian(t, to_cartesian(t, ξ)) ≈ ξ atol = 1E-14
-
-            # Every component carries the type of the coordinates, whether or not its body mentions
-            # them. A structurally constant entry such as `g₁₁ = 1` must not come out as the `Int`
-            # literal SymEngine emits for it, which would make the type of a component depend on
-            # which entry it is.
-            @test typeof(g₁₁(t, ξ)) === typeof(g₃₃(t, ξ)) === typeof(ξ[1])
-            @test typeof(DF₁₂(t, ξ)) === typeof(DF₁₁(t, ξ)) === typeof(ξ[1])
-            @test typeof(φ(t, ξ)) === typeof(B(t, ξ)) === typeof(ξ[1])
-
-            # A scalar component allocates nothing, and a matrix wrapper only the 3×3 matrix it
-            # returns, 144 bytes. Components of mixed type would make `hvcat` promote at runtime and
-            # cost several times that, which is what the bound catches; it is generous rather than
-            # exact so that it does not pin the size of an array header.
-            let bound = 400
-                B(t, ξ), J(t, ξ), g(t, ξ), DF(t, ξ)     # warm up
-                @test @allocated(B(t, ξ)) == 0
-                @test @allocated(J(t, ξ)) == 0
-                @test @allocated(g(t, ξ)) ≤ bound
-                @test @allocated(DF(t, ξ)) ≤ bound
-            end
-
-            let g = g(t, ξ), ḡ = ḡ(t, ξ), DF = DF(t, ξ), DF̄ = DF̄(t, ξ), a = a(t, ξ),
-                b = b(t, ξ), c = c(t, ξ), a⃗ = a⃗(t, ξ), b⃗ = b⃗(t, ξ), c⃗ = c⃗(t, ξ),
-                â = aₚ(t, ξ), b̂ = bₚ(t, ξ), ĉ = cₚ(t, ξ)
-
-                @test J(t, ξ) ≈ sqrt(det(DF' * DF)) atol = 1E-12
-
-                # `J` is the unsigned volume element |det DF|, asserted just above. `orientation`
-                # carries the sign that `J` throws away, and the two together must reproduce the
-                # signed determinant — otherwise the Hodge star and the cross product, which are
-                # handed `orientation(equ) * J`, are working in the wrong-handed frame.
-                @test det(DF) ≈ orientation() * J(t, ξ) atol = 1E-12
-                @test orientation() ∈ (-1, +1)
-                # the generated function must agree with the trait it was generated from
-                @test orientation() == ElectromagneticFields.orientation(equ)
-                @test ḡ ≈ inv(g) atol = 1E-12
-                @test DF̄ ≈ inv(DF) atol = 1E-12
-                @test DF' * DF ≈ g atol = 1E-12
-                @test DF * DF̄ ≈ Array(I, 3, 3) atol = 1E-12
-                @test DF̄ * DF̄' ≈ ḡ atol = 1E-12
-
-                if $equilibrium_module != ElectromagneticFields.Singular
-                    @test g * a⃗ ≈ a atol = 1E-14
-                    @test g * b⃗ ≈ b atol = 1E-14
-                    @test g * c⃗ ≈ c atol = 1E-14
-
-                    @test ḡ * a ≈ a⃗ atol = 1E-14
-                    @test ḡ * b ≈ b⃗ atol = 1E-14
-                    @test ḡ * c ≈ c⃗ atol = 1E-14
-
-                    @test â ≈ DF * a⃗ atol = 1E-14
-                    @test b̂ ≈ DF * b⃗ atol = 1E-14
-                    @test ĉ ≈ DF * c⃗ atol = 1E-14
-
-                    @test â ≈ DF̄' * a atol = 1E-14
-                    @test b̂ ≈ DF̄' * b atol = 1E-14
-                    @test ĉ ≈ DF̄' * c atol = 1E-14
-
-                    @test a⃗' * a ≈ 1 atol = 1E-14
-                    @test b⃗' * b ≈ 1 atol = 1E-14
-                    @test c⃗' * c ≈ 1 atol = 1E-14
-
-                    @test â' * â ≈ 1 atol = 1E-14
-                    @test b̂' * b̂ ≈ 1 atol = 1E-14
-                    @test ĉ' * ĉ ≈ 1 atol = 1E-14
-
-                    @test â' * b̂ ≈ 0 atol = 1E-14
-                    @test b̂' * ĉ ≈ 0 atol = 1E-14
-                    @test ĉ' * â ≈ 0 atol = 1E-14
-
-                    @test a' * ḡ * a ≈ 1 atol = 1E-14
-                    @test b' * ḡ * b ≈ 1 atol = 1E-14
-                    @test c' * ḡ * c ≈ 1 atol = 1E-14
-
-                    @test a' * ḡ * b ≈ 0 atol = 1E-14
-                    @test b' * ḡ * c ≈ 0 atol = 1E-14
-                    @test c' * ḡ * a ≈ 0 atol = 1E-14
-
-                    @test a⃗' * g * a⃗ ≈ 1 atol = 1E-14
-                    @test b⃗' * g * b⃗ ≈ 1 atol = 1E-14
-                    @test c⃗' * g * c⃗ ≈ 1 atol = 1E-14
-
-                    @test a⃗' * g * b⃗ ≈ 0 atol = 1E-14
-                    @test b⃗' * g * c⃗ ≈ 0 atol = 1E-14
-                    @test c⃗' * g * a⃗ ≈ 0 atol = 1E-14
-                end
-            end
-        end
-        end
-
-        # run tests
-        @testset "$(rpad($module_name,60))" begin
-            import .$module_test
-            $module_test.test_equilibrium(t, ξ)
-            $module_test.test_curl(t, ξ)
-        end
+generics() = (getfield(ElectromagneticFields, name) for name in FIELD_FUNCTION_NAMES)
+
+"""
+Allocations of one call to `f`, measured behind a function barrier.
+
+`f` arrives untyped from `generics()`, so the call is dynamically dispatched and `@allocated`
+applied to it directly charges for boxing the result rather than for the work — the barrier
+`docs/src/interface.md` prescribes for users is needed here for the same reason.
+"""
+@noinline function allocations(f, field, t, ξ)
+    f(field, t, ξ)      # warm up
+    @allocated(f(field, t, ξ))
+end
+
+"""
+Every generic accepts a coordinate vector and three scalars and gives the same answer; every one
+returns the coordinates' float type; and none of them allocates.
+
+The type check is what the conversion in `FieldFunction` exists for. A structurally constant body
+such as `g♭` of a cartesian chart is emitted with `Int` literals, and left alone it would make the
+type of a quantity depend on which equilibrium it came from.
+
+The allocation check is what forces the coordinates through an `SVector`: `build_function` builds
+its output container `similarto` its argument, so a plain `Vector` would return heap arrays and
+allocate up to 6 KiB for a rank-three tensor.
+"""
+function test_interface(field, t, ξ)
+    for f in generics()
+        @test f(field, t, ξ...) == f(field, t, ξ)
+
+        v = f(field, t, ξ)
+        @test (v isa Number ? typeof(v) : eltype(v)) === eltype(ξ)
+
+        @test allocations(f, field, t, ξ) == 0
+    end
+
+    # the domain bounds take no time
+    @test rangemin(field, ξ) == rangemin(field, t, ξ)
+    @test rangemax(field, ξ) == rangemax(field, t, ξ)
+    @test rangemin(field, ξ...) == rangemin(field, t, ξ)
+    @test rangemax(field, ξ...) == rangemax(field, t, ξ)
+end
+
+"The chart: the metric, the Jacobian, the volume element and the sign it throws away."
+function test_chart(field, equ, t, ξ)
+    @test from_cartesian(field, t, to_cartesian(field, t, ξ)) ≈ ξ atol = 1E-14
+
+    G = g♭(field, t, ξ)
+    Ḡ = g♯(field, t, ξ)
+    F = DF(field, t, ξ)
+    F̄ = DF̄(field, t, ξ)
+
+    @test J(field, t, ξ) ≈ sqrt(det(F' * F)) atol = 1E-12
+
+    # `J` is the unsigned volume element |det DF|, asserted just above. `orientation` carries the
+    # sign that `J` throws away, and the two together must reproduce the signed determinant —
+    # otherwise the Hodge star and the cross product, which are handed `orientation(equ) * J`, are
+    # working in the wrong-handed frame.
+    @test det(F) ≈ orientation(field) * J(field, t, ξ) atol = 1E-12
+    @test orientation(field) ∈ (-1, +1)
+    @test orientation(field) == ElectromagneticFields.orientation(equ)
+
+    @test Ḡ ≈ inv(G) atol = 1E-12
+    @test F̄ ≈ inv(F) atol = 1E-12
+    @test F' * F ≈ G atol = 1E-12
+    @test F * F̄ ≈ I atol = 1E-12
+    @test F̄ * F̄' ≈ Ḡ atol = 1E-12
+end
+
+"Raising and lowering indices, and the three representations of the same field."
+function test_representations(field, t, ξ)
+    G = g♭(field, t, ξ)
+    Ḡ = g♯(field, t, ξ)
+    F = DF(field, t, ξ)
+    F̄ = DF̄(field, t, ξ)
+
+    for (cov, con) in ((A♭, A♯), (B♭, B♯), (E♭, E♯))
+        @test con(field, t, ξ) ≈ Ḡ * cov(field, t, ξ) atol = 1E-12
+        @test cov(field, t, ξ) ≈ G * con(field, t, ξ) atol = 1E-12
+    end
+
+    @test B♮(field, t, ξ) ≈ F̄' * B♭(field, t, ξ) atol = 1E-12
+    @test B♮(field, t, ξ) ≈ F * B♯(field, t, ξ) atol = 1E-12
+
+    @test B(field, t, ξ) ≈ sqrt(dot(B♯(field, t, ξ), B♭(field, t, ξ))) atol = 1E-12
+    @test b♭(field, t, ξ) ≈ B♭(field, t, ξ) / B(field, t, ξ) atol = 1E-12
+    @test b♯(field, t, ξ) ≈ B♯(field, t, ξ) / B(field, t, ξ) atol = 1E-12
+    @test b♮(field, t, ξ) ≈ B♮(field, t, ξ) / B(field, t, ξ) atol = 1E-12
+
+    # the two-form is antisymmetric by construction
+    @test B♭♭(field, t, ξ) ≈ -transpose(B♭♭(field, t, ξ)) atol = 1E-14
+end
+
+"The perpendicular frame (a, b, c) is orthonormal in all three representations."
+function test_frame(field, t, ξ)
+    G = g♭(field, t, ξ)
+    Ḡ = g♯(field, t, ξ)
+    F = DF(field, t, ξ)
+    F̄ = DF̄(field, t, ξ)
+
+    for (cov, con, phys) in ((a♭, a♯, a♮), (b♭, b♯, b♮), (c♭, c♯, c♮))
+        u, v, w = cov(field, t, ξ), con(field, t, ξ), phys(field, t, ξ)
+
+        @test u ≈ G * v atol = 1E-14
+        @test v ≈ Ḡ * u atol = 1E-14
+        @test w ≈ F * v atol = 1E-14
+        @test w ≈ F̄' * u atol = 1E-14
+
+        @test dot(v, u) ≈ 1 atol = 1E-14
+        @test dot(w, w) ≈ 1 atol = 1E-14
+        @test u' * Ḡ * u ≈ 1 atol = 1E-14
+        @test v' * G * v ≈ 1 atol = 1E-14
+    end
+
+    for (p, q) in ((a♮, b♮), (b♮, c♮), (c♮, a♮))
+        @test dot(p(field, t, ξ), q(field, t, ξ)) ≈ 0 atol = 1E-14
+    end
+    for (p, q) in ((a♭, b♭), (b♭, c♭), (c♭, a♭))
+        @test p(field, t, ξ)' * Ḡ * q(field, t, ξ) ≈ 0 atol = 1E-14
+    end
+    for (p, q) in ((a♯, b♯), (b♯, c♯), (c♯, a♯))
+        @test p(field, t, ξ)' * G * q(field, t, ξ) ≈ 0 atol = 1E-14
     end
 end
 
-# perturbation list (equilibrium, parameters, perturbation, parameters, module)
-perts = (
-    (SymmetricQuadratic, EzCosZ, (2.0)),
-    (ThetaPinch, EzCosZ, (2.0))
-)
+"""
+`B` really is the curl of `A`: finite-difference ∇ × A in cartesian coordinates and compare with
+the physical components of the generated field. This is the check that catches an orientation
+error, which reverses `B` with no other visible symptom.
+"""
+function test_curl(field, t, ξ; h = 1E-5)
+    x = to_cartesian(field, t, ξ)
 
-# test equilibria
+    function A_cartesian(t, x)
+        η = from_cartesian(field, t, x)
+        F̄ = DF̄(field, t, η)
+        F̄' * A♭(field, t, η)
+    end
 
-@test_equilibrium ABC [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
-@test_equilibrium AxisymmetricTokamakCartesian [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
-@test_equilibrium AxisymmetricTokamakCylindrical [-Inf, -Inf, 0.0] [+Inf, +Inf, 2π]
-@test_equilibrium AxisymmetricTokamakToroidal [-Inf, 0.0, 0.0] [+Inf, 2π, 2π]
-@test_equilibrium AxisymmetricTokamakToroidalRegularization [-Inf, 0.0, 0.0] [+Inf, 2π, 2π]
-@test_equilibrium Dipole [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
-@test_equilibrium PenningTrapUniform [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
-@test_equilibrium PenningTrapBottle [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
-@test_equilibrium PenningTrapAsymmetric [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
-@test_equilibrium QuadraticPotentials [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
-@test_equilibrium Singular [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
-@test_equilibrium SymmetricQuadratic [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
-@test_equilibrium ThetaPinch [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
-@test_equilibrium SolovevFRC [-Inf, -Inf, 0.0] [+Inf, +Inf, 2π]
-@test_equilibrium SolovevITER [-Inf, -Inf, 0.0] [+Inf, +Inf, 2π]
-@test_equilibrium SolovevITERwXpoint [-Inf, -Inf, 0.0] [+Inf, +Inf, 2π]
-@test_equilibrium SolovevNSTX [-Inf, -Inf, 0.0] [+Inf, +Inf, 2π]
-@test_equilibrium SolovevNSTXwXpoint [-Inf, -Inf, 0.0] [+Inf, +Inf, 2π]
-@test_equilibrium SolovevNSTXwDoubleXpoint [-Inf, -Inf, 0.0] [+Inf, +Inf, 2π]
-@test_equilibrium SolovevSymmetric [-Inf, -Inf, -Inf] [+Inf, +Inf, +Inf]
-println()
+    ê(i) = SVector{3}(k == i ? one(eltype(x)) : zero(eltype(x)) for k in 1:3)
+    ∂(i, j) = (A_cartesian(t, x .+ h .* ê(i))[j] - A_cartesian(t, x .- h .* ê(i))[j]) / (2h)
 
-# test perturbations
-# @testset "$(rpad(teststring(equ[1], equ[3]),60))" for equ in perts begin
-#         equ_obj = equ[1].init(equ[2]..., perturbation=equ[3].init(equ[4]...))
-#         # test_equilibrium(equ[1], t, x)
-#     end
-# end
-# println()
+    curlA = [∂(2, 3) - ∂(3, 2), ∂(3, 1) - ∂(1, 3), ∂(1, 2) - ∂(2, 1)]
+    Bcar = B♮(field, t, ξ)
+
+    # central differences on an O(1) field carry an O(h²) truncation error; the tolerance is
+    # scaled by |B| so that it means the same thing for the Dipole as for the ThetaPinch
+    @test norm(curlA - Bcar) ≤ 1E-6 * max(norm(Bcar), 1)
+end
+
+# equilibrium, sample point, rangemin, rangemax, and whether the perpendicular frame is checked.
+# `Singular` diverges on the axis, so its frame is left out.
+const EQUILIBRIA = [
+    ("ABC", ABCEquilibrium(), ξ,
+        [-Inf, -Inf, -Inf], [+Inf, +Inf, +Inf], true),
+    ("AxisymmetricTokamakCartesian", AxisymmetricTokamakCartesianEquilibrium(), ξ,
+        [-Inf, -Inf, -Inf], [+Inf, +Inf, +Inf], true),
+    ("AxisymmetricTokamakCylindrical", AxisymmetricTokamakCylindricalEquilibrium(), ξ,
+        [-Inf, -Inf, 0.0], [+Inf, +Inf, 2π], true),
+    ("AxisymmetricTokamakToroidal", AxisymmetricTokamakToroidalEquilibrium(), ξ,
+        [-Inf, 0.0, 0.0], [+Inf, 2π, 2π], true),
+    ("AxisymmetricTokamakToroidalRegularization",
+        AxisymmetricTokamakToroidalRegularizationEquilibrium(), ξ,
+        [-Inf, 0.0, 0.0], [+Inf, 2π, 2π], true),
+    ("Dipole", DipoleField(), ξ,
+        [-Inf, -Inf, -Inf], [+Inf, +Inf, +Inf], true),
+    ("PenningTrapUniform", PenningTrapUniformEquilibrium(), ξ,
+        [-Inf, -Inf, -Inf], [+Inf, +Inf, +Inf], true),
+    ("PenningTrapBottle", PenningTrapBottleEquilibrium(), ξ,
+        [-Inf, -Inf, -Inf], [+Inf, +Inf, +Inf], true),
+    ("PenningTrapAsymmetric", PenningTrapAsymmetricEquilibrium(), ξ,
+        [-Inf, -Inf, -Inf], [+Inf, +Inf, +Inf], true),
+    ("QuadraticPotentials", QuadraticPotentialsField(), ξ,
+        [-Inf, -Inf, -Inf], [+Inf, +Inf, +Inf], true),
+    ("Singular", SingularEquilibrium(), ξ,
+        [-Inf, -Inf, -Inf], [+Inf, +Inf, +Inf], false),
+    ("SymmetricQuadratic", SymmetricQuadraticEquilibrium(), ξ,
+        [-Inf, -Inf, -Inf], [+Inf, +Inf, +Inf], true),
+    ("ThetaPinch", ThetaPinchEquilibrium(), ξ,
+        [-Inf, -Inf, -Inf], [+Inf, +Inf, +Inf], true),
+    ("SolovevFRC", SolovevEquilibriumFRC(), ξ,
+        [-Inf, -Inf, 0.0], [+Inf, +Inf, 2π], true),
+    ("SolovevITER", SolovevEquilibriumITER(), ξ,
+        [-Inf, -Inf, 0.0], [+Inf, +Inf, 2π], true),
+    ("SolovevITERwXpoint", SolovevXpointEquilibriumITER(), ξ,
+        [-Inf, -Inf, 0.0], [+Inf, +Inf, 2π], true),
+    ("SolovevNSTX", SolovevEquilibriumNSTX(), ξ,
+        [-Inf, -Inf, 0.0], [+Inf, +Inf, 2π], true),
+    ("SolovevNSTXwXpoint", SolovevXpointEquilibriumNSTX(), ξ,
+        [-Inf, -Inf, 0.0], [+Inf, +Inf, 2π], true),
+    ("SolovevNSTXwDoubleXpoint", SolovevDoubleXpointEquilibriumNSTX(), ξ,
+        [-Inf, -Inf, 0.0], [+Inf, +Inf, 2π], true),
+    ("SolovevSymmetric", SolovevSymmetricEquilibrium(), ξ,
+        [-Inf, -Inf, -Inf], [+Inf, +Inf, +Inf], true)
+]
+
+const FIELDS = Dict{String, Any}()
+
+for (name, equ, p, rmin, rmax, frame) in EQUILIBRIA
+    field = FieldFunctions(equ)
+    FIELDS[name] = field
+
+    @testset "$(rpad(name, 60))" begin
+        test_interface(field, t, p)
+        test_chart(field, equ, t, p)
+        test_representations(field, t, p)
+        frame && test_frame(field, t, p)
+        test_curl(field, t, p)
+
+        @test rangemin(field, t, p) == rmin
+        @test rangemax(field, t, p) == rmax
+    end
+end
 
 # test correctness of some of the magnetic fields
 
-function test_axisymmetric_tokamak_cartesian_equilibrium(equ_mod, t = 0.0, x = [
-        1.5, 0.0, 0.5])
-    @test equ_mod.B¹(t, x) ≈ equ_mod.B₁(t, x) atol = 1E-16
-    @test equ_mod.B²(t, x) ≈ equ_mod.B₂(t, x) atol = 1E-16
-    @test equ_mod.B³(t, x) ≈ equ_mod.B₃(t, x) atol = 1E-16
+function test_axisymmetric_tokamak_cartesian_equilibrium(
+        field, t = 0.0, x = [1.5, 0.0, 0.5])
+    par = parameters(field)
+    crd = coordinates(field)
 
-    @test equ_mod.B₁(t, x) ≈
-          -equ_mod.B₀ / equ_mod.q₀ *
-          (equ_mod.q₀ * equ_mod.R₀ * equ_mod.Y(t, x) + equ_mod.X(t, x) * equ_mod.Z(t, x)) /
-          equ_mod.R(t, x)^2 atol = 1E-16
-    @test equ_mod.B₂(t, x) ≈
-          +equ_mod.B₀ / equ_mod.q₀ *
-          (equ_mod.q₀ * equ_mod.R₀ * equ_mod.X(t, x) - equ_mod.Y(t, x) * equ_mod.Z(t, x)) /
-          equ_mod.R(t, x)^2 atol = 1E-16
-    @test equ_mod.B₃(t, x) ≈
-          +equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t, x) - equ_mod.R₀) / equ_mod.R(t, x) atol = 1E-16
+    @test B♯(field, t, x) ≈ B♭(field, t, x) atol = 1E-16
+
+    @test B♭(field, t, x)[1] ≈
+          -par.B₀ / par.q₀ * (par.q₀ * par.R₀ * crd.Y(t, x) + crd.X(t, x) * crd.Z(t, x)) /
+          crd.R(t, x)^2 atol = 1E-16
+    @test B♭(field, t, x)[2] ≈
+          +par.B₀ / par.q₀ * (par.q₀ * par.R₀ * crd.X(t, x) - crd.Y(t, x) * crd.Z(t, x)) /
+          crd.R(t, x)^2 atol = 1E-16
+    @test B♭(field, t, x)[3] ≈
+          +par.B₀ / par.q₀ * (crd.R(t, x) - par.R₀) / crd.R(t, x) atol = 1E-16
 end
 
-function test_axisymmetric_tokamak_cylindrical_equilibrium(equ_mod, t = 0.0, x = [
-        1.5, 0.5, π / 5])
-    @test equ_mod.B¹(t, x) == -equ_mod.B₀ / equ_mod.q₀ * equ_mod.Z(t, x) / equ_mod.R(t, x)
-    @test equ_mod.B²(t, x) ==
-          +equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t, x) - equ_mod.R₀) / equ_mod.R(t, x)
-    @test equ_mod.B³(t, x) == +equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t, x)^2
+function test_axisymmetric_tokamak_cylindrical_equilibrium(
+        field, t = 0.0, x = [1.5, 0.5, π / 5])
+    par = parameters(field)
+    crd = coordinates(field)
 
-    @test equ_mod.B₁(t, x) == -equ_mod.B₀ / equ_mod.q₀ * equ_mod.Z(t, x) / equ_mod.R(t, x)
-    @test equ_mod.B₂(t, x) ==
-          +equ_mod.B₀ / equ_mod.q₀ * (equ_mod.R(t, x) - equ_mod.R₀) / equ_mod.R(t, x)
-    @test equ_mod.B₃(t, x) == +equ_mod.B₀ * equ_mod.R₀
+    @test B♯(field, t, x)[1] == -par.B₀ / par.q₀ * crd.Z(t, x) / crd.R(t, x)
+    @test B♯(field, t, x)[2] == +par.B₀ / par.q₀ * (crd.R(t, x) - par.R₀) / crd.R(t, x)
+    @test B♯(field, t, x)[3] == +par.B₀ * par.R₀ / crd.R(t, x)^2
+
+    @test B♭(field, t, x)[1] == -par.B₀ / par.q₀ * crd.Z(t, x) / crd.R(t, x)
+    @test B♭(field, t, x)[2] == +par.B₀ / par.q₀ * (crd.R(t, x) - par.R₀) / crd.R(t, x)
+    @test B♭(field, t, x)[3] == +par.B₀ * par.R₀
 end
 
-function test_axisymmetric_tokamak_toroidal_equilibrium(equ_mod, t = 0.0, x = [
-        0.5, π / 10, π / 5])
-    @test equ_mod.B¹(t, x) == 0
-    @test equ_mod.B²(t, x) == +equ_mod.B₀ / equ_mod.q₀ / equ_mod.R(t, x)
-    @test equ_mod.B³(t, x) ≈ +equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t, x)^2 atol = 1E-14
+function test_axisymmetric_tokamak_toroidal_equilibrium(
+        field, t = 0.0, x = [0.5, π / 10, π / 5])
+    par = parameters(field)
+    crd = coordinates(field)
 
-    @test equ_mod.B₁(t, x) == 0
-    @test equ_mod.B₂(t, x) == +equ_mod.B₀ / equ_mod.q₀ * equ_mod.r(t, x)^2 / equ_mod.R(t, x)
-    @test equ_mod.B₃(t, x) ≈ +equ_mod.B₀ * equ_mod.R₀ atol = 1E-14
+    @test B♯(field, t, x)[1] == 0
+    @test B♯(field, t, x)[2] == +par.B₀ / par.q₀ / crd.R(t, x)
+    @test B♯(field, t, x)[3] ≈ +par.B₀ * par.R₀ / crd.R(t, x)^2 atol = 1E-14
+
+    @test B♭(field, t, x)[1] == 0
+    @test B♭(field, t, x)[2] == +par.B₀ / par.q₀ * crd.r(t, x)^2 / crd.R(t, x)
+    @test B♭(field, t, x)[3] ≈ +par.B₀ * par.R₀ atol = 1E-14
 end
 
 """
-The regularised chart carries the same magnetic field as `AxisymmetricTokamakToroidal`, in a gauge
-whose poloidal vector potential is regular on the magnetic axis, so it must reproduce that chart's
-field values exactly. Only the tolerances differ: the `1/cos²θ` gauge makes the generated
-expressions less well conditioned, so these are approximate where the unregularised ones are exact.
+The regularised chart carries the same magnetic field as
+`AxisymmetricTokamakToroidalEquilibrium`, in a gauge whose poloidal vector potential is regular on
+the magnetic axis, so it must reproduce that chart's field values exactly. Only the tolerances
+differ: the `1/cos²θ` gauge makes the generated expressions less well conditioned, so these are
+approximate where the unregularised ones are exact.
 """
 function test_axisymmetric_tokamak_toroidal_regularization_equilibrium(
-        equ_mod, t = 0.0, x = [0.5, π / 10, π / 5])
-    @test equ_mod.B¹(t, x) ≈ 0 atol = 1E-14
-    @test equ_mod.B²(t, x) ≈ +equ_mod.B₀ / equ_mod.q₀ / equ_mod.R(t, x) atol = 1E-14
-    @test equ_mod.B³(t, x) ≈ +equ_mod.B₀ * equ_mod.R₀ / equ_mod.R(t, x)^2 atol = 1E-14
+        field, t = 0.0, x = [0.5, π / 10, π / 5])
+    par = parameters(field)
+    crd = coordinates(field)
 
-    @test equ_mod.B₁(t, x) ≈ 0 atol = 1E-14
-    @test equ_mod.B₂(t, x) ≈ +equ_mod.B₀ / equ_mod.q₀ * equ_mod.r(t, x)^2 / equ_mod.R(t, x) atol = 1E-14
-    @test equ_mod.B₃(t, x) ≈ +equ_mod.B₀ * equ_mod.R₀ atol = 1E-14
+    @test B♯(field, t, x)[1] ≈ 0 atol = 1E-14
+    @test B♯(field, t, x)[2] ≈ +par.B₀ / par.q₀ / crd.R(t, x) atol = 1E-14
+    @test B♯(field, t, x)[3] ≈ +par.B₀ * par.R₀ / crd.R(t, x)^2 atol = 1E-14
+
+    @test B♭(field, t, x)[1] ≈ 0 atol = 1E-14
+    @test B♭(field, t, x)[2] ≈ +par.B₀ / par.q₀ * crd.r(t, x)^2 / crd.R(t, x) atol = 1E-14
+    @test B♭(field, t, x)[3] ≈ +par.B₀ * par.R₀ atol = 1E-14
 end
 
-function test_consistency_axisymmetric_tokamak_cylindrical_equilibrium(
-        equ_cyl, equ_car, t = 0.0, ξ = [1.5, 0.5, π / 5])
-    x = equ_cyl.to_cartesian(t, ξ)
-    DF = equ_cyl.DF(t, ξ)
-    DF̄ = equ_cyl.DF̄(t, ξ)
+function test_symmetric_quadratic_equilibrium(field, t = 0.0, x = [1.0, 0.5, 0.5])
+    par = parameters(field)
+    crd = coordinates(field)
 
-    B_cyl = [equ_cyl.B¹(t, ξ), equ_cyl.B²(t, ξ), equ_cyl.B³(t, ξ)]
-    B_car = [equ_car.B¹(t, x), equ_car.B²(t, x), equ_car.B³(t, x)]
+    @test B♯(field, t, x) == B♭(field, t, x)
 
-    B̂_cyl = [equ_cyl.B₁(t, ξ), equ_cyl.B₂(t, ξ), equ_cyl.B₃(t, ξ)]
-    B̂_car = [equ_car.B₁(t, x), equ_car.B₂(t, x), equ_car.B₃(t, x)]
+    @test B♭(field, t, x)[1] == 0
+    @test B♭(field, t, x)[2] == 0
+    @test B♭(field, t, x)[3] == par.B₀ * (1 + crd.X(t, x)^2 + crd.Y(t, x)^2)
 
-    @test B_cyl' * B̂_cyl ≈ B_car' * B̂_car atol = 1E-12
-    @test DF * B_cyl ≈ B_car atol = 1E-12
-    @test DF̄' * B̂_cyl ≈ B̂_car atol = 1E-12
+    @test B(field, t, x) == par.B₀ * (1 + crd.X(t, x)^2 + crd.Y(t, x)^2)
+
+    @test b♯(field, t, x) == [0, 0, 1]
+    @test b♭(field, t, x) == [0, 0, 1]
 end
 
-function test_consistency_axisymmetric_tokamak_toroidal_equilibrium(
-        equ_tor, equ_car, t = 0.0, ξ = [0.5, π / 10, π / 5])
-    x = equ_tor.to_cartesian(t, ξ)
-    DF = equ_tor.DF(t, ξ)
-    DF̄ = equ_tor.DF̄(t, ξ)
+function test_theta_pinch_equilibrium(field, t = 0.0, x = [1.0, 0.5, 0.5])
+    par = parameters(field)
 
-    B_tor = [equ_tor.B¹(t, ξ), equ_tor.B²(t, ξ), equ_tor.B³(t, ξ)]
-    B_car = [equ_car.B¹(t, x), equ_car.B²(t, x), equ_car.B³(t, x)]
-
-    B̂_tor = [equ_tor.B₁(t, ξ), equ_tor.B₂(t, ξ), equ_tor.B₃(t, ξ)]
-    B̂_car = [equ_car.B₁(t, x), equ_car.B₂(t, x), equ_car.B₃(t, x)]
-
-    @test B_tor' * B̂_tor ≈ B_car' * B̂_car atol = 1E-12
-    @test DF * B_tor ≈ B_car atol = 1E-12
-    @test DF̄' * B̂_tor ≈ B̂_car atol = 1E-12
+    @test B♯(field, t, x) == B♭(field, t, x)
+    @test B♭(field, t, x) == [0, 0, par.B₀]
+    @test B(field, t, x) == par.B₀
+    @test b♯(field, t, x) == [0, 0, 1]
+    @test b♭(field, t, x) == [0, 0, 1]
 end
 
-function test_symmetric_quadratic_equilibrium(equ_mod, t = 0.0, x = [1.0, 0.5, 0.5])
-    @test equ_mod.B¹(t, x) == equ_mod.B₁(t, x)
-    @test equ_mod.B²(t, x) == equ_mod.B₂(t, x)
-    @test equ_mod.B³(t, x) == equ_mod.B₃(t, x)
+function test_abc_equilibrium(field, t = 0.0, x = [1.0, 0.5, 0.5])
+    par = parameters(field)
+    crd = coordinates(field)
 
-    @test equ_mod.B₁(t, x) == 0
-    @test equ_mod.B₂(t, x) == 0
-    @test equ_mod.B₃(t, x) == equ_mod.B₀ * (1 + equ_mod.X(t, x)^2 + equ_mod.Y(t, x)^2)
+    @test B♯(field, t, x) == B♭(field, t, x)
+    @test B♭(field, t, x) == A♭(field, t, x)
 
-    @test equ_mod.B(t, x) == equ_mod.B₀ * (1 + equ_mod.X(t, x)^2 + equ_mod.Y(t, x)^2)
-
-    @test equ_mod.b¹(t, x) == 0
-    @test equ_mod.b²(t, x) == 0
-    @test equ_mod.b³(t, x) == 1
-
-    @test equ_mod.b₁(t, x) == 0
-    @test equ_mod.b₂(t, x) == 0
-    @test equ_mod.b₃(t, x) == 1
+    @test B♭(field, t, x)[1] == par.a₀ * sin(crd.Z(t, x)) + par.c₀ * cos(crd.Y(t, x))
+    @test B♭(field, t, x)[2] == par.b₀ * sin(crd.X(t, x)) + par.a₀ * cos(crd.Z(t, x))
+    @test B♭(field, t, x)[3] == par.c₀ * sin(crd.Y(t, x)) + par.b₀ * cos(crd.X(t, x))
 end
 
-function test_theta_pinch_equilibrium(equ_mod, t = 0.0, x = [1.0, 0.5, 0.5])
-    @test equ_mod.B¹(t, x) == equ_mod.B₁(t, x)
-    @test equ_mod.B²(t, x) == equ_mod.B₂(t, x)
-    @test equ_mod.B³(t, x) == equ_mod.B₃(t, x)
-
-    @test equ_mod.B₁(t, x) == 0
-    @test equ_mod.B₂(t, x) == 0
-    @test equ_mod.B₃(t, x) == equ_mod.B₀
-
-    @test equ_mod.B(t, x) == equ_mod.B₀
-
-    @test equ_mod.b¹(t, x) == 0
-    @test equ_mod.b²(t, x) == 0
-    @test equ_mod.b³(t, x) == 1
-
-    @test equ_mod.b₁(t, x) == 0
-    @test equ_mod.b₂(t, x) == 0
-    @test equ_mod.b₃(t, x) == 1
+@testset "$(rpad("Magnetic Fields", 60))" begin
+    test_axisymmetric_tokamak_cartesian_equilibrium(FIELDS["AxisymmetricTokamakCartesian"])
+    test_axisymmetric_tokamak_cylindrical_equilibrium(FIELDS["AxisymmetricTokamakCylindrical"])
+    test_axisymmetric_tokamak_toroidal_equilibrium(FIELDS["AxisymmetricTokamakToroidal"])
+    test_axisymmetric_tokamak_toroidal_regularization_equilibrium(FIELDS["AxisymmetricTokamakToroidalRegularization"])
+    test_symmetric_quadratic_equilibrium(FIELDS["SymmetricQuadratic"])
+    test_theta_pinch_equilibrium(FIELDS["ThetaPinch"])
+    test_abc_equilibrium(FIELDS["ABC"])
 end
 
-function test_abc_equilibrium(equ_mod, t = 0.0, x = [1.0, 0.5, 0.5])
-    @test equ_mod.B¹(t, x) == equ_mod.B₁(t, x)
-    @test equ_mod.B²(t, x) == equ_mod.B₂(t, x)
-    @test equ_mod.B³(t, x) == equ_mod.B₃(t, x)
+"""
+Two charts of the same physical field, compared at the same physical point: the contravariant
+components transform with `DF`, the covariant ones with `DF̄'`, and their contraction is a scalar
+and so chart-independent.
+"""
+function test_chart_consistency(field, field_car, t, p)
+    x = to_cartesian(field, t, p)
 
-    @test equ_mod.B₁(t, x) == equ_mod.A₁(t, x)
-    @test equ_mod.B₂(t, x) == equ_mod.A₂(t, x)
-    @test equ_mod.B₃(t, x) == equ_mod.A₃(t, x)
-
-    @test equ_mod.B₁(t, x) ==
-          equ_mod.a₀ * sin(equ_mod.Z(t, x)) + equ_mod.c₀ * cos(equ_mod.Y(t, x))
-    @test equ_mod.B₂(t, x) ==
-          equ_mod.b₀ * sin(equ_mod.X(t, x)) + equ_mod.a₀ * cos(equ_mod.Z(t, x))
-    @test equ_mod.B₃(t, x) ==
-          equ_mod.c₀ * sin(equ_mod.Y(t, x)) + equ_mod.b₀ * cos(equ_mod.X(t, x))
+    @test dot(B♯(field, t, p), B♭(field, t, p)) ≈
+          dot(B♯(field_car, t, x), B♭(field_car, t, x)) atol = 1E-12
+    @test DF(field, t, p) * B♯(field, t, p) ≈ B♯(field_car, t, x) atol = 1E-12
+    @test DF̄(field, t, p)' * B♭(field, t, p) ≈ B♭(field_car, t, x) atol = 1E-12
 end
 
-@testset "$(rpad("Magnetic Fields",60))" begin
-    test_axisymmetric_tokamak_cartesian_equilibrium(AxisymmetricTokamakCartesianTest)
-    test_axisymmetric_tokamak_cylindrical_equilibrium(AxisymmetricTokamakCylindricalTest)
-    test_axisymmetric_tokamak_toroidal_equilibrium(AxisymmetricTokamakToroidalTest)
-    test_axisymmetric_tokamak_toroidal_regularization_equilibrium(AxisymmetricTokamakToroidalRegularizationTest)
-    test_symmetric_quadratic_equilibrium(SymmetricQuadraticTest)
-    test_theta_pinch_equilibrium(ThetaPinchTest)
-    test_abc_equilibrium(ABCTest)
-end
-
-@testset "$(rpad("Consistency",60))" begin
-    test_consistency_axisymmetric_tokamak_cylindrical_equilibrium(
-        AxisymmetricTokamakCylindricalTest, AxisymmetricTokamakCartesianTest)
-    test_consistency_axisymmetric_tokamak_toroidal_equilibrium(
-        AxisymmetricTokamakToroidalTest, AxisymmetricTokamakCartesianTest)
+@testset "$(rpad("Consistency", 60))" begin
+    car = FIELDS["AxisymmetricTokamakCartesian"]
+    test_chart_consistency(FIELDS["AxisymmetricTokamakCylindrical"], car, 0.0,
+        [1.5, 0.5, π / 5])
+    test_chart_consistency(FIELDS["AxisymmetricTokamakToroidal"], car, 0.0,
+        [0.5, π / 10, π / 5])
     # the regularised chart shares the toroidal chart's coordinates, so the same check applies
-    test_consistency_axisymmetric_tokamak_toroidal_equilibrium(
-        AxisymmetricTokamakToroidalRegularizationTest, AxisymmetricTokamakCartesianTest)
+    test_chart_consistency(FIELDS["AxisymmetricTokamakToroidalRegularization"], car, 0.0,
+        [0.5, π / 10, π / 5])
 end
 
-# `code` has two callers with opposite `escape` settings, and everything above goes through only one
-# of them: `@test_equilibrium` splices `Mod.@code`, which escapes its names into the calling module.
-# `load_equilibrium` is the unescaped path, and it is the one that evaluates the generated `export`
-# statements into a module it does not own — so it is the path where `export orientation` can fail
-# without anything else noticing. Both handednesses are covered, since the sign is the whole point.
-
-using LinearAlgebra
-
-module AxisymmetricTokamakCylindricalLoadTest end
-module AxisymmetricTokamakCartesianLoadTest end
-module ThetaPinchLoadTest end
-
-const equ_cyl_loaded = ElectromagneticFields.AxisymmetricTokamakCylindrical.init()
-const equ_car_loaded = ElectromagneticFields.AxisymmetricTokamakCartesian.init()
-const equ_pinch_loaded = ElectromagneticFields.ThetaPinch.init()
-
-@testset "$(rpad("load_equilibrium",60))" begin
-    # inside the testset on purpose. A `@testset` body is a function body, so this is exactly the
-    # case the plain form cannot serve: the methods it evaluates would be one world age too new for
-    # this frame to call. The do-block form runs its body in the world age they live in, and that is
-    # what is under test here — everything below would be a `MethodError` without it.
-    for (target, equ) in (
-        (AxisymmetricTokamakCylindricalLoadTest, equ_cyl_loaded),
-        (AxisymmetricTokamakCartesianLoadTest, equ_car_loaded)
-    )
-        result = load_equilibrium(equ; target_module = target) do mod
-            # the module the code went into, not a copy of it
-            @test mod === target
-
-            @test mod.orientation() ∈ (-1, +1)
-            @test mod.orientation() == ElectromagneticFields.orientation(equ)
-            @test det(mod.DF(t, ξ)) ≈ mod.orientation() * mod.J(t, ξ) atol = 1E-12
-
-            # `names` sees only what the module exports, which is what the unescaped path emits
-            @test :orientation ∈ names(mod)
-
-            mod.orientation()
-        end
-
-        # the callback's value comes back out
-        @test result == ElectromagneticFields.orientation(equ)
-    end
-
-    # the plain form returns the target module. Its own module, since loading twice into one would
-    # redefine every method there; and the check stops at the return value, because from this frame
-    # the definitions it just made are one world age too new to call
-    @test load_equilibrium(equ_pinch_loaded; target_module = ThetaPinchLoadTest) ===
-          ThetaPinchLoadTest
-end
-
-# `A₃` is the poloidal flux function of the axisymmetric equilibria, and it is what the plotting
+# `A♭[3]` is the poloidal flux function of the axisymmetric equilibria, and it is what the plotting
 # extension contours. The defining property is that the magnetic field lies in its level surfaces,
-# `B · ∇A₃ = 0`. The second half of each case guards the distinction that makes this worth asserting:
-# the physical toroidal component `A₃ / R` is a plausible-looking stand-in that does not have the
-# property. `R` there is the major radius in each chart's own coordinates, not `ξ₁` — in the toroidal
-# chart `ξ₁` is `r`, and dividing by it leaves a flux label behind.
+# `B · ∇A₃ = 0`. The second half of each case guards the distinction that makes this worth
+# asserting: the physical toroidal component `A₃ / R` is a plausible-looking stand-in that does not
+# have the property. `R` there is the major radius in each chart's own coordinates, not `ξ₁` — in
+# the toroidal chart `ξ₁` is `r`, and dividing by it leaves a flux label behind.
 
-module FluxLabelCylindrical end
-module FluxLabelToroidal end
-module FluxLabelSolovev end
-
-@testset "$(rpad("A₃ is a flux label for the axisymmetric equilibria",60))" begin
-    for (target, equ, p) in (
-        (FluxLabelCylindrical,
-        ElectromagneticFields.AxisymmetricTokamakCylindrical.init(), [1.1, 0.2, 0.3]),
-        (FluxLabelToroidal,
-        ElectromagneticFields.AxisymmetricTokamakToroidal.init(), [0.2, 0.7, 0.3]),
-        (FluxLabelSolovev, ElectromagneticFields.Solovev.ITER(), [1.1, 0.2, 0.3])
+@testset "$(rpad("A₃ is a flux label for the axisymmetric equilibria", 60))" begin
+    for (field, p) in (
+        (FIELDS["AxisymmetricTokamakCylindrical"], [1.1, 0.2, 0.3]),
+        (FIELDS["AxisymmetricTokamakToroidal"], [0.2, 0.7, 0.3]),
+        (FIELDS["SolovevITER"], [1.1, 0.2, 0.3])
     )
-        load_equilibrium(equ; target_module = target) do mod
-            Bcon = [mod.B¹(t, p), mod.B²(t, p), mod.B³(t, p)]
+        Bcon = B♯(field, t, p)
 
-            # central differences, so the tolerance is set by the truncation error rather than by ε
-            h = 1E-6
-            ê(i) = [k == i ? h : zero(h) for k in 1:3]
-            ∇(f) = [(f(p .+ ê(i)) - f(p .- ê(i))) / 2h for i in 1:3]
+        # central differences, so the tolerance is set by the truncation error rather than by ε
+        h = 1E-6
+        ê(i) = [k == i ? h : zero(h) for k in 1:3]
+        ∇(f) = [(f(p .+ ê(i)) - f(p .- ê(i))) / 2h for i in 1:3]
 
-            ψ(q) = mod.A₃(t, q)
-            @test Bcon' * ∇(ψ) ≈ 0 atol = 1E-8
+        ψ(q) = A♭(field, t, q)[3]
+        @test dot(Bcon, ∇(ψ)) ≈ 0 atol = 1E-8
 
-            # the quantity that is *not* a flux label, at a point where the difference shows
-            physical(q) = mod.A₃(t, q) / mod.R(t, q)
-            @test !isapprox(Bcon' * ∇(physical), 0; atol = 1E-8)
-        end
+        # the quantity that is *not* a flux label, at a point where the difference shows
+        physical(q) = A♭(field, t, q)[3] / coordinates(field).R(t, q)
+        @test !isapprox(dot(Bcon, ∇(physical)), 0; atol = 1E-8)
     end
 end
 
-# `code` runs every SymEngine-derived body through `eliminate_common_subexpressions`, which is only
-# safe because it names subexpressions rather than rewriting them. That claim is what is checked
-# here — that the eliminated block still denotes the very same expression — for every generated
-# function of every equilibrium.
-#
-# Structurally rather than numerically, because the numeric alternative does not scale. Comparing
-# values means compiling both versions of all ~440 functions per equilibrium, and `d²b₁dx₁dx₁` alone
-# is 6231 statements before elimination; a numeric sweep over the Solov'ev equilibria does not
-# finish. The structural identity is also the stronger statement — it holds at every point at once,
-# rather than at whichever sample points the test happened to choose.
-#
-# The comparison never materialises the expansion. Both expressions are interned into one table keyed
-# by structure — a call by its head and the ids of its arguments, a leaf by its type and value — with
-# each temporary resolving to the id its right-hand side was given. Two expressions land on the same
-# id exactly when they are structurally identical, so the block denotes the body iff its last
-# statement interns to the body's root id, and that is linear in the size of the expression.
-#
-# Substituting the temporaries back and comparing trees is the obvious alternative, and is quadratic:
-# each definition would hold the full expansion of its own subtree, so the work is the sum of all of
-# them. It does not finish on the Solov'ev second derivatives.
-function same_expression(body::Expr, block::Expr)
-    ids = Dict{Any, Int}()
-    next_id = Ref(0)
+# A perturbation is combined with its equilibrium symbolically, before any code is generated, so
+# the perturbed field is a `FieldFunctions` like any other. `EzCosZPerturbation` contributes only a
+# scalar potential, so `B` is untouched and `E` is not.
 
-    intern(key) = get!(() -> (next_id[] += 1), ids, key)
+@testset "$(rpad("Perturbation", 60))" begin
+    equ = ThetaPinchEquilibrium()
+    pert = EzCosZPerturbation(2.0)
 
-    visit(e, env) = e isa Symbol && haskey(env, e) ? env[e] :
-                    e isa Expr && e.head === :call ?
-                    intern(Any[e.args[1];
-                               Int[visit(a, env) for a in @view e.args[2:end]]]) :
-                    intern((typeof(e), e))
+    plain = FIELDS["ThetaPinch"]
+    perturbed = FieldFunctions(equ, pert)
 
-    root = visit(body, Dict{Symbol, Int}())
+    @test perturbation(perturbed) === pert
+    @test equilibrium(perturbed) === equ
 
-    environment = Dict{Symbol, Int}()
-    value = 0
-
-    for statement in block.args
-        if statement isa Expr && statement.head === :(=)
-            environment[statement.args[1]] = visit(statement.args[2], environment)
-        else
-            value = visit(statement, environment)
-        end
-    end
-
-    value == root
+    @test B♭(perturbed, t, ξ) ≈ B♭(plain, t, ξ)
+    @test φ(plain, t, ξ) == 0
+    @test φ(perturbed, t, ξ) ≈ 2.0 / (2π) * sin(2π * ξ[3])
+    @test E♭(perturbed, t, ξ)[3] ≈ -2.0 * cos(2π * ξ[3])
+    @test E♭(plain, t, ξ) == [0, 0, 0]
 end
 
-# The same equilibria `@test_equilibrium` covers above.
-const cse_equilibria = (
-    ("ABC", ElectromagneticFields.ABC.init()),
-    ("AxisymmetricTokamakCartesian",
-        ElectromagneticFields.AxisymmetricTokamakCartesian.init()),
-    ("AxisymmetricTokamakCylindrical",
-        ElectromagneticFields.AxisymmetricTokamakCylindrical.init()),
-    ("AxisymmetricTokamakToroidal",
-        ElectromagneticFields.AxisymmetricTokamakToroidal.init()),
-    ("AxisymmetricTokamakToroidalRegularization",
-        ElectromagneticFields.AxisymmetricTokamakToroidalRegularization.init()),
-    ("Dipole", ElectromagneticFields.Dipole.init()),
-    ("PenningTrapUniform", ElectromagneticFields.PenningTrapUniform.init()),
-    ("PenningTrapBottle", ElectromagneticFields.PenningTrapBottle.init()),
-    ("PenningTrapAsymmetric", ElectromagneticFields.PenningTrapAsymmetric.init()),
-    ("QuadraticPotentials", ElectromagneticFields.QuadraticPotentials.init()),
-    ("Singular", ElectromagneticFields.Singular.init()),
-    ("SolovevFRC", ElectromagneticFields.Solovev.FRC()),
-    ("SolovevITER", ElectromagneticFields.Solovev.ITER()),
-    ("SolovevITERwXpoint", ElectromagneticFields.Solovev.ITER(xpoint = true)),
-    ("SolovevNSTX", ElectromagneticFields.Solovev.NSTX()),
-    ("SolovevNSTXwXpoint", ElectromagneticFields.Solovev.NSTX(xpoint = true)),
-    ("SolovevNSTXwDoubleXpoint", ElectromagneticFields.Solovev.NSTXdoubleX()),
-    ("SolovevSymmetric", ElectromagneticFields.SolovevSymmetric.init()),
-    ("SymmetricQuadratic", ElectromagneticFields.SymmetricQuadratic.init()),
-    ("ThetaPinch", ElectromagneticFields.ThetaPinch.init())
-)
+# The generated code takes the equilibrium's parameters as an argument instead of having them
+# baked in, which is what lets one compiled function serve every parameter value of a type — and
+# in turn what makes the cache, and the precompilation that fills it, correct.
 
-@testset "$(rpad("Common subexpression elimination preserves every value",60))" begin
-    for (name, equ) in cse_equilibria
-        @testset "$(rpad(name,56))" begin
-            functions = ElectromagneticFields.generate_equilibrium_functions(equ, ZeroPerturbation())
+@testset "$(rpad("Symbolic parameters and the cache", 60))" begin
+    a = FieldFunctions(AxisymmetricTokamakCylindricalEquilibrium(1.0, 1.0, 2.0))
+    b = FieldFunctions(AxisymmetricTokamakCylindricalEquilibrium(6.2, 5.3, 1.7))
+    c = FieldFunctions(AxisymmetricTokamakToroidalEquilibrium())
 
-            for (key, expression) in functions
-                expression isa ElectromagneticFields.SymEngine.Basic || continue
+    # same type, different parameters: the very same generated function, different answers
+    for name in ElectromagneticFields.FIELD_FUNCTION_NAMES
+        @test functions(a)[name].f === functions(b)[name].f
+    end
+    @test B♭(a, t, ξ) != B♭(b, t, ξ)
 
-                body = convert(Expr, expression)
-                ElectromagneticFields.replace_expr!(body, :atan2, :atan)
-                body isa Expr || continue
+    # a different equilibrium type must not share it
+    @test functions(c).B♭.f !== functions(a).B♭.f
 
-                @test same_expression(body,
-                    ElectromagneticFields.eliminate_common_subexpressions(body))
-            end
-        end
+    # the parameters are the equilibrium's own, and the values travel with the field
+    @test parameters(b) == (R₀ = 6.2, B₀ = 5.3, q₀ = 1.7)
+    @test functions(b).B♭.p == SVector(6.2, 5.3, 1.7)
+
+    # `c` is derived rather than chosen, but `A₃` reads it, so it is a parameter like the rest
+    @test :c ∈ keys(parameters(FIELDS["SolovevITER"]))
+
+    # Note what the identity above does and does not witness. A `RuntimeGeneratedFunction` is
+    # identified by a hash of its body, so two built independently from the same expression are
+    # `===` whether or not either came from the cache — which is exactly why the cache can
+    # survive precompilation. It is still evidence that the parameters are arguments: baked in as
+    # literals they would give `a` and `b` different bodies, and so different objects.
+    #
+    # Whether the cache was used is therefore observed through the cache itself.
+    clear_field_cache!()
+    @test isempty(ElectromagneticFields.FIELD_CACHE)
+
+    uncached = FieldFunctions(AxisymmetricTokamakCylindricalEquilibrium(6.2, 5.3, 1.7);
+        cache = false)
+    @test isempty(ElectromagneticFields.FIELD_CACHE)
+    @test B♭(uncached, t, ξ) == B♭(b, t, ξ)
+
+    # a cached build fills it, and a field rebuilt after a clear agrees with the one it replaces
+    rebuilt = FieldFunctions(AxisymmetricTokamakCylindricalEquilibrium(6.2, 5.3, 1.7))
+    @test !isempty(ElectromagneticFields.FIELD_CACHE)
+    for name in ElectromagneticFields.FIELD_FUNCTION_NAMES
+        f = getfield(ElectromagneticFields, name)
+        @test f(rebuilt, t, ξ) == f(b, t, ξ)
     end
 end
-
-println()

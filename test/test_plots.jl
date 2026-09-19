@@ -6,26 +6,26 @@ using Test
 # One instance of every equilibrium that has a plotting method. Loading CairoMakie above is what
 # brings the extension into scope, so this testset doubles as a check that it is found at all.
 const plot_equilibria = (
-    ABC.init(),
-    AxisymmetricTokamakCartesian.init(),
-    AxisymmetricTokamakCylindrical.init(),
-    AxisymmetricTokamakToroidal.init(),
-    Dipole.init(),
-    QuadraticPotentials.init(),
-    Singular.init(),
-    SolovevSymmetric.init(),
-    SymmetricQuadratic.init(),
-    ThetaPinch.init(),
-    Solovev.ITER(),
-    Solovev.NSTX(),
-    Solovev.FRC(),
-    Solovev.ITER(xpoint = true),
-    Solovev.NSTXdoubleX()
+    ABCEquilibrium(),
+    AxisymmetricTokamakCartesianEquilibrium(),
+    AxisymmetricTokamakCylindricalEquilibrium(),
+    AxisymmetricTokamakToroidalEquilibrium(),
+    DipoleField(),
+    QuadraticPotentialsField(),
+    SingularEquilibrium(),
+    SolovevSymmetricEquilibrium(),
+    SymmetricQuadraticEquilibrium(),
+    ThetaPinchEquilibrium(),
+    SolovevEquilibriumITER(),
+    SolovevEquilibriumNSTX(),
+    SolovevEquilibriumFRC(),
+    SolovevXpointEquilibriumITER(),
+    SolovevDoubleXpointEquilibriumNSTX()
 )
 
 # ABC is sampled on a cubic grid, so it takes neither `ny` nor `xlims`/`ylims` and has to sit out
 # the tests that vary them.
-const rectangular_equilibria = filter(equ -> !(equ isa ABC.ABCEquilibrium), plot_equilibria)
+const rectangular_equilibria = filter(equ -> !(equ isa ABCEquilibrium), plot_equilibria)
 
 isaxis(x) = x isa Makie.Axis || (x isa AbstractVector && all(ax -> ax isa Makie.Axis, x))
 
@@ -44,7 +44,7 @@ isaxis(x) = x isa Makie.Axis || (x isa AbstractVector && all(ax -> ax isa Makie.
     # `size` and `figure` can both carry a figure size, so the precedence is part of the interface:
     # the size chosen for the equilibrium, then `figure`, then an explicit `size`
     figuresize(fig) = Tuple(Makie.widths(fig.scene.viewport[]))
-    let equ = ThetaPinch.init()
+    let equ = ThetaPinchEquilibrium()
         @test figuresize(plot_equilibrium(equ)) == (800, 400)
         @test figuresize(plot_equilibrium(equ; size = (320, 240))) == (320, 240)
         @test figuresize(plot_equilibrium(equ; figure = (; size = (360, 260)))) ==
@@ -69,10 +69,11 @@ isaxis(x) = x isa Makie.Axis || (x isa AbstractVector && all(ax -> ax isa Makie.
     # the singular field diverges on the z axis, so its logarithmic contour levels have
     # to cope with a grid that hits the axis, and with a window in which a component of
     # the vector potential does not change sign
-    @test plot_equilibrium(Singular.init(); nx = 101, ny = 101) isa Makie.Figure
-    @test plot_equilibrium(Singular.init(); nx = 101, ny = 101, colorbar = true) isa
+    @test plot_equilibrium(SingularEquilibrium(); nx = 101, ny = 101) isa Makie.Figure
+    @test plot_equilibrium(SingularEquilibrium(); nx = 101, ny = 101, colorbar = true) isa
           Makie.Figure
-    @test plot_equilibrium(Singular.init(); xlims = (2.0, 3.0), ylims = (2.0, 3.0)) isa
+    @test plot_equilibrium(SingularEquilibrium(); xlims = (2.0, 3.0), ylims = (
+        2.0, 3.0)) isa
           Makie.Figure
 
     # drawing into an existing figure, which is how several equilibria are composed,
@@ -84,12 +85,12 @@ isaxis(x) = x isa Makie.Axis || (x isa AbstractVector && all(ax -> ax isa Makie.
 
     # every position type the extension accepts
     fig = Makie.Figure()
-    @test isaxis(plot_equilibrium!(fig[1, 1], Solovev.ITER()))
-    @test isaxis(plot_equilibrium!(fig[1, 2][1, 1], Solovev.NSTX()))
-    @test isaxis(plot_equilibrium!(Makie.GridLayout(fig[1, 3]), ThetaPinch.init()))
+    @test isaxis(plot_equilibrium!(fig[1, 1], SolovevEquilibriumITER()))
+    @test isaxis(plot_equilibrium!(fig[1, 2][1, 1], SolovevEquilibriumNSTX()))
+    @test isaxis(plot_equilibrium!(Makie.GridLayout(fig[1, 3]), ThetaPinchEquilibrium()))
 
     # equilibria without a plotting method
-    @test_throws ArgumentError plot_equilibrium(PenningTrapUniform.init())
-    @test_throws ArgumentError plot_equilibrium(PenningTrapBottle.init())
-    @test_throws ArgumentError plot_equilibrium(PenningTrapAsymmetric.init())
+    @test_throws ArgumentError plot_equilibrium(PenningTrapUniformEquilibrium())
+    @test_throws ArgumentError plot_equilibrium(PenningTrapBottleEquilibrium())
+    @test_throws ArgumentError plot_equilibrium(PenningTrapAsymmetricEquilibrium())
 end

@@ -48,22 +48,22 @@ curvilinear, its metric is non-trivial, and it is left-handed.
 using ElectromagneticFields
 using LinearAlgebra
 
-AxisymmetricTokamakCylindrical.@code(6.2, 5.3, 2.0)
+field = FieldFunctions(AxisymmetricTokamakCylindricalEquilibrium(6.2, 5.3, 2.0))
 
 t = 0.0
 ξ = [6.5, 0.5, 0.25]
 nothing # hide
 ```
 
-The chart itself is generated as `to_cartesian` and `from_cartesian`, and componentwise as `x¹`,
-`x²`, `x³` and `ξ¹`, `ξ²`, `ξ³`:
+The chart itself is generated as `to_cartesian` and `from_cartesian`, each returning the three
+components as an `SVector`:
 
 ```@example coordinates
-to_cartesian(t, ξ)
+to_cartesian(field, t, ξ)
 ```
 
 ```@example coordinates
-roundtrip = from_cartesian(t, to_cartesian(t, ξ)) ≈ ξ
+roundtrip = from_cartesian(field, t, to_cartesian(field, t, ξ)) ≈ ξ
 @assert roundtrip # hide
 roundtrip
 ```
@@ -72,7 +72,7 @@ The bounds of the coordinate domain come as `rangemin` and `rangemax`. For this 
 toroidal angle is bounded:
 
 ```@example coordinates
-rangemin(t, ξ), rangemax(t, ξ)
+rangemin(field, t, ξ), rangemax(field, t, ξ)
 ```
 
 
@@ -89,33 +89,33 @@ g_{ij} = \sum_k {DF^k}_i \, {DF^k}_j ,
 g^{ij} = (g^{-1})_{ij} .
 ```
 
-Both are generated in two forms: as individual components `DFᵢⱼ`, `DF̄ᵢⱼ`, `gᵢⱼ` and `gⁱʲ`, and as
-matrix-valued wrappers `DF`, `DF̄`, `g` and `ḡ`. The naming is worth a moment: at component level a
-raised index pair denotes the inverse metric, `g¹¹` … `g³³`, while at matrix level the inverse
-carries an overbar, `ḡ`. The same overbar marks the inverse tangent map ``DF^{-1}``, whose
-components are the derivatives of the inverse chart,
+Both are generated as matrix-valued functions: `DF` and `DF̄` for the tangent map and its inverse,
+`g♭` and `g♯` for the metric and its inverse. The metric follows the musical isomorphisms — `♭`
+lowers an index, `♯` raises one — while the inverse of the tangent map carries an overbar, its
+components being the derivatives of the inverse chart,
 
 ```math
 {\bar{DF}^i}_j = \frac{\partial \xi^i}{\partial x^j} .
 ```
 
 ```@example coordinates
-DF(t, ξ)
+DF(field, t, ξ)
 ```
 
 The three identities relating them hold pointwise:
 
 ```@example coordinates
-checks = (DF̄(t, ξ) ≈ inv(DF(t, ξ)),
-          DF(t, ξ)' * DF(t, ξ) ≈ g(t, ξ),
-          ḡ(t, ξ) ≈ inv(g(t, ξ)))
+checks = (DF̄(field, t, ξ) ≈ inv(DF(field, t, ξ)),
+          DF(field, t, ξ)' * DF(field, t, ξ) ≈ g♭(field, t, ξ),
+          g♯(field, t, ξ) ≈ inv(g♭(field, t, ξ)))
 @assert all(checks) # hide
 checks
 ```
 
-Derivatives of the metric are generated as well, `dgᵢⱼdxₖ` and `dgⁱʲdxₖ` for the first and
-`d²gᵢⱼdxₖdxₗ` and `d²gⁱʲdxₖdxₗ` for the second, which is what a geometric integrator needs to
-assemble Christoffel symbols.
+Derivatives of the metric are generated as well, `Dg♭` and `Dg♯` for the first and `DDg♭` and
+`DDg♯` for the second, which is what a geometric integrator needs to assemble Christoffel symbols.
+They are rank-three and rank-four `SArray`s, so `Dg♭(field, t, ξ)[i,j,k]` is ``\partial_k
+g_{ij}``.
 
 
 ## Covariant, Contravariant and Physical Components
@@ -130,8 +130,8 @@ v_i = g_{ij} \, v^j , \qquad v^i = g^{ij} \, v_j .
 
 Components with a lower index are called *covariant*, components with an upper index
 *contravariant*. In the code the two conversions are one-liners,
-`covariant_to_contravariant` and `contravariant_to_covariant`, and the naming convention follows the
-indices directly: `B₁, B₂, B₃` are covariant, `B¹, B², B³` contravariant.
+`covariant_to_contravariant` and `contravariant_to_covariant`, and the naming follows the musical
+isomorphisms that perform them: `B♭` is covariant, `B♯` contravariant.
 
 Neither of them is what a measurement returns. Covariant and contravariant components are taken with
 respect to the coordinate basis and its dual, and in a curvilinear chart those basis vectors are
@@ -146,28 +146,28 @@ v_{(i)} = {DF^i}_j \, v^j = {\bar{DF}^j}_i \, v_j .
 ```
 
 That is, physical components are obtained by pushing the vector forward to the ambient cartesian
-frame. They all carry the same units, and their euclidean norm is the length of the vector. They are
-written with parenthesised indices, `B₍₁₎, B₍₂₎, B₍₃₎`.
+frame. They all carry the same units, and their euclidean norm is the length of the vector. They
+are written with the musical natural, `B♮`, the sign that cancels a flat or a sharp.
 
 Some texts define physical components instead by normalising the coordinate basis vectors,
 ``v_{\langle i \rangle} = \sqrt{g_{ii}} \, v^i``. For an orthogonal chart that is also an
 orthonormal frame, so it gives the same magnitude, but its components differ from the ones here by
 the rotation relating the local frame to the cartesian one.
 
-The unit vector along the magnetic field, `b`, is available in all three representations, as the
-vector-valued wrappers `b` (covariant), `b⃗` (contravariant) and `bₚ` (physical):
+The unit vector along the magnetic field is available in all three representations, as `b♭`
+(covariant), `b♯` (contravariant) and `b♮` (physical):
 
 ```@example coordinates
-[b(t, ξ) b⃗(t, ξ) bₚ(t, ξ)]
+[b♭(field, t, ξ) b♯(field, t, ξ) b♮(field, t, ξ)]
 ```
 
 The three columns are the same vector. Lowering, raising and pushing forward take one into another:
 
 ```@example coordinates
-conversions = (g(t, ξ) * b⃗(t, ξ) ≈ b(t, ξ),
-               ḡ(t, ξ) * b(t, ξ) ≈ b⃗(t, ξ),
-               bₚ(t, ξ) ≈ DF(t, ξ) * b⃗(t, ξ),
-               bₚ(t, ξ) ≈ DF̄(t, ξ)' * b(t, ξ))
+conversions = (g♭(field, t, ξ) * b♯(field, t, ξ) ≈ b♭(field, t, ξ),
+               g♯(field, t, ξ) * b♭(field, t, ξ) ≈ b♯(field, t, ξ),
+               b♮(field, t, ξ) ≈ DF(field, t, ξ) * b♯(field, t, ξ),
+               b♮(field, t, ξ) ≈ DF̄(field, t, ξ)' * b♭(field, t, ξ))
 @assert all(conversions) # hide
 conversions
 ```
@@ -178,22 +178,20 @@ physical components is an ordinary euclidean dot product. Contracting covariant 
 the other hand, is meaningless.
 
 ```@example coordinates
-@assert b⃗(t, ξ)' * b(t, ξ) ≈ 1 && norm(bₚ(t, ξ)) ≈ 1 # hide
-b⃗(t, ξ)' * b(t, ξ), norm(bₚ(t, ξ))
+@assert b♯(field, t, ξ)' * b♭(field, t, ξ) ≈ 1 && norm(b♮(field, t, ξ)) ≈ 1 # hide
+b♯(field, t, ξ)' * b♭(field, t, ξ), norm(b♮(field, t, ξ))
 ```
 
 Summarising the notation:
 
 | | |
 |---|---|
-| `Bᵢ`, e.g. `B₁` | covariant components |
-| `Bⁱ`, e.g. `B¹` | contravariant components |
-| `B₍ᵢ₎`, e.g. `B₍₁₎` | physical components |
-| `b`, `a`, `c` | vector-valued wrapper, covariant |
-| `b⃗`, `a⃗`, `c⃗` | vector-valued wrapper, contravariant |
-| `bₚ`, `aₚ`, `cₚ` | vector-valued wrapper, physical |
-| `g`, `DF` | matrix-valued metric and tangent map |
-| `ḡ`, `DF̄` | their inverses |
+| `B♭`, `b♭`, `a♭`, `c♭`, `A♭`, `E♭` | covariant components, `\flat` |
+| `B♯`, `b♯`, `a♯`, `c♯`, `A♯`, `E♯` | contravariant components, `\sharp` |
+| `B♮`, `b♮`, `a♮`, `c♮` | physical components, `\natural` |
+| `B` | the magnitude ``\|B\|`` |
+| `g♭`, `DF` | metric and tangent map |
+| `g♯`, `DF̄` | their inverses |
 
 
 ## Volume Element and Orientation
@@ -214,16 +212,16 @@ Four of the five charts above are left-handed, because the toroidal angle sits i
 where the right-handed ordering would put the second poloidal coordinate — ``(R, Z, \phi)`` rather
 than ``(R, \phi, Z)``. This is not a corner case, and getting it wrong has no visible symptom other
 than a magnetic field pointing the wrong way. Each equilibrium therefore declares its handedness
-explicitly, and the generated module exposes it as `orientation()`, the one generated function that
-takes no arguments at all, since the sign depends on neither time nor position. See
+explicitly, and the field carries it as `orientation(field)` — a stored value rather than a
+generated function, since the sign depends on neither time nor position. See
 [`orientation`](@ref ElectromagneticFields.orientation) for the full discussion.
 
 ```@example coordinates
-orientation(), J(t, ξ), det(DF(t, ξ))
+orientation(field), J(field, t, ξ), det(DF(field, t, ξ))
 ```
 
 ```@example coordinates
-signed = det(DF(t, ξ)) ≈ orientation() * J(t, ξ)
+signed = det(DF(field, t, ξ)) ≈ orientation(field) * J(field, t, ξ)
 @assert signed # hide
 signed
 ```

@@ -1,7 +1,7 @@
 # Axisymmetric Tokamak (Cartesian)
 
 ```@docs
-AxisymmetricTokamakCartesian
+AxisymmetricTokamakCartesianEquilibrium
 ```
 
 ## Constructing the Field
@@ -10,7 +10,7 @@ AxisymmetricTokamakCartesian
 using CairoMakie
 using ElectromagneticFields
 
-equ = AxisymmetricTokamakCartesian.init()
+equ = AxisymmetricTokamakCartesianEquilibrium()
 ```
 
 ## Plotting

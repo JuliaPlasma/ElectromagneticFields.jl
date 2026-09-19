@@ -7,9 +7,156 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Releases 
 not covered here; see the git history for those.
 
 
-## [Unreleased]
+## [Unreleased] — targeting 0.9.0
 
 ### Changed
+
+- **The symbolic engine is replaced from SymEngine.jl to Symbolics.jl.** Dependencies change:
+  SymEngine is removed, Symbolics, StaticArrays and GeometricBase are added. Julia floor stays 1.10.
+  GeometricBase is there for the generic names `functions`, `parameters` and `periodicity`, which
+  this package now extends rather than defining its own — it previously exported a `periodicity`
+  of its own, which collided with GeometricEquations' in any package using both.
+
+  This change is **breaking** for any code that relied on the old API. Fields no longer inject
+  generated code into a module. Instead, `FieldFunctions(equ, pert = ZeroPerturbation(); cse = true)`
+  builds a struct holding the generated functions:
+
+  ```julia
+  using ElectromagneticFields
+
+  field = FieldFunctions(SolovevEquilibriumITER())
+
+  # every quantity is reached through a generic taking the field first
+  B♭(field, 1.0, [1.05, 0.25, 0.5])
+
+  # or all of them at once, as a NamedTuple
+  functions(field)
+  ```
+
+  The generated functions are now RuntimeGeneratedFunctions built at runtime using
+  `Symbolics.build_function(...; expression = Val{false})`, with optional common-subexpression
+  elimination. A field is now a value: it can be constructed inside a function, stored, and passed
+  to a vector field as part of the `parameters` NamedTuple of a GeometricEquations problem,
+  without the world-age trap the old module-injection approach had.
+
+  Building one is not free, and almost none of the cost is what one would guess. On the toroidal
+  tokamak the symbolic trace takes 7.1 s and code generation 4.1 s, while compiling the generated
+  code takes 0.6 s — 5% of the total. The rest is Julia compiling Symbolics' own machinery for the
+  expression shapes a trace produces, which is paid per *shape* rather than per field.
+
+  Being per shape, it is recoverable, and two things now recover it. The generated functions of a
+  type already built are **cached** — keyed on the equilibrium and perturbation types rather than
+  on the parameter values, which the code no longer contains — and a `PrecompileTools` workload
+  **traces one field of every shipped type** during precompilation, so the specializations and
+  the cache both land in the package image.
+
+  The result is that constructing any equilibrium this package ships costs nothing: the first
+  field in a session drops from 8.5 s to 0.00 s, and all twenty together from about 19 s to
+  0.01 s, for any parameter values. The price is this package's own precompilation, 1.5 s →
+  24.5 s, paid once per version. An equilibrium of your own is traced once per session and cached
+  after that.
+
+  The cache is keyed on types, not on the content of the methods behind them, so redefining an
+  `A₁` or a metric coefficient in a running session leaves it stale. `clear_field_cache!()`
+  discards it, and `FieldFunctions(equ; cache = false)` bypasses it for one call.
+
+- **The generated code no longer has the equilibrium's parameters baked into it.** The symbolic
+  trace runs against a copy of the equilibrium whose parameters are symbolic, so the code is
+  written in terms of `R₀`, `B₀`, `q₀` … and takes their values as an argument. The equilibrium
+  struct stays where the values live and the field passes them in on each call.
+
+  What this changes for a caller is mostly that things are faster, but the property is worth
+  knowing: the generated code depends on the equilibrium's *type* and not on its parameters, so
+  two fields of the same type share their compiled functions exactly. That is what makes the
+  precompiled workload above cover parameter values nobody anticipated, rather than only the ones
+  it happened to name.
+
+  It also fixes the meaning of `get_parameters`, which used to select which parameters to export
+  as constants and now selects which are arguments of the generated code. Anything the `A₁`, `φ`
+  or metric methods read and it does not list is frozen into the code as a literal. The default —
+  every field of the struct but `name` — is what all the equilibria here want, so the Solov'ev
+  override that excluded the derived coefficient vector `c` is gone: `A₃` reads `c`, so `c` has to
+  travel with the rest. `parameters(field)` for a Solov'ev equilibrium therefore now includes it.
+
+  A field type of your own must be constructible as `Type{T}(parameters...)` — the convention all
+  of these follow, a parametric struct whose first member is `name` — so that the trace can build
+  the symbolic copy. `symbolic_copy` takes a method for a type that departs from it.
+
+- **A package can build its fields during its own precompilation** and pay nothing at load time.
+  `@precompilable_fields` at the top level of a module, and `cache_module = @__MODULE__` passed to
+  `FieldFunctions`, put the generated bodies in that module's cache so they survive into its
+  package image; a `PrecompileTools.@compile_workload` over the accessors caches their compiled
+  code as well. A field prepared this way evaluates in microseconds on the first call of a fresh
+  session, with no trace, no code generation and no compilation. Without it the field still works
+  and is simply rebuilt on each load.
+
+- **The function API replaces ~450 scalar functions with ~41 generics returning tensors.** Each
+  generic now takes the field as its first argument, followed by `t` (time) and `ξ` (coordinates).
+  All old scalar values remain accessible as entries in the returned tensors.
+
+  The new names use the musical isomorphisms: `♭` (`\flat`) lowers an index and denotes the
+  covariant components, `♯` (`\sharp`) raises one and denotes the contravariant components, and
+  `♮` (`\natural`) denotes the physical components. The bare letter is the magnitude, which has no
+  index to raise or lower, so `B` is still `|B|`; two lowered indices, `B♭♭`, are the magnetic
+  two-form. A leading `D` is a derivative with respect to the chart coordinates:
+
+  | New name | Old names | Type |
+  |---|---|---|
+  | `B♭(field, t, ξ)` | `B₁, B₂, B₃` | SVector covariant components |
+  | `B♯(field, t, ξ)` | `B¹, B², B³` | SVector contravariant components |
+  | `B(field, t, ξ)` | `B` | magnitude |
+  | `B♭♭(field, t, ξ)` | `B₁₁, B₁₂, ..., B₃₃` | SMatrix two-form |
+  | `g♭(field, t, ξ)` | `g` | SMatrix covariant metric |
+  | `g♯(field, t, ξ)` | `ḡ, g⁻¹` | SMatrix contravariant metric |
+  | `DA♭(field, t, ξ)` | `dAᵢdxⱼ` | SMatrix first derivatives |
+  | `DB(field, t, ξ)` | `dBdxᵢ` | SVector first derivatives of magnitude |
+  | `DDB(field, t, ξ)` | `d²Bdxᵢdxⱼ` | SMatrix Hessian of the magnitude |
+  | `DDA♭(field, t, ξ)` | `d²Aᵢdxⱼdxₖ` | SArray second derivatives |
+  | `Dg♭`, `Dg♯`, `DDg♭`, `DDg♯` | `dgᵢⱼdxₖ`, `d²gᵢⱼdxₖdxₗ`, … | SArray metric derivatives |
+  | `b♭`, `b♯`, `b♮` | `bᵢ`, `bⁱ`, `b₍ᵢ₎` | SVector unit magnetic field |
+  | `a♭`, `a♯`, `a♮`, `c♭`, `c♯`, `c♮` | `a`, `a⃗`, `aₚ`, … | SVector perpendicular frame |
+  | `E♭(field, t, ξ)`, `E♯` | `Eᵢ`, `Eⁱ` | SVector electric field |
+  | `J(field, t, ξ)` | `J` | volume element `√\|g\| = \|det DF\|` |
+  | `φ(field, t, ξ)` | `φ` | electrostatic potential |
+  | `DF(field, t, ξ)`, `DF̄` | `DF`, `DF̄` | SMatrix tangent map and its inverse |
+  | `to_cartesian`, `from_cartesian`, `rangemin`, `rangemax` | same | SVector, field first |
+
+  Four things become data rather than functions: `parameters(field)` — which replaces the
+  constants the old code spliced into the module — `coordinates(field)`, `periodicity(field)`, and
+  `orientation(field)`, which was a generated zero-argument function and is now a stored `Int`.
+  `equilibrium(field)` and `perturbation(field)` return the objects the field was built from, and
+  `functions(field)` returns all generated functions as a NamedTuple. Every one of the ~444 old
+  scalar values is an entry of one of these tensors, verified against the SymEngine-0.8 output
+  across all 20 equilibria and all 8844 scalar points — see `scripts/verify_against_symengine.jl`.
+
+  A tensor computation shares subexpressions across all its entries and is therefore usually faster
+  than the old per-component calls, and every accessor is allocation-free and type-stable. The test
+  suite asserts both properties for all 20 equilibria.
+
+- **Field constructors replace the old submodule `init()` pattern.** `Solovev.ITER()` is now
+  `SolovevEquilibriumITER()`, exported from the package. The six Solov'ev alias modules
+  (SolovevITER, SolovevNSTX, SolovevFRC, SolovevITERwXpoint, SolovevNSTXwXpoint,
+  SolovevNSTXwDoubleXpoint) are superseded by `SolovevEquilibriumITER`, `SolovevEquilibriumNSTX`,
+  `SolovevEquilibriumFRC`, `SolovevXpointEquilibriumITER`, `SolovevXpointEquilibriumNSTX` and
+  `SolovevDoubleXpointEquilibriumNSTX` — names that already existed inside the Solovev module and
+  are now exported from the package. `Solovev.ITER(xpoint = true)` and its siblings are gone. All other field modules follow
+  the same pattern: `ThetaPinch.init()` → `ThetaPinchEquilibrium()`, `ABC.init()` → `ABCEquilibrium()`,
+  `Dipole.init()` → `DipoleField()`, and likewise for Singular, QuadraticPotentials,
+  SymmetricQuadratic, SolovevSymmetric, PenningTrap (with its three variants Uniform, Bottle and
+  Asymmetric) and AxisymmetricTokamak (Cartesian, Cylindrical, Toroidal and the Toroidal
+  Regularization gauge, each with an `AxisymmetricTokamak*ITER()` preset).
+  The coordinate helpers (X, Y, Z, R, r, θ, ϕ, r²) are now package-level generics with one method
+  per equilibrium type, not exported (to avoid collisions), and are accessible as
+  `ElectromagneticFields.R` or via the `coordinates(field)` NamedTuple.
+
+- Internal helpers removed in the SymEngine → Symbolics transition: the hand-rolled common-
+  subexpression elimination pass (made redundant by `Symbolics.build_function(...; cse = true)`),
+  `code_arguments`, `fnesc`, `replace_expr!`, `symprint`, and the dead `Γ` (Christoffel symbol)
+  and `connection` routines. The `@code` macros are removed; code generation is now done by calling
+  `FieldFunctions`, which returns a struct holding the functions.
+
+- Documentation restructured with new "Interface" and "Code Generation" pages; Usage, Coordinates,
+  Fields, Plotting and the twelve analytic field pages rewritten for the new API.
 
 - `src/analytic/analytic_equilibrium.jl` and `test/test_analytic.jl` are now Unicode
   NFC-normalised. They stored `ḡ` (21 times), `â` (3) and `ĉ` (3) as a base letter plus a combining

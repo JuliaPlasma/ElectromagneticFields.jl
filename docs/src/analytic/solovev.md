@@ -11,7 +11,7 @@ The coordinates are ``(R/R_0, Z/R_0, \phi)``, i.e. normalised to the major radiu
 ## Up/Down Symmetric Equilibrium
 
 ```@docs
-ElectromagneticFields.Solovev.SolovevEquilibrium
+SolovevEquilibrium
 ```
 
 ### Constructing the Field
@@ -22,13 +22,14 @@ The parameters can be given explicitly,
 using CairoMakie
 using ElectromagneticFields
 
-equ = Solovev.init(6.2, 5.3, 0.32, 1.7, 0.33, -0.155)
+equ = SolovevEquilibrium(6.2, 5.3, 0.32, 1.7, 0.33, -0.155)
 ```
 
-or one of the named configurations can be used. `ITER`, `NSTX` and `FRC` are provided:
+or one of the named configurations can be used. `SolovevEquilibriumITER`,
+`SolovevEquilibriumNSTX` and `SolovevEquilibriumFRC` are provided:
 
 ```@example solovev
-equ = Solovev.ITER()
+equ = SolovevEquilibriumITER()
 ```
 
 ### Plotting
@@ -45,11 +46,11 @@ triangularity is visible directly in the shape of the boundary:
 ```@example solovev
 fig = Figure(size = (900, 400))
 
-plot_equilibrium!(fig[1,1], Solovev.ITER();
+plot_equilibrium!(fig[1,1], SolovevEquilibriumITER();
     title = "ITER", xlims = (0.6, 1.4))
-plot_equilibrium!(fig[1,2], Solovev.NSTX();
+plot_equilibrium!(fig[1,2], SolovevEquilibriumNSTX();
     title = "NSTX", xlims = (0.05, 2.3), ylims = (-2.25, +2.25))
-plot_equilibrium!(fig[1,3], Solovev.FRC();
+plot_equilibrium!(fig[1,3], SolovevEquilibriumFRC();
     title = "FRC", xlims = (0.0, 2.0), ylims = (-10.0, +10.0),
     aspect = AxisAspect(0.5))
 
@@ -60,30 +61,31 @@ fig
 ## Equilibrium with X-Point
 
 ```@docs
-ElectromagneticFields.Solovev.SolovevXpointEquilibrium
+SolovevXpointEquilibrium
 ```
 
 ### Constructing the Field
 
-Passing `xpoint = true` to any of the named configurations places an X-point below the plasma,
-turning the outermost closed flux surface into a separatrix:
+The `Xpoint` configurations place an X-point below the plasma, turning the outermost closed flux
+surface into a separatrix:
 
 ```@example solovev
-equ_xpoint = Solovev.ITER(xpoint = true)
+equ_xpoint = SolovevXpointEquilibriumITER()
 ```
 
-`Solovev.NSTXdoubleX()` gives a configuration with X-points above *and* below the plasma.
+[`SolovevDoubleXpointEquilibriumNSTX`](@ref) gives a configuration with X-points above *and*
+below the plasma.
 
 ### Plotting
 
 ```@example solovev
 fig = Figure(size = (900, 400))
 
-plot_equilibrium!(fig[1,1], Solovev.ITER(xpoint = true);
+plot_equilibrium!(fig[1,1], SolovevXpointEquilibriumITER();
     title = "ITER", xlims = (0.6, 1.4))
-plot_equilibrium!(fig[1,2], Solovev.NSTX(xpoint = true);
+plot_equilibrium!(fig[1,2], SolovevXpointEquilibriumNSTX();
     title = "NSTX", xlims = (0.05, 2.3), ylims = (-2.25, +2.25))
-plot_equilibrium!(fig[1,3], Solovev.NSTXdoubleX();
+plot_equilibrium!(fig[1,3], SolovevDoubleXpointEquilibriumNSTX();
     title = "NSTX (double X-point)", xlims = (0.05, 2.3), ylims = (-2.25, +2.25))
 
 fig
@@ -96,18 +98,16 @@ X-point configuration there is one at the top and one at the bottom.
 ## Evaluating the Field
 
 ```@example solovev
-Solovev.@code_iter()
+field = FieldFunctions(SolovevEquilibriumITER())
 nothing # hide
 ```
-
-Each named configuration has its own code macro (`@code_iter`, `@code_nstx`, `@code_frc`, and the
-`_xpoint` variants); for an equilibrium built from explicit parameters use `Solovev.@code` or
-[`load_equilibrium`](@ref).
 
 The coordinates are normalised to ``R_0``, so a physical grid has to be divided by it before the
 generated functions are called:
 
 ```@example solovev
+R₀ = parameters(field).R₀
+
 nr, nz = 100, 120
 
 Rgrid = LinRange(3.0, 9.0, nr)
@@ -116,18 +116,20 @@ Zgrid = LinRange(-5.0, +5.0, nz)
 sample(f) = [f(0.0, Rgrid[i] / R₀, Zgrid[j] / R₀, 0.0)
              for i in eachindex(Rgrid), j in eachindex(Zgrid)]
 
-Bfield = sample(B)
-A_R = sample(A₁)
-A_Z = sample(A₂)
-A_ϕ = sample(A₃)
+Bfield = sample((t, ξ...) -> B(field, t, ξ...))
+A_R = sample((t, ξ...) -> A♭(field, t, ξ...)[1])
+A_Z = sample((t, ξ...) -> A♭(field, t, ξ...)[2])
+A_ϕ = sample((t, ξ...) -> A♭(field, t, ξ...)[3])
 
 extrema(Bfield)
 ```
 
-The plasma boundary is the flux surface parametrised by the shape parameters, which are available
-as constants in the generated code:
+The plasma boundary is the flux surface parametrised by the shape parameters, which the field
+carries as data:
 
 ```@example solovev
+ϵ, κ, δ = parameters(field).ϵ, parameters(field).κ, parameters(field).δ
+
 τ = LinRange(0, 2π, 200)
 
 boundary_R = R₀ .* (1 .+ ϵ .* cos.(τ .+ asin(δ) .* sin.(τ)))

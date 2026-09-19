@@ -1,7 +1,7 @@
 # Theta Pinch
 
 ```@docs
-ThetaPinch
+ThetaPinchEquilibrium
 ```
 
 ## Constructing the Field
@@ -10,7 +10,7 @@ ThetaPinch
 using CairoMakie
 using ElectromagneticFields
 
-equ = ThetaPinch.init()
+equ = ThetaPinchEquilibrium()
 ```
 
 ## Plotting

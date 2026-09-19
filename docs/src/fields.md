@@ -14,7 +14,7 @@ the subject of [Coordinates](coordinates.md).
 using ElectromagneticFields
 using LinearAlgebra
 
-AxisymmetricTokamakCylindrical.@code(6.2, 5.3, 2.0)
+field = FieldFunctions(AxisymmetricTokamakCylindricalEquilibrium(6.2, 5.3, 2.0))
 
 t = 0.0
 ξ = [6.5, 0.5, 0.25]
@@ -55,7 +55,7 @@ E^1 = - d \varphi \equiv E_i \, dx^i , \qquad E_i = - \partial_i \varphi , \qqua
 
 ## Vector Potential
 
-`A₁`, `A₂`, `A₃` are the covariant components, and they are exactly what the equilibrium supplied.
+`A♭` gives the covariant components, and they are exactly what the equilibrium supplied.
 For the cylindrical tokamak used here they are
 
 ```math
@@ -63,20 +63,19 @@ A (R, Z, \phi) = \frac{B_0}{2} \left( R_0 \frac{Z}{R} , \, - R_0 \ln \frac{R}{R_
 ```
 
 ```@example fields
-[A₁(t, ξ), A₂(t, ξ), A₃(t, ξ)]
+A♭(field, t, ξ)
 ```
 
-The contravariant components `A¹`, `A²`, `A³` are obtained by raising the index with the inverse
-metric. In this chart ``g^{11} = g^{22} = 1``, so only the third component differs, by a factor
-``1/R^2``:
+The contravariant components `A♯` are obtained by raising the index with the inverse metric. In
+this chart ``g^{11} = g^{22} = 1``, so only the third component differs, by a factor ``1/R^2``:
 
 ```@example fields
-[A¹(t, ξ), A²(t, ξ), A³(t, ξ)]
+A♯(field, t, ξ)
 ```
 
-First and second derivatives are generated as `dAᵢdxⱼ` and `d²Aᵢdxⱼdxₖ`, where the `x` in the name
-refers to the chart coordinates ``\xi``, not to cartesian ones. There are no physical components of
-`A`.
+First and second derivatives are generated as `DA♭` and `DDA♭`, differentiated with respect to the
+chart coordinates ``\xi`` rather than cartesian ones: `DA♭(field, t, ξ)[i,j]` is ``\partial_j
+A_i``. There are no physical components of `A`.
 
 The vector potential is only determined up to a gauge, and different gauges of the same field are
 genuinely different equilibria here, since the generated code follows whatever was written down.
@@ -90,32 +89,27 @@ magnetic axis.
 Two naming conventions are easy to trip over, so they are worth stating before the table.
 
 The first is that `B` is a scalar. It is ``|B|``, the magnitude of the magnetic field, and the
-components live under the indexed names. The second is that superscripts on `B` mean two different
-things depending on how many indices there are: `B¹`, `B²`, `B³` are the contravariant components of
-the field, while `B₁₂`, `B₂₃`, … are the components of the two-form ``B_{ij}``. In particular the
-generated function `B²` is the second contravariant component, not the two-form that the math above
-calls ``B^2``.
+components live under the decorated names. The second is that `B♭♭`, with two flats, is the
+two-form ``B_{ij}`` and not the covariant vector `B♭` — two lowered indices rather than one.
 
 | | |
 |---|---|
 | `B` | ``\|B\|``, the magnitude of the magnetic field |
-| `B₁, B₂, B₃` | covariant components |
-| `B¹, B², B³` | contravariant components |
-| `B₍₁₎, B₍₂₎, B₍₃₎` | physical components |
-| `B₁₁ … B₃₃` | components of the two-form ``B_{ij}`` |
-| `dBᵢdxⱼ` | derivatives of the covariant components |
-| `dBdxᵢ`, `d²Bdxᵢdxⱼ` | first and second derivatives of ``\|B\|`` |
+| `B♭` | covariant components |
+| `B♯` | contravariant components |
+| `B♮` | physical components |
+| `B♭♭` | components of the two-form ``B_{ij}`` |
+| `DB♭` | derivatives of the covariant components |
+| `DB`, `DDB` | first and second derivatives of ``\|B\|`` |
 
 ```@example fields
-B(t, ξ)
+B(field, t, ξ)
 ```
 
 The three representations, as columns — covariant, contravariant, physical:
 
 ```@example fields
-[B₁(t, ξ) B¹(t, ξ) B₍₁₎(t, ξ);
- B₂(t, ξ) B²(t, ξ) B₍₂₎(t, ξ);
- B₃(t, ξ) B³(t, ξ) B₍₃₎(t, ξ)]
+[B♭(field, t, ξ) B♯(field, t, ξ) B♮(field, t, ξ)]
 ```
 
 The covariant toroidal component is the outlier: it is ``B_0 R_0``, larger than the field strength
@@ -125,11 +119,11 @@ Contracting the covariant components with the contravariant ones nevertheless gi
 answer, as does the euclidean norm of the physical ones:
 
 ```@example fields
-Bcov = [B₁(t, ξ), B₂(t, ξ), B₃(t, ξ)]
-Bcon = [B¹(t, ξ), B²(t, ξ), B³(t, ξ)]
-Bphy = [B₍₁₎(t, ξ), B₍₂₎(t, ξ), B₍₃₎(t, ξ)]
+Bcov = B♭(field, t, ξ)
+Bcon = B♯(field, t, ξ)
+Bphy = B♮(field, t, ξ)
 
-magnitudes = (sqrt(Bcon' * Bcov) ≈ B(t, ξ), norm(Bphy) ≈ B(t, ξ))
+magnitudes = (sqrt(Bcon' * Bcov) ≈ B(field, t, ξ), norm(Bphy) ≈ B(field, t, ξ))
 @assert all(magnitudes) # hide
 magnitudes
 ```
@@ -138,9 +132,7 @@ The two-form is antisymmetric by construction, and its entries are the curl of `
 Hodge star has been applied:
 
 ```@example fields
-[B₁₁(t, ξ) B₁₂(t, ξ) B₁₃(t, ξ);
- B₂₁(t, ξ) B₂₂(t, ξ) B₂₃(t, ξ);
- B₃₁(t, ξ) B₃₂(t, ξ) B₃₃(t, ξ)]
+B♭♭(field, t, ξ)
 ```
 
 
@@ -155,23 +147,22 @@ b = \frac{B}{|B|} ,
 
 and `a` and `c` complete it to an orthonormal triad. `a` is the cross product of the first
 coordinate basis vector not parallel to `b` with `b` itself, `c` is `b × a`, and both are then
-normalised in the metric. Like every
-vector here they come in all three representations, both componentwise as `a₁ a₂ a₃`, `a¹ a² a³`,
-`a₍₁₎ a₍₂₎ a₍₃₎` and as the wrappers `a`, `a⃗`, `aₚ`.
+normalised in the metric. Like every vector here they come in all three representations, as
+`a♭`, `a♯` and `a♮`.
 
 Orthonormality is only visible as such in the physical components, where the Gram matrix of the
 triad is the identity:
 
 ```@example fields
-F = [aₚ(t, ξ) bₚ(t, ξ) cₚ(t, ξ)]
+F = [a♮(field, t, ξ) b♮(field, t, ξ) c♮(field, t, ξ)]
 
 @assert F' * F ≈ I # hide
 round.(F' * F; digits = 12)
 ```
 
-Derivatives of the unit vector are generated as `dbᵢdxⱼ` and `d²bᵢdxⱼdxₖ` for the covariant
-components and `db₍ᵢ₎dxⱼ` for the physical ones. No curvature or torsion is generated; those have to
-be assembled from these derivatives.
+Derivatives of the unit vector are generated as `Db♭` and `DDb♭` for the covariant components and
+`Db♮` for the physical ones. No curvature or torsion is generated; those have to be assembled from
+these derivatives.
 
 
 ## Electrostatic Potential and Electric Field
@@ -188,26 +179,22 @@ uniform Penning trap, with
 \varphi (x,y,z) = - E_0 \left( \frac{x^2}{2} + \frac{y^2}{2} - z^2 \right) ,
 ```
 
-in a session of its own, since a second `@code` call would collide with the several hundred names
-the tokamak has already spliced into the one above:
+a second field stands alongside the tokamak, because each field is a value of its own:
 
-```@example penning
-using ElectromagneticFields
+```@example fields
+trap = FieldFunctions(PenningTrapUniformEquilibrium(100.0, 10.0))
 
-PenningTrapUniform.@code(100.0, 10.0)
-
-t = 0.0
 x = [0.5, 0.3, 0.2]
 
-φ(t, x)
+φ(trap, t, x)
 ```
 
-```@example penning
-[E₁(t, x), E₂(t, x), E₃(t, x)]
+```@example fields
+E♭(trap, t, x)
 ```
 
 The chart is cartesian, so here the covariant, contravariant and physical components all coincide.
-Derivatives are generated as `dEᵢdxⱼ`. Unlike the magnetic field, the electric field has neither
+Derivatives are generated as `DE♭`. Unlike the magnetic field, the electric field has neither
 physical components nor a magnitude function.
 
 
@@ -218,31 +205,21 @@ chart it is written in. The same tokamak equilibrium is available in cartesian a
 coordinates, and at the same physical point the two agree — the contravariant components transform
 with `DF`, the covariant ones with `DF̄'`, and the magnitude is invariant.
 
-```@example independence
-using ElectromagneticFields
-
-module Cylindrical end
-module Cartesian end
-
-load_equilibrium(AxisymmetricTokamakCylindrical.init(6.2, 5.3, 2.0); target_module = Cylindrical)
-load_equilibrium(AxisymmetricTokamakCartesian.init(6.2, 5.3, 2.0); target_module = Cartesian)
+```@example fields
+cylindrical = field
+cartesian = FieldFunctions(AxisymmetricTokamakCartesianEquilibrium(6.2, 5.3, 2.0))
 nothing # hide
 ```
 
-```@example independence
-t = 0.0
-ξ = [6.5, 0.5, 0.25]
-x = Cylindrical.to_cartesian(t, ξ)
+```@example fields
+x = to_cartesian(cylindrical, t, ξ)
 
-Bcon = [Cylindrical.B¹(t, ξ), Cylindrical.B²(t, ξ), Cylindrical.B³(t, ξ)]
-Bcov = [Cylindrical.B₁(t, ξ), Cylindrical.B₂(t, ξ), Cylindrical.B₃(t, ξ)]
+Bcon_car = B♯(cartesian, t, x)
+Bcov_car = B♭(cartesian, t, x)
 
-Bcon_car = [Cartesian.B¹(t, x), Cartesian.B²(t, x), Cartesian.B³(t, x)]
-Bcov_car = [Cartesian.B₁(t, x), Cartesian.B₂(t, x), Cartesian.B₃(t, x)]
-
-transforms = (Cylindrical.DF(t, ξ) * Bcon ≈ Bcon_car,
-              Cylindrical.DF̄(t, ξ)' * Bcov ≈ Bcov_car,
-              Cylindrical.B(t, ξ) ≈ Cartesian.B(t, x))
+transforms = (DF(cylindrical, t, ξ) * Bcon ≈ Bcon_car,
+              DF̄(cylindrical, t, ξ)' * Bcov ≈ Bcov_car,
+              B(cylindrical, t, ξ) ≈ B(cartesian, t, x))
 @assert all(transforms) # hide
 transforms
 ```
@@ -251,8 +228,8 @@ The physical components make the same point more directly. The cartesian chart i
 frame, so the physical components of the cylindrical field are simply the components of the
 cartesian one:
 
-```@example independence
-physical = [Cylindrical.B₍₁₎(t, ξ), Cylindrical.B₍₂₎(t, ξ), Cylindrical.B₍₃₎(t, ξ)] ≈ Bcon_car
+```@example fields
+physical = B♮(cylindrical, t, ξ) ≈ Bcon_car
 @assert physical # hide
 physical
 ```

@@ -1,7 +1,7 @@
 # Singular Field
 
 ```@docs
-Singular
+SingularEquilibrium
 ```
 
 ## Constructing the Field
@@ -10,7 +10,7 @@ Singular
 using CairoMakie
 using ElectromagneticFields
 
-equ = Singular.init()
+equ = SingularEquilibrium()
 ```
 
 ## Plotting
@@ -26,7 +26,7 @@ plot_equilibrium(equ)
 ## Evaluating the Field
 
 ```@example singular
-Singular.@code()
+field = FieldFunctions(equ)
 nothing # hide
 ```
 
@@ -34,5 +34,5 @@ The divergence is steep enough to be worth keeping in mind when this field is us
 case — an order of magnitude closer to the axis means three orders of magnitude in ``|B|``:
 
 ```@example singular
-[B(0.0, r, 0.0, 0.0) for r in (1.0, 0.1, 0.01)]
+[B(field, 0.0, r, 0.0, 0.0) for r in (1.0, 0.1, 0.01)]
 ```

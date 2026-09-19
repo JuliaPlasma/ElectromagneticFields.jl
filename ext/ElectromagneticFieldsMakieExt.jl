@@ -5,20 +5,6 @@ using Makie: AxisAspect, DataAspect, Figure, GridLayout, GridPosition, GridSubpo
 
 using ElectromagneticFields
 using ElectromagneticFields: A₁, A₂, A₃, ξ¹, ξ²
-using ElectromagneticFields.ABC: ABCEquilibrium
-using ElectromagneticFields.AxisymmetricTokamakCartesian:
-                                                          AxisymmetricTokamakCartesianEquilibrium
-using ElectromagneticFields.AxisymmetricTokamakCylindrical:
-                                                            AxisymmetricTokamakCylindricalEquilibrium
-using ElectromagneticFields.AxisymmetricTokamakToroidal:
-                                                         AxisymmetricTokamakToroidalEquilibrium
-using ElectromagneticFields.Dipole: DipoleField
-using ElectromagneticFields.QuadraticPotentials: QuadraticPotentialsField
-using ElectromagneticFields.Singular: SingularEquilibrium
-using ElectromagneticFields.Solovev: SolovevEquilibrium, SolovevXpointEquilibrium
-using ElectromagneticFields.SolovevSymmetric: SolovevSymmetricEquilibrium
-using ElectromagneticFields.SymmetricQuadratic: SymmetricQuadraticEquilibrium
-using ElectromagneticFields.ThetaPinch: ThetaPinchEquilibrium
 
 import ElectromagneticFields: plot_equilibrium, plot_equilibrium!
 
@@ -88,7 +74,7 @@ function plot_equilibrium!(position::Position, equ::ABCEquilibrium;
 
     # Only the three mid-planes are shown, so only their 3nx² values are evaluated rather than the
     # full nx³ cube. `ni` picks the grid point closest to π, which for odd `nx` is π exactly.
-    B(x, y, z) = ElectromagneticFields.ABC.B([x, y, z], equ)
+    B(x, y, z) = ElectromagneticFields.B([x, y, z], equ)
 
     Bxy = [B(xgrid[i], xgrid[j], xgrid[ni])
            for i in eachindex(xgrid), j in eachindex(xgrid)]
@@ -253,7 +239,7 @@ function plot_equilibrium!(position::Position, equ::SingularEquilibrium;
             for i in eachindex(xgrid), j in eachindex(ygrid)]
     pot2 = [A₂([xgrid[i], ygrid[j], 0.0], equ)
             for i in eachindex(xgrid), j in eachindex(ygrid)]
-    Bfield = [ElectromagneticFields.Singular.B([xgrid[i], ygrid[j], 0.0], equ)
+    Bfield = [ElectromagneticFields.B([xgrid[i], ygrid[j], 0.0], equ)
               for i in eachindex(xgrid), j in eachindex(ygrid)]
 
     Blo = max(0.1, minimum(abs, Iterators.filter(isfinite, Bfield); init = 0.1))
@@ -288,7 +274,7 @@ function plot_equilibrium!(position::Position, equ::SymmetricQuadraticEquilibriu
     for (n, (component, title)) in enumerate((
         (A₁, L"A_x (x,y)"),
         (A₂, L"A_y (x,y)"),
-        (ElectromagneticFields.SymmetricQuadratic.B, L"B_z (x,y)")
+        (ElectromagneticFields.B, L"B_z (x,y)")
     ))
         vals = [component([xgrid[i], ygrid[j], 0.0], equ)
                 for i in eachindex(xgrid), j in eachindex(ygrid)]

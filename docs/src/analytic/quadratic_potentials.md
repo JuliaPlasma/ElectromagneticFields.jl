@@ -1,7 +1,7 @@
 # Quadratic Potentials
 
 ```@docs
-QuadraticPotentials
+QuadraticPotentialsField
 ```
 
 ## Constructing the Field
@@ -10,7 +10,7 @@ QuadraticPotentials
 using CairoMakie
 using ElectromagneticFields
 
-equ = QuadraticPotentials.init()
+equ = QuadraticPotentialsField()
 ```
 
 ## Plotting
@@ -28,7 +28,7 @@ This is one of the few fields that carries an electrostatic potential as well as
 so the generated code includes `φ` and the components of the electric field:
 
 ```@example quadratic
-QuadraticPotentials.@code()
+field = FieldFunctions(equ)
 nothing # hide
 ```
 
@@ -36,5 +36,5 @@ nothing # hide
 t = 0.0
 x = [0.5, 0.3, 0.2]
 
-φ(t, x), [E₁(t, x), E₂(t, x), E₃(t, x)]
+φ(field, t, x), E♭(field, t, x)
 ```

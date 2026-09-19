@@ -1,3 +1,6 @@
+
+const DEFAULT_SINGULAR_B₀ = 1.0
+
 @doc raw"""
 Singular magnetic field in (x,y,z) coordinates with covariant components of
 the vector potential given by
@@ -15,32 +18,14 @@ B(x,y,z) = B_0 \, \begin{pmatrix}
 
 Parameters: `B₀`
 """
-module Singular
-
-import ..ElectromagneticFields
-import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
-import ..ElectromagneticFields: A₁, A₂, A₃
-import ..AnalyticCartesianField: X, Y, Z
-
-export SingularEquilibrium
-
-const DEFAULT_B₀ = 1.0
-
 struct SingularEquilibrium{T <: Number} <: CartesianEquilibrium
     name::String
     B₀::T
     SingularEquilibrium{T}(B₀::T) where {T <: Number} = new("Singular Magnetic Field", B₀)
 end
 
-SingularEquilibrium(B₀::T = DEFAULT_B₀) where {T <: Number} = SingularEquilibrium{T}(B₀)
-
-function init(B₀ = DEFAULT_B₀)
-    SingularEquilibrium(B₀)
-end
-
-macro code(args...)
-    parameters, options = code_arguments(args)
-    code(init(parameters...); escape = true, options...)
+function SingularEquilibrium(B₀::T = DEFAULT_SINGULAR_B₀) where {T <: Number}
+    SingularEquilibrium{T}(B₀)
 end
 
 function Base.show(io::IO, equ::SingularEquilibrium)
@@ -53,16 +38,12 @@ R(x::AbstractVector, equ::SingularEquilibrium) = r(x, equ)
 θ(x::AbstractVector, equ::SingularEquilibrium) = atan(Y(x, equ), X(x, equ))
 ϕ(x::AbstractVector, equ::SingularEquilibrium) = θ(x, equ)
 
-ElectromagneticFields.A₁(x::AbstractVector, equ::SingularEquilibrium) = + equ.B₀ * x[2] /
-                                                                        sqrt(x[1]^2 +
-                                                                             x[2]^2)^3
-ElectromagneticFields.A₂(x::AbstractVector, equ::SingularEquilibrium) = - equ.B₀ * x[1] /
-                                                                        sqrt(x[1]^2 +
-                                                                             x[2]^2)^3
-ElectromagneticFields.A₃(x::AbstractVector, equ::SingularEquilibrium) = zero(eltype(x))
+A₁(x::AbstractVector, equ::SingularEquilibrium) = +equ.B₀ * x[2] / sqrt(x[1]^2 + x[2]^2)^3
+A₂(x::AbstractVector, equ::SingularEquilibrium) = -equ.B₀ * x[1] / sqrt(x[1]^2 + x[2]^2)^3
+A₃(x::AbstractVector, equ::SingularEquilibrium) = zero(eltype(x))
+
 B(x::AbstractVector, equ::SingularEquilibrium) = equ.B₀ / sqrt(x[1]^2 + x[2]^2)^3
 
-ElectromagneticFields.get_functions(::SingularEquilibrium) = (
-    X = X, Y = Y, Z = Z, R = R, r = r, θ = θ, ϕ = ϕ, r² = r²)
-
+function get_functions(::SingularEquilibrium)
+    (X = X, Y = Y, Z = Z, R = R, r = r, θ = θ, ϕ = ϕ, r² = r²)
 end

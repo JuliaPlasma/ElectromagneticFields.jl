@@ -1,3 +1,7 @@
+
+const DEFAULT_PENNING_UNIFORM_B₀ = 100.0
+const DEFAULT_PENNING_UNIFORM_E₀ = 10.0
+
 @doc raw"""
 Penning trap with uniform magnetic field in (x,y,z) coordinates.
 Based on Yanyan Shi, Yajuan Sun, Yulei Wang, Jian Liu, Study of adaptive symplectic methods for
@@ -24,17 +28,6 @@ Parameters:
 * `B₀`: B-field strength
 * `E₀`: E-field strength
 """
-module PenningTrapUniform
-
-import ..ElectromagneticFields
-import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
-import ..AnalyticCartesianField: X, Y, Z
-
-export PenningTrapUniformEquilibrium
-
-const DEFAULT_B₀ = 100.0
-const DEFAULT_E₀ = 10.0
-
 struct PenningTrapUniformEquilibrium{T <: Number} <: CartesianEquilibrium
     name::String
     B₀::T
@@ -45,16 +38,10 @@ struct PenningTrapUniformEquilibrium{T <: Number} <: CartesianEquilibrium
     end
 end
 
-PenningTrapUniformEquilibrium(B₀::T = DEFAULT_B₀,
-    E₀::T = DEFAULT_E₀) where {T <: Number} = PenningTrapUniformEquilibrium{T}(B₀, E₀)
-
-function init(B₀ = DEFAULT_B₀, E₀ = DEFAULT_E₀)
-    PenningTrapUniformEquilibrium(B₀, E₀)
-end
-
-macro code(args...)
-    parameters, options = code_arguments(args)
-    code(init(parameters...); escape = true, options...)
+function PenningTrapUniformEquilibrium(
+        B₀::T = DEFAULT_PENNING_UNIFORM_B₀,
+        E₀::T = DEFAULT_PENNING_UNIFORM_E₀) where {T <: Number}
+    PenningTrapUniformEquilibrium{T}(B₀, E₀)
 end
 
 function Base.show(io::IO, equ::PenningTrapUniformEquilibrium)
@@ -63,17 +50,12 @@ function Base.show(io::IO, equ::PenningTrapUniformEquilibrium)
     print(io, "  E₀ = ", equ.E₀)
 end
 
-ElectromagneticFields.A₁(x::AbstractVector, equ::PenningTrapUniformEquilibrium) = zero(eltype(x))
-ElectromagneticFields.A₂(x::AbstractVector, equ::PenningTrapUniformEquilibrium) = equ.B₀ *
-                                                                                  X(x, equ)
-ElectromagneticFields.A₃(x::AbstractVector, equ::PenningTrapUniformEquilibrium) = zero(eltype(x))
-ElectromagneticFields.φ(x::AbstractVector, equ::PenningTrapUniformEquilibrium) = - equ.E₀ *
-                                                                                 (X(x, equ)^2 /
-                                                                                  2 +
-                                                                                  Y(x, equ)^2 /
-                                                                                  2 -
-                                                                                  Z(x, equ)^2)
+A₁(x::AbstractVector, equ::PenningTrapUniformEquilibrium) = zero(eltype(x))
+A₂(x::AbstractVector, equ::PenningTrapUniformEquilibrium) = equ.B₀ * X(x, equ)
+A₃(x::AbstractVector, equ::PenningTrapUniformEquilibrium) = zero(eltype(x))
 
-ElectromagneticFields.get_functions(::PenningTrapUniformEquilibrium) = (X = X, Y = Y, Z = Z)
-
+function φ(x::AbstractVector, equ::PenningTrapUniformEquilibrium)
+    -equ.E₀ * (X(x, equ)^2 / 2 + Y(x, equ)^2 / 2 - Z(x, equ)^2)
 end
+
+get_functions(::PenningTrapUniformEquilibrium) = (X = X, Y = Y, Z = Z)

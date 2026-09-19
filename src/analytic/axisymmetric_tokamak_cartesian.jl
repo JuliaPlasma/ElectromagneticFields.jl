@@ -1,3 +1,8 @@
+
+const DEFAULT_TOKAMAK_CARTESIAN_R₀ = 1
+const DEFAULT_TOKAMAK_CARTESIAN_B₀ = 1
+const DEFAULT_TOKAMAK_CARTESIAN_q₀ = 2
+
 @doc raw"""
 Axisymmetric tokamak equilibrium in (x,y,z) coordinates with covariant
 components of the vector potential given by
@@ -14,54 +19,36 @@ Parameters:
 * `R₀`: position of magnetic axis
 * `B₀`: B-field at magnetic axis
 * `q₀`: safety factor at magnetic axis
+
+[`AxisymmetricTokamakCartesianITER`](@ref) returns this equilibrium with ITER's parameters.
 """
-module AxisymmetricTokamakCartesian
-
-import ..ElectromagneticFields
-import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
-import ..AnalyticCartesianField: X, Y, Z
-
-export AxisymmetricTokamakCartesianEquilibrium
-
-const DEFAULT_R₀ = 1
-const DEFAULT_B₀ = 1
-const DEFAULT_q₀ = 2
-
-const ITER_R₀ = 6.2
-const ITER_B₀ = 5.3
-const ITER_q₀ = √2
-
 struct AxisymmetricTokamakCartesianEquilibrium{T <: Number} <: CartesianEquilibrium
     name::String
     R₀::T
     B₀::T
     q₀::T
 
-    function AxisymmetricTokamakCartesianEquilibrium{T}(R₀::T, B₀::T, q₀::T) where {T <:
-                                                                                    Number}
+    function AxisymmetricTokamakCartesianEquilibrium{T}(
+            R₀::T, B₀::T, q₀::T) where {T <: Number}
         new("AxisymmetricTokamakCartesianEquilibrium", R₀, B₀, q₀)
     end
 end
 
-AxisymmetricTokamakCartesianEquilibrium(R₀::T = DEFAULT_R₀, B₀::T = DEFAULT_B₀,
-    q₀::T = DEFAULT_q₀) where {T <: Number} = AxisymmetricTokamakCartesianEquilibrium{T}(R₀, B₀, q₀)
-
-function init(R₀ = DEFAULT_R₀, B₀ = DEFAULT_B₀, q₀ = DEFAULT_q₀)
-    AxisymmetricTokamakCartesianEquilibrium(R₀, B₀, q₀)
+function AxisymmetricTokamakCartesianEquilibrium(
+        R₀::T = DEFAULT_TOKAMAK_CARTESIAN_R₀,
+        B₀::T = DEFAULT_TOKAMAK_CARTESIAN_B₀,
+        q₀::T = DEFAULT_TOKAMAK_CARTESIAN_q₀) where {T <: Number}
+    AxisymmetricTokamakCartesianEquilibrium{T}(R₀, B₀, q₀)
 end
 
-function ITER()
+"""
+    AxisymmetricTokamakCartesianITER()
+
+[`AxisymmetricTokamakCartesianEquilibrium`](@ref) with ITER's parameters, `ITER_R₀`, `ITER_B₀` and
+`ITER_q₀`.
+"""
+function AxisymmetricTokamakCartesianITER()
     AxisymmetricTokamakCartesianEquilibrium(ITER_R₀, ITER_B₀, ITER_q₀)
-end
-
-macro code(args...)
-    parameters, options = code_arguments(args)
-    code(init(parameters...); escape = true, options...)
-end
-
-macro code_iter(args...)
-    parameters, options = code_arguments(args)
-    code(ITER(parameters...); escape = true, options...)
 end
 
 function Base.show(io::IO, equ::AxisymmetricTokamakCartesianEquilibrium)
@@ -71,41 +58,35 @@ function Base.show(io::IO, equ::AxisymmetricTokamakCartesianEquilibrium)
     print(io, "  q₀ = ", equ.q₀)
 end
 
-R²(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = X(x, equ)^2 +
-                                                                      Y(x, equ)^2
-r²(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = (R(x, equ) - equ.R₀)^2 +
-                                                                      Z(x, equ)^2
+function R²(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium)
+    X(x, equ)^2 + Y(x, equ)^2
+end
+function r²(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium)
+    (R(x, equ) - equ.R₀)^2 + Z(x, equ)^2
+end
 R(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = sqrt(R²(x, equ))
 r(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = sqrt(r²(x, equ))
-θ(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = atan(Z(x, equ), R(x, equ) -
-                                                                                     equ.R₀)
-ϕ(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = atan(Y(x, equ), X(x, equ))
+function θ(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium)
+    atan(Z(x, equ), R(x, equ) - equ.R₀)
+end
+function ϕ(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium)
+    atan(Y(x, equ), X(x, equ))
+end
 
-ElectromagneticFields.A₁(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = + equ.B₀ *
-                                                                                            (equ.R₀ *
-                                                                                             X(x, equ) *
-                                                                                             Z(x, equ) -
-                                                                                             r²(x, equ) *
-                                                                                             Y(x, equ) /
-                                                                                             equ.q₀) /
-                                                                                            R²(x, equ) /
-                                                                                            2
-ElectromagneticFields.A₂(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = + equ.B₀ *
-                                                                                            (equ.R₀ *
-                                                                                             Y(x, equ) *
-                                                                                             Z(x, equ) +
-                                                                                             r²(x, equ) *
-                                                                                             X(x, equ) /
-                                                                                             equ.q₀) /
-                                                                                            R²(x, equ) /
-                                                                                            2
-ElectromagneticFields.A₃(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium) = - equ.B₀ *
-                                                                                            equ.R₀ *
-                                                                                            log(R(x, equ) /
-                                                                                                equ.R₀) /
-                                                                                            2
+function A₁(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium)
+    +equ.B₀ * (equ.R₀ * X(x, equ) * Z(x, equ) - r²(x, equ) * Y(x, equ) / equ.q₀) /
+    R²(x, equ) / 2
+end
+function A₂(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium)
+    +equ.B₀ * (equ.R₀ * Y(x, equ) * Z(x, equ) + r²(x, equ) * X(x, equ) / equ.q₀) /
+    R²(x, equ) / 2
+end
+function A₃(x::AbstractVector, equ::AxisymmetricTokamakCartesianEquilibrium)
+    # `log`, not `NaNMath.log`: unlike the cylindrical and toroidal charts this one is never
+    # evaluated at R = 0, since R² = x² + y² and the chart covers all of space.
+    -equ.B₀ * equ.R₀ * log(R(x, equ) / equ.R₀) / 2
+end
 
-ElectromagneticFields.get_functions(::AxisymmetricTokamakCartesianEquilibrium) = (
-    X = X, Y = Y, Z = Z, R = R, r = r, θ = θ, ϕ = ϕ, R² = R², r² = r²)
-
+function get_functions(::AxisymmetricTokamakCartesianEquilibrium)
+    (X = X, Y = Y, Z = Z, R = R, r = r, θ = θ, ϕ = ϕ, R² = R², r² = r²)
 end

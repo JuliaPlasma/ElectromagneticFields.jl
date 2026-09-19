@@ -5,9 +5,13 @@ authors = ["Michael Kraus <michael.kraus@ipp.mpg.de>"]
 
 [deps]
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
+GeometricBase = "9a0b12b7-583b-4f04-aa1f-d8551b6addc9"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 NaNMath = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
-SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
+PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
+RuntimeGeneratedFunctions = "7e49a35a-f44a-4d26-94aa-eba1b4ca6b47"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [weakdeps]
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
@@ -18,9 +22,13 @@ ElectromagneticFieldsMakieExt = "Makie"
 [compat]
 CairoMakie = "0.15"
 Combinatorics = "1"
+GeometricBase = "0.14"
 Makie = "0.24"
 NaNMath = "1"
-SymEngine = "0.12, 0.13"
+PrecompileTools = "1"
+RuntimeGeneratedFunctions = "0.5"
+StaticArrays = "1"
+Symbolics = "7"
 julia = "1.10"
 
 [extras]

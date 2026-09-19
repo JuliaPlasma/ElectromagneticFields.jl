@@ -2,6 +2,7 @@
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 ElectromagneticFields = "d6c1ba6f-ee03-53af-b876-68cefeb88ec8"
+Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [sources]
 ElectromagneticFields = {path = ".."}
@@ -9,3 +10,4 @@ ElectromagneticFields = {path = ".."}
 [compat]
 CairoMakie = "0.15"
 Documenter = "1"
+Symbolics = "7"

@@ -1,7 +1,7 @@
 # Axisymmetric Tokamak (Toroidal)
 
 ```@docs
-AxisymmetricTokamakToroidal
+AxisymmetricTokamakToroidalEquilibrium
 ```
 
 ## Constructing the Field
@@ -10,7 +10,7 @@ AxisymmetricTokamakToroidal
 using CairoMakie
 using ElectromagneticFields
 
-equ = AxisymmetricTokamakToroidal.init()
+equ = AxisymmetricTokamakToroidalEquilibrium()
 ```
 
 ## Plotting
@@ -28,7 +28,7 @@ plot_equilibrium(equ)
 ## Evaluating the Field
 
 ```@example att
-AxisymmetricTokamakToroidal.@code()
+field = FieldFunctions(AxisymmetricTokamakToroidalEquilibrium())
 nothing # hide
 ```
 
@@ -39,11 +39,11 @@ The chart maps ``(r, \theta, \phi)`` to the cartesian coordinates, and `to_carte
 t = 0.0
 ξ = [0.5, π/4, 0.0]
 
-x = to_cartesian(t, ξ)
+x = to_cartesian(field, t, ξ)
 ```
 
 ```@example att
-roundtrip = from_cartesian(t, x) ≈ ξ
+roundtrip = from_cartesian(field, t, x) ≈ ξ
 @assert roundtrip # hide
 roundtrip
 ```
@@ -54,7 +54,33 @@ determinant `J`:
 ```@example att
 using LinearAlgebra
 
-signed = det(DF(t, ξ)) ≈ orientation() * J(t, ξ)
+signed = det(DF(field, t, ξ)) ≈ orientation(field) * J(field, t, ξ)
 @assert signed # hide
-orientation(), signed
+orientation(field), signed
+```
+
+
+## The Regularized Gauge
+
+```@docs
+AxisymmetricTokamakToroidalRegularizationEquilibrium
+```
+
+The vector potential is fixed only up to a gauge, and the two gauges are genuinely different
+equilibria here, because the generated code follows whatever was written down. The poloidal
+vector potential of the chart above is singular on the magnetic axis; this variant carries the
+same magnetic field in a gauge that is regular there.
+
+```@example att
+regular = FieldFunctions(AxisymmetricTokamakToroidalRegularizationEquilibrium())
+
+same_field = B♭(regular, t, ξ) ≈ B♭(field, t, ξ)
+@assert same_field # hide
+same_field
+```
+
+The vector potentials differ, as they must:
+
+```@example att
+[A♭(field, t, ξ) A♭(regular, t, ξ)]
 ```

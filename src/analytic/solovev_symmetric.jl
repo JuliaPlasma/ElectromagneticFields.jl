@@ -1,3 +1,9 @@
+
+const DEFAULT_SOLOVEV_SYMMETRIC_R₀ = 1.0
+const DEFAULT_SOLOVEV_SYMMETRIC_B₀ = 1.0
+const DEFAULT_SOLOVEV_SYMMETRIC_α = 2.0
+const DEFAULT_SOLOVEV_SYMMETRIC_β = 0.5
+
 @doc raw"""
 Symmetric Solov'ev equilibrium in cartesian (x,y,z) coordinates.
 Based on McCarthy, Physics of Plasmas 6, 3554, 1999.
@@ -12,19 +18,6 @@ Parameters:
  * `B₀`: B-field at magnetic axis
  * `α`, `β`: free constants
 """
-module SolovevSymmetric
-
-import ..ElectromagneticFields
-import ..ElectromagneticFields: CartesianEquilibrium, code, code_arguments
-import ..AnalyticCartesianField: X, Y, Z
-
-export SolovevSymmetricEquilibrium
-
-const DEFAULT_R₀ = 1.0
-const DEFAULT_B₀ = 1.0
-const DEFAULT_α = 2.0
-const DEFAULT_β = 0.5
-
 struct SolovevSymmetricEquilibrium{T <: Number} <: CartesianEquilibrium
     name::String
     R₀::T
@@ -37,18 +30,12 @@ struct SolovevSymmetricEquilibrium{T <: Number} <: CartesianEquilibrium
     end
 end
 
-function SolovevSymmetricEquilibrium(R₀::T = DEFAULT_R₀, B₀::T = DEFAULT_B₀,
-        α::T = DEFAULT_α, β::T = DEFAULT_β) where {T <: Number}
+function SolovevSymmetricEquilibrium(
+        R₀::T = DEFAULT_SOLOVEV_SYMMETRIC_R₀,
+        B₀::T = DEFAULT_SOLOVEV_SYMMETRIC_B₀,
+        α::T = DEFAULT_SOLOVEV_SYMMETRIC_α,
+        β::T = DEFAULT_SOLOVEV_SYMMETRIC_β) where {T <: Number}
     SolovevSymmetricEquilibrium{T}(R₀, B₀, α, β)
-end
-
-function init(R₀ = DEFAULT_R₀, B₀ = DEFAULT_B₀, α = DEFAULT_α, β = DEFAULT_β)
-    SolovevSymmetricEquilibrium(R₀, B₀, α, β)
-end
-
-macro code(args...)
-    parameters, options = code_arguments(args)
-    code(init(parameters...); escape = true, options...)
 end
 
 function Base.show(io::IO, equ::SolovevSymmetricEquilibrium)
@@ -59,17 +46,10 @@ function Base.show(io::IO, equ::SolovevSymmetricEquilibrium)
     print(io, "  β  = ", equ.β)
 end
 
-ElectromagneticFields.A₁(x::AbstractVector, equ::SolovevSymmetricEquilibrium) = zero(eltype(x))
-ElectromagneticFields.A₂(x::AbstractVector, equ::SolovevSymmetricEquilibrium) = zero(eltype(x))
-ElectromagneticFields.A₃(x::AbstractVector, equ::SolovevSymmetricEquilibrium) = - equ.B₀ *
-                                                                                (equ.α *
-                                                                                 (equ.R₀ +
-                                                                                  X(x, equ))^4 /
-                                                                                 4 +
-                                                                                 equ.β *
-                                                                                 Y(x, equ)^2) /
-                                                                                2
-
-ElectromagneticFields.get_functions(::SolovevSymmetricEquilibrium) = (X = X, Y = Y, Z = Z)
-
+A₁(x::AbstractVector, equ::SolovevSymmetricEquilibrium) = zero(eltype(x))
+A₂(x::AbstractVector, equ::SolovevSymmetricEquilibrium) = zero(eltype(x))
+function A₃(x::AbstractVector, equ::SolovevSymmetricEquilibrium)
+    -equ.B₀ * (equ.α * (equ.R₀ + X(x, equ))^4 / 4 + equ.β * Y(x, equ)^2) / 2
 end
+
+get_functions(::SolovevSymmetricEquilibrium) = (X = X, Y = Y, Z = Z)
