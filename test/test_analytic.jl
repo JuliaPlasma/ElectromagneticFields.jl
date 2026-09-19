@@ -13,6 +13,18 @@ const ξ = [1.05, 0.5, 0.5]
 generics() = (getfield(ElectromagneticFields, name) for name in FIELD_FUNCTION_NAMES)
 
 """
+Allocations of one call to `f`, measured behind a function barrier.
+
+`f` arrives untyped from `generics()`, so the call is dynamically dispatched and `@allocated`
+applied to it directly charges for boxing the result rather than for the work — the barrier
+`docs/src/interface.md` prescribes for users is needed here for the same reason.
+"""
+@noinline function allocations(f, field, t, ξ)
+    f(field, t, ξ)      # warm up
+    @allocated(f(field, t, ξ))
+end
+
+"""
 Every generic accepts a coordinate vector and three scalars and gives the same answer; every one
 returns the coordinates' float type; and none of them allocates.
 
@@ -31,8 +43,7 @@ function test_interface(field, t, ξ)
         v = f(field, t, ξ)
         @test (v isa Number ? typeof(v) : eltype(v)) === eltype(ξ)
 
-        f(field, t, ξ)      # warm up
-        @test @allocated(f(field, t, ξ)) == 0
+        @test allocations(f, field, t, ξ) == 0
     end
 
     # the domain bounds take no time
