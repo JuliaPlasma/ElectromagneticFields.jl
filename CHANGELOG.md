@@ -177,6 +177,27 @@ not covered here; see the git history for those.
   The only bytes that change at runtime are the `"Dḡ"` and `"DDḡ"` labels passed to `symprint`,
   which prints them; string literals are not parser-normalised. Nothing reads that output back.
 
+### Fixed
+
+- **Contour plots of a field that diverges inside the plot window work again on Makie 0.24.15.**
+  That release orders every traced contour line through `canonical_line_order`, which takes the
+  smallest vertex of a closed line and then keeps the candidate rotations that equal it. A vertex
+  holding a `NaN` equals nothing, so no candidate survives and the reduction over them throws
+  `reducing over an empty collection is not allowed`.
+
+  Such a vertex appears wherever the sampled grid meets a singular line. The tracer places each
+  vertex at `(level - z₁) / (z₂ - z₁)` along a cell edge, so one non-finite sample makes every
+  vertex of the lines through the cells around it `NaN`. `SingularEquilibrium` has `A₁ = A₂ = 0/0`
+  and `|B| = 1/0` at the origin, which every grid with odd `nx` and `ny` over a window straddling
+  the axis samples — `nx = 37, ny = 53` and `nx = 101, ny = 101` among them. All eight test jobs
+  of the CI matrix were red on this, on every operating system and every Julia version.
+
+  The panel values are now made finite before they reach `contour!`: a `NaN` becomes the lowest
+  finite sample of the panel, which is the side the tracer already reads it on, and `±Inf` is
+  clamped into the finite range. Finite samples pass through untouched, so no other plot changes,
+  and the package no longer depends on Makie tolerating a `NaN` vertex. `[compat] Makie = "0.24"`
+  is left as it is, because 0.24.14 and earlier were never affected.
+
 ## [0.8.0] - 2026-08-10
 
 ### Changed

@@ -35,12 +35,26 @@ end
 # Shared drawing helper. The values are expected in Makie's convention, i.e. `vals[i,j]` holds the
 # value at `(xgrid[i], ygrid[j])`.
 
+# A field that diverges inside the plot range yields Inf or NaN wherever the grid meets its singular
+# line. The contour tracer puts each vertex at `(level - z₁) / (z₂ - z₁)` along a cell edge, so a
+# single non-finite sample makes every vertex of the lines through the cells around it NaN, and
+# Makie cannot order a line that holds a NaN. The tracer compares each sample against the level and
+# reads a NaN as below it, so mapping NaN to the lowest finite sample of the panel leaves the traced
+# lines where they were and only makes their vertices finite; Inf is clamped into the finite range
+# for the same reason. A finite sample passes through untouched, and so does a finite panel.
+function finitevalues(vals)
+    all(isfinite, vals) && return vals
+    lo, hi = extrema(Iterators.filter(isfinite, vals))
+    map(v -> isnan(v) ? lo : clamp(v, lo, hi), vals)
+end
+
 function contourpanel!(position::Position, xgrid, ygrid, vals;
         title = "", xlabel = L"x", ylabel = L"y", levels = 20,
         aspect = DataAspect(), colorbar = false, colormap = :viridis, kwargs...)
     ax = Axis(
         position[1, 1]; title = title, xlabel = xlabel, ylabel = ylabel, aspect = aspect)
-    contour!(ax, xgrid, ygrid, vals; levels = levels, colormap = colormap, kwargs...)
+    contour!(ax, xgrid, ygrid, finitevalues(vals); levels = levels, colormap = colormap,
+        kwargs...)
 
     if colorbar
         # a line contour carries no colormap Makie could derive a colorbar from, so the range of
