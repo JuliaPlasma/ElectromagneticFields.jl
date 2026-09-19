@@ -455,10 +455,15 @@ end
     @test isempty(ElectromagneticFields.FIELD_CACHE)
     @test B♭(uncached, t, ξ) == B♭(b, t, ξ)
 
-    # a cached build fills it, and a field rebuilt after a clear agrees with the one it replaces
+    # a cached build fills it, and a field rebuilt after a clear agrees with the one it replaces.
+    # The three checks are separate on purpose: a rebuilt field carries the very same generated
+    # function and the very same parameters, and only because of that do its values agree to the
+    # last bit. Comparing the values alone cannot say which of the three broke.
     rebuilt = FieldFunctions(AxisymmetricTokamakCylindricalEquilibrium(6.2, 5.3, 1.7))
     @test !isempty(ElectromagneticFields.FIELD_CACHE)
     for name in ElectromagneticFields.FIELD_FUNCTION_NAMES
+        @test functions(rebuilt)[name].f === functions(b)[name].f
+        @test functions(rebuilt)[name].p == functions(b)[name].p
         f = getfield(ElectromagneticFields, name)
         @test f(rebuilt, t, ξ) == f(b, t, ξ)
     end
