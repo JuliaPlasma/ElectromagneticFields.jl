@@ -419,6 +419,11 @@ end
 # baked in, which is what lets one compiled function serve every parameter value of a type — and
 # in turn what makes the cache, and the precompilation that fills it, correct.
 
+# How far two builds of one equilibrium may drift apart. Reassociating the same arithmetic moves
+# the last bit or two, and how far depends on what the platform contracts; a wrong formula moves it
+# by O(1), so this is tight enough to catch one and four orders tighter than `≈` on its own.
+const REBUILD_RTOL = 1.0e-12
+
 @testset "$(rpad("Symbolic parameters and the cache", 60))" begin
     a = FieldFunctions(AxisymmetricTokamakCylindricalEquilibrium(1.0, 1.0, 2.0))
     b = FieldFunctions(AxisymmetricTokamakCylindricalEquilibrium(6.2, 5.3, 1.7))
@@ -441,10 +446,15 @@ end
     @test :c ∈ keys(parameters(FIELDS["SolovevITER"]))
 
     # Note what the identity above does and does not witness. A `RuntimeGeneratedFunction` is
-    # identified by a hash of its body, so two built independently from the same expression are
-    # `===` whether or not either came from the cache — which is exactly why the cache can
-    # survive precompilation. It is still evidence that the parameters are arguments: baked in as
-    # literals they would give `a` and `b` different bodies, and so different objects.
+    # identified by a hash of its body, so two built from the same expression are `===` whether or
+    # not either came from the cache — which is exactly why the cache can survive precompilation.
+    # It is still evidence that the parameters are arguments: baked in as literals they would give
+    # `a` and `b` different bodies, and so different objects.
+    #
+    # It says nothing about two separate traces of the same equilibrium, which need not produce the
+    # same expression at all: the simplifier is free to choose any equivalent form, and
+    # SymbolicUtils 4.46.8 chooses a different one for about half of these functions. So a rebuild
+    # guarantees the same field, not the same rounding — see the comparison below.
     #
     # Whether the cache was used is therefore observed through the cache itself.
     clear_field_cache!()
@@ -453,13 +463,17 @@ end
     uncached = FieldFunctions(AxisymmetricTokamakCylindricalEquilibrium(6.2, 5.3, 1.7);
         cache = false)
     @test isempty(ElectromagneticFields.FIELD_CACHE)
-    @test B♭(uncached, t, ξ) == B♭(b, t, ξ)
+    @test B♭(uncached, t, ξ) ≈ B♭(b, t, ξ) rtol=REBUILD_RTOL
 
-    # a cached build fills it, and a field rebuilt after a clear agrees with the one it replaces
+    # a cached build fills it, and a field rebuilt after a clear agrees with the one it replaces.
+    # The parameters are compared exactly, because those are the equilibrium's own numbers and a
+    # rebuild copies them. The values are compared to a few ULP, because the two bodies may be
+    # different orderings of the same arithmetic; a wrong formula is off by O(1) and still fails.
     rebuilt = FieldFunctions(AxisymmetricTokamakCylindricalEquilibrium(6.2, 5.3, 1.7))
     @test !isempty(ElectromagneticFields.FIELD_CACHE)
     for name in ElectromagneticFields.FIELD_FUNCTION_NAMES
+        @test functions(rebuilt)[name].p == functions(b)[name].p
         f = getfield(ElectromagneticFields, name)
-        @test f(rebuilt, t, ξ) == f(b, t, ξ)
+        @test f(rebuilt, t, ξ) ≈ f(b, t, ξ) rtol=REBUILD_RTOL
     end
 end

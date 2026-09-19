@@ -177,6 +177,40 @@ not covered here; see the git history for those.
   The only bytes that change at runtime are the `"Dḡ"` and `"DDḡ"` labels passed to `symprint`,
   which prints them; string literals are not parser-normalised. Nothing reads that output back.
 
+### Fixed
+
+- **Contour plots of a field that diverges inside the plot window work again on Makie 0.24.15.**
+  That release orders every traced contour line through `canonical_line_order`, which takes the
+  smallest vertex of a closed line and then keeps the candidate rotations that equal it. A vertex
+  holding a `NaN` equals nothing, so no candidate survives and the reduction over them throws
+  `reducing over an empty collection is not allowed`.
+
+  Such a vertex appears wherever the sampled grid meets a singular line. The tracer places each
+  vertex at `(level - z₁) / (z₂ - z₁)` along a cell edge, so one non-finite sample makes every
+  vertex of the lines through the cells around it `NaN`. `SingularEquilibrium` has `A₁ = A₂ = 0/0`
+  and `|B| = 1/0` at the origin, which every grid with odd `nx` and `ny` over a window straddling
+  the axis samples — `nx = 37, ny = 53` and `nx = 101, ny = 101` among them. All eight test jobs
+  of the CI matrix were red on this, on every operating system and every Julia version.
+
+  The panel values are now made finite before they reach `contour!`: a `NaN` becomes the lowest
+  finite sample of the panel, which is the side the tracer already reads it on, and `±Inf` is
+  clamped into the finite range. Finite samples pass through untouched, so no other plot changes,
+  and the package no longer depends on Makie tolerating a `NaN` vertex. `[compat] Makie = "0.24"`
+  is left as it is, because 0.24.14 and earlier were never affected.
+
+- **A field rebuilt after `clear_field_cache!()` agrees with the one it replaces to a few ULP, not
+  bit for bit.** Two symbolic traces of one equilibrium need not produce the same expression: the
+  simplifier may choose any equivalent form, and SymbolicUtils 4.46.8 chooses a different one for
+  about half of the 41 generated functions. The generated bodies then differ, and whether that
+  reaches the result depends on what the platform contracts — on aarch64 macOS under Julia 1 it
+  moves the last bit of 11 of them, on Windows under the Julia floor it moves none.
+
+  Nothing about a field's accuracy changes; both forms evaluate the same quantity. What changes is
+  the guarantee the test suite states. It compared the values of a rebuilt field bit for bit, which
+  made it a lottery over the platform: red on aarch64 macOS, green elsewhere for no better reason
+  than rounding. It now compares the parameters exactly, and the values at `rtol = 1e-12`, four
+  orders tighter than `≈` alone and far tighter than any real error in a formula.
+
 ## [0.8.0] - 2026-08-10
 
 ### Changed
