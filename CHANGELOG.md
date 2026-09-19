@@ -198,6 +198,19 @@ not covered here; see the git history for those.
   and the package no longer depends on Makie tolerating a `NaN` vertex. `[compat] Makie = "0.24"`
   is left as it is, because 0.24.14 and earlier were never affected.
 
+- **A field rebuilt after `clear_field_cache!()` agrees with the one it replaces to a few ULP, not
+  bit for bit.** Two symbolic traces of one equilibrium need not produce the same expression: the
+  simplifier may choose any equivalent form, and SymbolicUtils 4.46.8 chooses a different one for
+  about half of the 41 generated functions. The generated bodies then differ, and whether that
+  reaches the result depends on what the platform contracts — on aarch64 macOS under Julia 1 it
+  moves the last bit of 11 of them, on Windows under the Julia floor it moves none.
+
+  Nothing about a field's accuracy changes; both forms evaluate the same quantity. What changes is
+  the guarantee the test suite states. It compared the values of a rebuilt field bit for bit, which
+  made it a lottery over the platform: red on aarch64 macOS, green elsewhere for no better reason
+  than rounding. It now compares the parameters exactly, and the values at `rtol = 1e-12`, four
+  orders tighter than `≈` alone and far tighter than any real error in a formula.
+
 ## [0.8.0] - 2026-08-10
 
 ### Changed
