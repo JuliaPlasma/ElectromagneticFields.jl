@@ -188,11 +188,12 @@ not covered here; see the git history for those.
   failure was silent — the `SVector` fits, so there was no bounds error, and `parameters(field)`
   read the right struct while every accessor computed from the wrong slots.
 
-  No field this package ships can reach it. Exactly two structs have a vector parameter,
-  `SolovevEquilibrium` and `SolovevXpointEquilibrium`, and each has one; `ZeroPerturbation` has no
-  parameters and `EzCosZPerturbation` one scalar. The total is therefore a function of the type
-  pair alone. An equilibrium of your own with two vector parameters reaches it with no
-  perturbation involved.
+  No field this package ships can reach it. Exactly two structs carry a vector parameter,
+  `SolovevEquilibrium` and `SolovevXpointEquilibrium`, and each carries exactly one;
+  `ZeroPerturbation` has no parameters and `EzCosZPerturbation` one scalar. With a single vector
+  per struct the total fixes that vector's length, and with it the split, which is why the old key
+  held for every shipped field. An equilibrium of your own with two vector parameters reaches the
+  collision with no perturbation involved.
 
   A value that the generated code bakes in as a literal — anything the `A₁`, `φ` or metric methods
   read that `get_parameters` omits — stays invisible to the key, and no key over parameters can

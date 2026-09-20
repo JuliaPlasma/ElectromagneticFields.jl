@@ -482,9 +482,8 @@ end
 # separate. Lengths `(2, 3)` and `(3, 2)` both flatten to five slots, and the generated code reads
 # those slots positionally, so the second field would be served the first one's code and return
 # numbers computed from the wrong parameters — no bounds error, no `MethodError`, and `parameters`
-# still showing the right struct. Nothing shipped here can reach it: each Solov'ev type has one
-# vector parameter and the perturbations have a fixed count, so the total is a function of the
-# type pair alone.
+# still showing the right struct. Nothing shipped here can reach it: the two structs that carry a
+# vector parameter carry exactly one each, so their total fixes its length and with it the split.
 module TwoVectorField
 
 using ElectromagneticFields: CartesianEquilibrium, X, Y
@@ -524,7 +523,7 @@ end
     @test ElectromagneticFields.parameter_shape(ThetaPinchEquilibrium()) == (0,)
     @test ElectromagneticFields.parameter_shape(ZeroPerturbation()) == ()
 
-    # the two shapes flatten to the same number of slots, which is what the key used to carry
+    # the two shapes flatten to the same number of slots: a total alone cannot separate them
     @test length(ElectromagneticFields.parameter_values(equ23)) ==
           length(ElectromagneticFields.parameter_values(equ32))
 
