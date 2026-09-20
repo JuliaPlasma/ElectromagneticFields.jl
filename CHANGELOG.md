@@ -195,12 +195,13 @@ not covered here; see the git history for those.
   asserts the boundary conditions the solve imposes, which nothing did before — every identity it
   checked holds for any coefficients whatever.
 
-  It costs cold session time. Each distinct expression becomes a `RuntimeGeneratedFunction` that
-  Julia compiles on its first call, and the six shipped Solov'ev equilibria make 702 evaluations
-  over 59 distinct expressions, so building all six in a fresh process goes from 0.38 s to 0.75 s
-  — median of five cold processes, Julia 1.13 on aarch64 macOS. Compilation is the whole of it:
-  building one function per distinct expression rather than one per call recovers none of the
-  difference, and the second pass in one process is 0.018 s either way.
+  It costs cold session time. Each distinct expression becomes a `RuntimeGeneratedFunction`
+  that Julia compiles on its first call, and the six shipped Solov'ev equilibria make 702
+  evaluations over 59 distinct expressions, so building all six in a fresh process roughly
+  doubles, from about 0.37 s to about 0.7 s — median of five cold processes each, ratio
+  between 1.8× and 2.0× across three runs, Julia 1.13 on aarch64 macOS. Compilation is
+  the whole of it: building one function per distinct expression rather than one per call
+  recovers none of the difference, and the second pass in one process is 0.018 s either way.
 
 ### Fixed
 
