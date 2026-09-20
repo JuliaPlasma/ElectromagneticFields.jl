@@ -141,9 +141,15 @@ maxx¹(ξ::AbstractVector{T}, equ::AnalyticField) where {T} = +T(Inf)
 maxx²(ξ::AbstractVector{T}, equ::AnalyticField) where {T} = +T(Inf)
 maxx³(ξ::AbstractVector{T}, equ::AnalyticField) where {T} = +T(Inf)
 
-function GeometricBase.periodicity(x::AbstractVector{T}, ::AnalyticField) where {T}
-    (-Inf * ones(T, 4), +Inf * ones(T, 4))
-end
+# `periodicity(equ)` says which of the chart's three coordinates are periodic, one `Bool` each. It
+# is defined per chart family, in that chart's own source file next to its `minx`/`maxx` bounds,
+# and there is deliberately **no default**: a chart nobody has answered for raises a `MethodError`
+# when a field is built from it.
+#
+# It cannot be derived from `minx`/`maxx`, because a bounded range does not imply periodicity. The
+# two agree on every chart here — each bounds exactly its angles, to [0, 2π] — but a wall at r = a
+# or a slab bounded in z would bound a coordinate that does not wrap. An all-`false` default was
+# rejected for the same reason a derived answer was: it lets a periodic chart answer silently.
 
 """
     from_cartesian(x, equ::AnalyticField)

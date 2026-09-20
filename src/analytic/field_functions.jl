@@ -154,9 +154,9 @@ and the scalar potential `φ`.
 
 Four things are data rather than functions: `parameters(field)` returns the equilibrium's scalar
 parameters, `coordinates(field)` the equilibrium's own coordinate helpers such as `R`, `r`, `θ` and
-`ϕ`, `periodicity(field)` the periodic domain, and `orientation(field)` the sign of the chart's
-handedness — see [`orientation`](@ref). `functions(field)` returns all of the above generated
-functions as a `NamedTuple`.
+`ϕ`, `periodicity(field)` an `SVector{3, Bool}` saying which coordinates of the chart are periodic,
+and `orientation(field)` the sign of the chart's handedness — see [`orientation`](@ref).
+`functions(field)` returns all of the above generated functions as a `NamedTuple`.
 
 # Parameters
 
@@ -302,7 +302,7 @@ function FieldFunctions(equ::AnalyticEquilibrium,
     par = NamedTuple{names}(map(name -> getfield(equ, name), names))
 
     FieldFunctions(equ, pert, par, crd,
-        GeometricBase.periodicity(zeros(3), equ), orientation(equ), fns)
+        GeometricBase.periodicity(equ), orientation(equ), fns)
 end
 
 # `FIELD_FUNCTION_DOCS` drives the construction above, the accessors below and their docstrings,

@@ -434,6 +434,81 @@ end
     end
 end
 
+# `periodicity` is answered per chart family rather than per equilibrium, because it is a property
+# of the chart, and it has no fallback. So there are three things to check: that each family gives
+# the right answer, that the families between them account for every shipped equilibrium, and that
+# a chart which has not answered fails loudly instead of reporting no periodicity.
+#
+# A chart that has not answered is the case worth a test of its own. An all-`false` default would
+# be indistinguishable, at every call site, from a chart that really has no periodic coordinate.
+
+module NoChartAnswer
+
+using ElectromagneticFields: AnalyticEquilibrium
+import ElectromagneticFields: A₁, A₂, A₃, x¹, x², x³, ξ¹, ξ², ξ³, J
+
+# A chart of its own — subtyping `AnalyticEquilibrium` rather than `CartesianEquilibrium` is what
+# keeps it away from the cartesian family's method. It is the identity map, so it is a well-formed
+# chart in every respect but the one being tested.
+struct UnansweredChartEquilibrium{T <: Number} <: AnalyticEquilibrium
+    name::String
+    B₀::T
+
+    function UnansweredChartEquilibrium{T}(B₀::T) where {T <: Number}
+        new("UnansweredChartEquilibrium", B₀)
+    end
+end
+
+function UnansweredChartEquilibrium(B₀::T) where {T <: Number}
+    UnansweredChartEquilibrium{T}(B₀)
+end
+
+x¹(ξ::AbstractVector, ::UnansweredChartEquilibrium) = ξ[1]
+x²(ξ::AbstractVector, ::UnansweredChartEquilibrium) = ξ[2]
+x³(ξ::AbstractVector, ::UnansweredChartEquilibrium) = ξ[3]
+ξ¹(x::AbstractVector, ::UnansweredChartEquilibrium) = x[1]
+ξ²(x::AbstractVector, ::UnansweredChartEquilibrium) = x[2]
+ξ³(x::AbstractVector, ::UnansweredChartEquilibrium) = x[3]
+J(x::AbstractVector, ::UnansweredChartEquilibrium) = one(eltype(x))
+
+A₁(x::AbstractVector, equ::UnansweredChartEquilibrium) = -equ.B₀ * x[2] / 2
+A₂(x::AbstractVector, equ::UnansweredChartEquilibrium) = +equ.B₀ * x[1] / 2
+A₃(x::AbstractVector, ::UnansweredChartEquilibrium) = zero(eltype(x))
+
+end
+
+@testset "$(rpad("Periodicity is a property of the chart", 60))" begin
+    cartesian = ["ABC", "AxisymmetricTokamakCartesian", "Dipole", "PenningTrapUniform",
+        "PenningTrapBottle", "PenningTrapAsymmetric", "QuadraticPotentials", "Singular",
+        "SymmetricQuadratic", "ThetaPinch", "SolovevSymmetric"]
+    cylindrical = ["AxisymmetricTokamakCylindrical", "SolovevFRC", "SolovevITER",
+        "SolovevITERwXpoint", "SolovevNSTX", "SolovevNSTXwXpoint", "SolovevNSTXwDoubleXpoint"]
+    toroidal = ["AxisymmetricTokamakToroidal", "AxisymmetricTokamakToroidalRegularization"]
+
+    # the three families account for every equilibrium the table above builds, so a new one cannot
+    # be added without landing in a family here or failing this line
+    @test sort(vcat(cartesian, cylindrical, toroidal)) == sort([e[1] for e in EQUILIBRIA])
+
+    for (names, expected) in ((cartesian, SVector(false, false, false)),
+        (cylindrical, SVector(false, false, true)),
+        (toroidal, SVector(false, true, true)))
+        for name in names
+            @test periodicity(FIELDS[name]) == expected
+        end
+    end
+
+    # the field stores what the equilibrium says, with the element type it says it in
+    for (name, equ, _, _, _, _) in EQUILIBRIA
+        @test periodicity(FIELDS[name]) === periodicity(equ)
+        @test periodicity(equ) isa SVector{3, Bool}
+    end
+
+    # no fallback: a chart nobody has answered for raises rather than answering `false` everywhere
+    equ = NoChartAnswer.UnansweredChartEquilibrium(2.0)
+    @test_throws MethodError periodicity(equ)
+    @test_throws MethodError FieldFunctions(equ)
+end
+
 # A perturbation is combined with its equilibrium symbolically, before any code is generated, so
 # the perturbed field is a `FieldFunctions` like any other. `EzCosZPerturbation` contributes only a
 # scalar potential, so `B` is untouched and `E` is not.

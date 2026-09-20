@@ -203,6 +203,37 @@ not covered here; see the git history for those.
   the whole of it: building one function per distinct expression rather than one per call
   recovers none of the difference, and the second pass in one process is 0.018 s either way.
 
+- **`periodicity` says which coordinates are periodic, and is answered per chart.** It used to
+  return `(-Inf * ones(4), +Inf * ones(4))` for every equilibrium this package ships: four
+  components for a three-coordinate chart, and no periodicity in any of them — including the two
+  coordinates of the toroidal chart that are angles. That was the only definition of it anywhere
+  in the package, and no equilibrium had ever overridden it, so the answer said nothing about any
+  field.
+
+  `periodicity(equ)` and `periodicity(field)` now return an `SVector{3, Bool}`, one entry per
+  coordinate of the chart: all `false` for the cartesian charts, `false, false, true` for the
+  cylindrical ones, where the toroidal angle wraps, and `false, true, true` for the toroidal ones,
+  where both angles do. It takes the equilibrium alone rather than a point and the equilibrium,
+  because the answer does not depend on where in the chart it is asked.
+
+  It is a property of the chart, not of the equilibrium, so it is defined per chart family: five
+  methods cover all twenty shipped equilibria. **There is no fallback.** A chart of your own that
+  has not defined `periodicity` raises a `MethodError` when a field is built from it. An
+  all-`false` default was rejected because it is indistinguishable, at every call site, from a
+  chart that genuinely has no periodic coordinate — which is exactly the failure being fixed.
+
+  It cannot be read off `rangemin`/`rangemax`, which answer a different question: a bounded range
+  does not imply that a coordinate wraps. The two agree on every chart here, since each bounds
+  exactly its own angles, but a wall at `r = a` or a slab bounded in `z` would have a finite range
+  in a coordinate that does not wrap.
+
+  Two oddities go with the old shape. Four components for three coordinates fitted a `(q, t)` or
+  phase-space convention that nothing here uses. And `FieldFunctions` obtained the value by
+  calling the default with a hard-coded `zeros(3)`, so it came out `Float64` even for a `Float32`
+  equilibrium; the new answer carries no element type from the equilibrium at all.
+
+  This is breaking for any code that reads `periodicity` of a field built by this package.
+
 ### Fixed
 
 - **The generated-code cache is keyed on the shape of the parameters, not only on their number.**
