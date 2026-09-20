@@ -31,6 +31,10 @@ Define one for a type with a field that is not a parameter — a cache, say — 
 the generated code takes exactly these as its argument, so anything the `A₁`, `φ` or metric
 methods read and this does not list is frozen into the code as a literal. See
 [`parameter_names`](@ref), which applies the default.
+
+A value frozen in that way is invisible to the cache, which keys on the types and the parameter
+shapes alone: two equilibria differing only in such a value share one entry, and the second gets
+the first one's code. List the value as a parameter, or build the field with `cache = false`.
 """
 function get_parameters end
 
@@ -309,6 +313,24 @@ function parameter_values(field::AnalyticField)
 end
 
 parameter_values(::ZeroPerturbation) = ()
+
+"""
+    parameter_shape(field)
+
+How the parameters of `field` spread over the flattened tuple [`parameter_values`](@ref) returns:
+one entry per name, `0` for a scalar and the length for a vector.
+
+The generated code reads its parameter argument positionally, so which slot carries which meaning
+follows from this shape and not from the number of slots — two splits totalling the same, such as
+`(2, 3)` and `(3, 2)`, map the slots differently. It is what [`FieldFunctions`](@ref) keys its
+cache on.
+"""
+function parameter_shape(field::AnalyticField)
+    map(parameter_names(field)) do name
+        value = getfield(field, name)
+        value isa Number ? 0 : length(value)
+    end
+end
 
 """
     symbolic_copy(field)

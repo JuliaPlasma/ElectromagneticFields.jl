@@ -477,3 +477,75 @@ const REBUILD_RTOL = 1.0e-12
         @test f(rebuilt, t, ξ) ≈ f(b, t, ξ) rtol=REBUILD_RTOL
     end
 end
+
+# A type with two vector parameters is the case a cache key over the flattened total cannot
+# separate. Lengths `(2, 3)` and `(3, 2)` both flatten to five slots, and the generated code reads
+# those slots positionally, so the second field would be served the first one's code and return
+# numbers computed from the wrong parameters — no bounds error, no `MethodError`, and `parameters`
+# still showing the right struct. Nothing shipped here can reach it: each Solov'ev type has one
+# vector parameter and the perturbations have a fixed count, so the total is a function of the
+# type pair alone.
+module TwoVectorField
+
+using ElectromagneticFields: CartesianEquilibrium, X, Y
+import ElectromagneticFields: A₁, A₂, A₃
+
+struct TwoVectorEquilibrium{T <: Number} <: CartesianEquilibrium
+    name::String
+    a::Vector{T}
+    b::Vector{T}
+
+    function TwoVectorEquilibrium{T}(a::Vector{T}, b::Vector{T}) where {T <: Number}
+        new("TwoVectorEquilibrium", a, b)
+    end
+end
+
+function TwoVectorEquilibrium(a::Vector{T}, b::Vector{T}) where {T <: Number}
+    TwoVectorEquilibrium{T}(a, b)
+end
+
+A₁(x::AbstractVector, ::TwoVectorEquilibrium) = zero(eltype(x))
+A₂(x::AbstractVector, ::TwoVectorEquilibrium) = zero(eltype(x))
+
+# reads both parameters and weights them differently, so reading the slots under the other split
+# changes the answer rather than merely reordering it
+function A₃(x::AbstractVector, equ::TwoVectorEquilibrium)
+    sum(equ.a) * X(x, equ) + 2 * sum(equ.b) * Y(x, equ)
+end
+
+end
+
+@testset "$(rpad("The cache key carries the parameter shape", 60))" begin
+    equ23 = TwoVectorField.TwoVectorEquilibrium([1.0, 2.0], [3.0, 4.0, 5.0])
+    equ32 = TwoVectorField.TwoVectorEquilibrium([1.0, 2.0, 3.0], [4.0, 5.0])
+
+    @test ElectromagneticFields.parameter_shape(equ23) == (2, 3)
+    @test ElectromagneticFields.parameter_shape(equ32) == (3, 2)
+    @test ElectromagneticFields.parameter_shape(ThetaPinchEquilibrium()) == (0,)
+    @test ElectromagneticFields.parameter_shape(ZeroPerturbation()) == ()
+
+    # the two shapes flatten to the same number of slots, which is what the key used to carry
+    @test length(ElectromagneticFields.parameter_values(equ23)) ==
+          length(ElectromagneticFields.parameter_values(equ32))
+
+    entries = length(ElectromagneticFields.FIELD_CACHE)
+    f23 = FieldFunctions(equ23)
+    f32 = FieldFunctions(equ32)
+
+    # one entry each, with different code, rather than one entry serving both
+    @test length(ElectromagneticFields.FIELD_CACHE) == entries + 2
+    @test functions(f23).A♭.f !== functions(f32).A♭.f
+
+    # so each field reads its own parameters. `A₃ = sum(a) x + 2 sum(b) y`, and the numbers are
+    # small integers, so the comparison is exact however the trace associates the sums.
+    ζ = [1.0, 1.0, 0.0]
+    @test A♭(f23, t, ζ)[3] == sum(equ23.a) + 2 * sum(equ23.b)
+    @test A♭(f32, t, ζ)[3] == sum(equ32.a) + 2 * sum(equ32.b)
+
+    # the key is no finer than it must be: a second field of one shape is still a lookup
+    other23 = TwoVectorField.TwoVectorEquilibrium([6.0, 7.0], [8.0, 9.0, 10.0])
+    again = FieldFunctions(other23)
+    @test length(ElectromagneticFields.FIELD_CACHE) == entries + 2
+    @test functions(again).A♭.f === functions(f23).A♭.f
+    @test A♭(again, t, ζ)[3] == sum(other23.a) + 2 * sum(other23.b)
+end
