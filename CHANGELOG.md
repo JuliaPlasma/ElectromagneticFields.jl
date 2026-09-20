@@ -13,17 +13,16 @@ not covered here; see the git history for those.
 
 - **Aqua.jl runs as part of the test suite**, in `test/aqua_tests.jl`, which calls
   `Aqua.test_all`. This package carried no package-level quality check of any kind before, so all
-  eight — method ambiguities, unbound type parameters, undefined exports, project extras, stale and
-  duplicated dependencies, `[compat]` coverage, type piracy and persistent tasks — start from a
-  clean pass rather than from a list of known failures.
+  eight — method ambiguities, unbound type parameters, undefined exports, the agreement between
+  `Project.toml` and `test/Project.toml`, stale dependencies, `[compat]` bounds, type piracy and
+  persistent tasks — start from a clean pass rather than from a list of known failures.
 
-  Three of them cover something this package does structurally. `test_piracies` covers the eight
+  Two of them cover something this package does structurally. `test_piracies` covers the eight
   methods added to GeometricBase's `periodic`, `functions` and `parameters`, each of which
   dispatches on a type defined here; a new chart family brings a `periodic` method with it, so the
   property outlasts any list of the sites. `test_undefined_exports` covers an export list dominated
   by the musical-isomorphism accessors, which are defined across `src/analytic/` rather than beside
-  the export. `test_stale_deps` resolves `ConstructionBase`, which `src/` reaches only through
-  qualified access and which a text search reads as unused.
+  the export.
 
 - **The test suite has a `test/Project.toml` of its own**, carrying Aqua, CairoMakie,
   LinearAlgebra, SafeTestsets, StaticArrays and Test, each with a `[compat]` bound. The `[extras]`
