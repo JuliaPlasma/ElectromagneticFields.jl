@@ -30,11 +30,12 @@ coordinates and the equilibrium, written generically enough to accept symbolic a
 answer is a property of the chart rather than of a point in it. It is also the only entry with no
 default. A chart that has not answered raises a `MethodError` when a field is built from it, which
 is deliberate — an all-`false` default would let a periodic chart report no periodicity silently,
-and the bounds cannot be read for it, since a bounded range does not imply that a coordinate wraps.
+and the bounds cannot be read for it, since a bounded range does not imply that a
+coordinate wraps.
 
 The name is `GeometricBase.periodic`, which already means one `Bool` per component there. It is
-not `periodicity`: `GeometricEquations` gives that generic an `(xmin, xmax)` tuple, so answering it
-with a `Bool` vector would give one name two shapes.
+not `periodicity`: `GeometricEquations` gives that generic an `(xmin, xmax)` tuple, so answering
+it with a `Bool` vector would give one name two shapes.
 
 A field built on `CartesianEquilibrium` inherits the identity chart, `J = 1`, the euclidean
 metric, `orientation = +1` and no periodicity in any coordinate, so in that case only the vector

@@ -14,7 +14,7 @@ not covered here; see the git history for those.
 - **The symbolic engine is replaced from SymEngine.jl to Symbolics.jl.** Dependencies change:
   SymEngine is removed, Symbolics, StaticArrays, GeometricBase and ConstructionBase are added.
   Julia floor stays 1.10.
-  GeometricBase is there for the generic names `functions`, `parameters` and `periodicity`, which
+  GeometricBase is there for the generic names `functions`, `parameters` and `periodic`, which
   this package now extends rather than defining its own — it previously exported a `periodicity`
   of its own, which collided with GeometricEquations' in any package using both.
 
@@ -123,7 +123,7 @@ not covered here; see the git history for those.
   | `to_cartesian`, `from_cartesian`, `rangemin`, `rangemax` | same | SVector, field first |
 
   Four things become data rather than functions: `parameters(field)` — which replaces the
-  constants the old code spliced into the module — `coordinates(field)`, `periodicity(field)`, and
+  constants the old code spliced into the module — `coordinates(field)`, `periodic(field)`, and
   `orientation(field)`, which was a generated zero-argument function and is now a stored `Int`.
   `equilibrium(field)` and `perturbation(field)` return the objects the field was built from, and
   `functions(field)` returns all generated functions as a NamedTuple. Every one of the ~444 old
@@ -229,7 +229,7 @@ not covered here; see the git history for those.
 
   It is a property of the chart, not of the equilibrium, so it is defined per chart family: five
   methods cover all twenty shipped equilibria. **There is no fallback.** A chart of your own that
-  has not defined `periodicity` raises a `MethodError` when a field is built from it. An
+  has not defined `periodic` raises a `MethodError` when a field is built from it. An
   all-`false` default was rejected because it is indistinguishable, at every call site, from a
   chart that genuinely has no periodic coordinate — which is exactly the failure being fixed.
 
