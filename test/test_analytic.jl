@@ -434,10 +434,10 @@ end
     end
 end
 
-# `periodicity` is answered per chart family rather than per equilibrium, because it is a property
-# of the chart, and it has no fallback. So there are three things to check: that each family gives
-# the right answer, that the families between them account for every shipped equilibrium, and that
-# a chart which has not answered fails loudly instead of reporting no periodicity.
+# `periodic` is answered per chart family rather than per equilibrium, because it is a property of
+# the chart, and it has no fallback. So there are three things to check: that each family gives the
+# right answer, that the families between them account for every shipped equilibrium, and that a
+# chart which has not answered fails loudly instead of reporting no periodicity.
 #
 # A chart that has not answered is the case worth a test of its own. An all-`false` default would
 # be indistinguishable, at every call site, from a chart that really has no periodic coordinate.
@@ -493,20 +493,31 @@ end
         (cylindrical, SVector(false, false, true)),
         (toroidal, SVector(false, true, true)))
         for name in names
-            @test periodicity(FIELDS[name]) == expected
+            @test periodic(FIELDS[name]) == expected
         end
     end
 
     # the field stores what the equilibrium says, with the element type it says it in
     for (name, equ, _, _, _, _) in EQUILIBRIA
-        @test periodicity(FIELDS[name]) === periodicity(equ)
-        @test periodicity(equ) isa SVector{3, Bool}
+        @test periodic(FIELDS[name]) === periodic(equ)
+        @test periodic(equ) isa SVector{3, Bool}
     end
 
     # no fallback: a chart nobody has answered for raises rather than answering `false` everywhere
     equ = NoChartAnswer.UnansweredChartEquilibrium(2.0)
-    @test_throws MethodError periodicity(equ)
-    @test_throws MethodError FieldFunctions(equ)
+    @test_throws MethodError periodic(equ)
+
+    # and building a field from it raises too. `periodic` is the last thing the constructor
+    # calls, after the whole symbolic trace, so the error is matched on its function as well as on
+    # its type: a bare `MethodError` would equally match one raised earlier by some other part of
+    # the chart interface, and the test would pass without reaching the line it is about.
+    err = try
+        FieldFunctions(equ)
+        nothing
+    catch e
+        e
+    end
+    @test err isa MethodError && err.f === periodic
 end
 
 # A perturbation is combined with its equilibrium symbolically, before any code is generated, so

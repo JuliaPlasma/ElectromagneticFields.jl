@@ -132,7 +132,7 @@ coordinates(field).R(t, ξ)
 **`orientation(field)`** is `+1` or `-1`, the handedness of the chart. See
 [Volume Element and Orientation](@ref).
 
-**`periodicity(field)`** is an `SVector{3, Bool}`, one entry per coordinate of the chart, saying
+**`periodic(field)`** is an `SVector{3, Bool}`, one entry per coordinate of the chart, saying
 whether that coordinate is periodic. It is a property of the chart, so it is answered per chart
 family and not per equilibrium, and there is no default — a chart nobody has answered for raises a
 `MethodError` when a field is built from it.
@@ -141,7 +141,7 @@ This field is on the ``(R, Z, \phi)`` chart, where the toroidal angle is periodi
 poloidal coordinates are unbounded:
 
 ```@example interface
-periodicity(field)
+periodic(field)
 ```
 
 It is separate from `rangemin`/`rangemax` because a bounded range does not imply periodicity. The
@@ -149,6 +149,12 @@ two happen to agree on every chart this package ships — each one bounds exactl
 ``[0, 2\pi]`` — but a chart with a wall at ``r = a``, or a slab bounded in ``z``, would have a
 finite range in a coordinate that does not wrap. A chart of your own must therefore state
 periodicity itself rather than have it read off the bounds.
+
+The name is `GeometricBase.periodic`, which already means one `Bool` per component. It is
+deliberately not `periodicity`: `GeometricEquations` answers that generic with an `(xmin, xmax)`
+tuple naming the periodic domain, and a `Bool` vector under the same name would give one generic
+two shapes. A `GeometricEquations` problem still takes its own `periodicity` in its own form;
+`periodic(field)` is what tells you which components belong in it.
 
 **`equilibrium(field)`** and **`perturbation(field)`** return the objects the field was built
 from.

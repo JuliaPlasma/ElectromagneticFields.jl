@@ -141,15 +141,22 @@ maxx¹(ξ::AbstractVector{T}, equ::AnalyticField) where {T} = +T(Inf)
 maxx²(ξ::AbstractVector{T}, equ::AnalyticField) where {T} = +T(Inf)
 maxx³(ξ::AbstractVector{T}, equ::AnalyticField) where {T} = +T(Inf)
 
-# `periodicity(equ)` says which of the chart's three coordinates are periodic, one `Bool` each. It
-# is defined per chart family, in that chart's own source file next to its `minx`/`maxx` bounds,
-# and there is deliberately **no default**: a chart nobody has answered for raises a `MethodError`
-# when a field is built from it.
+# `periodic(equ)` says which of the chart's three coordinates are periodic, one `Bool` each. It is
+# defined per chart family, in that chart's own source file next to its `minx`/`maxx` bounds, and
+# there is deliberately **no default**: a chart nobody has answered for raises a `MethodError` when
+# a field is built from it.
+#
+# The name is GeometricBase's, where `periodic(s::StateVariable)` already means one `Bool` per
+# component and `isperiodic` means `any` of them. GeometricBase's other generic, `periodicity`, is
+# not this: GeometricEquations gives it an `(xmin, xmax)` tuple, and derives the per-component
+# answer from those bounds under the name `getperiodicity`. Answering `periodicity` with a `Bool`
+# vector would give one generic two shapes, and `per_lo, per_hi = periodicity(equ)` on a `Bool`
+# vector destructures to `(false, false)` without error.
 #
 # It cannot be derived from `minx`/`maxx`, because a bounded range does not imply periodicity. The
 # two agree on every chart here — each bounds exactly its angles, to [0, 2π] — but a wall at r = a
-# or a slab bounded in z would bound a coordinate that does not wrap. An all-`false` default was
-# rejected for the same reason a derived answer was: it lets a periodic chart answer silently.
+# or a slab bounded in z would bound a coordinate that does not wrap. An all-`false` default fails
+# for the same reason a derived answer does: it lets a periodic chart answer silently.
 
 """
     from_cartesian(x, equ::AnalyticField)

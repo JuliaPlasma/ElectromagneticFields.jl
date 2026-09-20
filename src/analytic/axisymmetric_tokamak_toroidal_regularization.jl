@@ -131,6 +131,6 @@ end
 
 # (r, θ, ϕ), as the unregularised toroidal chart. The gauge changes the vector potential, not the
 # coordinates.
-function GeometricBase.periodicity(::AxisymmetricTokamakToroidalRegularizationEquilibrium)
+function GeometricBase.periodic(::AxisymmetricTokamakToroidalRegularizationEquilibrium)
     SVector(false, true, true)
 end

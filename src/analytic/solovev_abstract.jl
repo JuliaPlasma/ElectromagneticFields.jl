@@ -51,4 +51,4 @@ minx³(ξ::AbstractVector{T}, equ::AbstractSolovevEquilibrium) where {T} = T(0)
 maxx³(ξ::AbstractVector{T}, equ::AbstractSolovevEquilibrium) where {T} = T(2π)
 
 # (R/R₀, Z/R₀, ϕ) is the cylindrical chart, so the toroidal angle alone is periodic.
-GeometricBase.periodicity(::AbstractSolovevEquilibrium) = SVector(false, false, true)
+GeometricBase.periodic(::AbstractSolovevEquilibrium) = SVector(false, false, true)

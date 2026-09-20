@@ -23,4 +23,4 @@ g₂₂(x::AbstractVector, ::CartesianField) = one(eltype(x))
 g₃₃(x::AbstractVector, ::CartesianField) = one(eltype(x))
 
 # (x, y, z), none of them periodic.
-GeometricBase.periodicity(::CartesianEquilibrium) = SVector(false, false, false)
+GeometricBase.periodic(::CartesianEquilibrium) = SVector(false, false, false)

@@ -124,7 +124,7 @@ the equilibrium's own coordinate helpers, whose names vary from field to field:
 keys(coordinates(field))
 ```
 
-which coordinates of the chart are periodic, `periodicity(field)`, and the handedness of the
+which coordinates of the chart are periodic, `periodic(field)`, and the handedness of the
 chart. `J` is the volume
 element and `DF` the Jacobian matrix; the two are related through `orientation`, and this
 equilibrium uses a left-handed ``(R, Z, \phi)`` chart, so the determinant of `DF` is `-J`:

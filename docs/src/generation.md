@@ -22,15 +22,19 @@ coordinates and the equilibrium, written generically enough to accept symbolic a
 | `J` | volume element ``\sqrt{\|g\|}`` | none for a new chart |
 | `orientation` | `+1` or `-1` | `+1` |
 | `minx¹` … `maxx³` | bounds of the coordinate domain | ``\pm\infty`` |
-| `periodicity` | which coordinates are periodic, one `Bool` each | none for a new chart |
+| `periodic` | which coordinates are periodic, one `Bool` each | none for a new chart |
 | `get_functions` | coordinate helpers to expose as `coordinates(field)` | none |
 | `get_parameters` | which fields are parameters of the field | every field but `name` |
 
-`periodicity` is the one exception to the shape above: it takes the equilibrium alone, because the
+`periodic` is the one exception to the shape above: it takes the equilibrium alone, because the
 answer is a property of the chart rather than of a point in it. It is also the only entry with no
 default. A chart that has not answered raises a `MethodError` when a field is built from it, which
 is deliberate — an all-`false` default would let a periodic chart report no periodicity silently,
 and the bounds cannot be read for it, since a bounded range does not imply that a coordinate wraps.
+
+The name is `GeometricBase.periodic`, which already means one `Bool` per component there. It is
+not `periodicity`: `GeometricEquations` gives that generic an `(xmin, xmax)` tuple, so answering it
+with a `Bool` vector would give one name two shapes.
 
 A field built on `CartesianEquilibrium` inherits the identity chart, `J = 1`, the euclidean
 metric, `orientation = +1` and no periodicity in any coordinate, so in that case only the vector
@@ -285,11 +289,12 @@ value of a coordinate is not: `if x[1] > 0` cannot be traced, and the expression
 without it.
 
 **A new chart needs its geometry to be consistent.** Defining `x¹` … `ξ³`, the metric, `J`,
-`orientation` and `periodicity` is not enough on its own; the first four have to fit together. The test suite asserts
-``J = \sqrt{\det(DF^T DF)}`` and ``\det DF = \mathrm{orientation} \cdot J`` for every equilibrium,
-and the identities in [Interface](interface.md) are the same checks to run on a chart of your own.
-Handedness in particular has no visible symptom when it is wrong other than a magnetic field
-pointing the wrong way — see [`orientation`](@ref ElectromagneticFields.orientation).
+`orientation` and `periodic` is not enough on its own; all but `periodic` have to fit
+together. The test suite asserts ``J = \sqrt{\det(DF^T DF)}`` and
+``\det DF = \mathrm{orientation} \cdot J`` for every equilibrium, and the identities in
+[Interface](interface.md) are the same checks to run on a chart of your own. Handedness in
+particular has no visible symptom when it is wrong other than a magnetic field pointing the wrong
+way — see [`orientation`](@ref ElectromagneticFields.orientation).
 
 A perturbation is defined the same way, subtyping `AnalyticPerturbation` (or
 `CartesianPerturbation`) and defining whichever of `A₁`, `A₂`, `A₃` and `φ` it contributes. It
