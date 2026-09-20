@@ -174,18 +174,26 @@ it ships. Two things combine:
 * the generated functions of a type already built are **cached**, keyed by what actually
   determines them — the equilibrium and perturbation types, the parameter shapes, `cse` and
   `cache_module` — but not by the parameter values, which the code does not contain;
-* a `PrecompileTools` workload **traces one field of every shipped type** during precompilation,
-  so both the compiled specializations and the cache itself land in the package image.
+* a `PrecompileTools` workload **builds every shipped equilibrium and traces a field of it** during
+  precompilation, so the constructors, the compiled specializations and the cache itself all land
+  in the package image.
 
-A fresh session therefore finds them already built:
+A fresh session therefore finds them already built. Measured against the same package with the
+workload removed, one cold process per figure:
 
-| | before | after |
+| | no workload | as shipped |
 |:--|--:|--:|
-| first field built in a session | 8.5 s | 0.00 s |
-| all twenty shipped equilibria | ~19 s | 0.01 s |
+| first field built in a session | 6.4 s | 0.001 s |
+| all twenty shipped equilibria, with their fields | 16.5 s | 0.34 s |
+| their constructors alone | 1.8 s | 0.06 s |
 | any parameter value of those types | — | 0.00 s |
 
-at the price of this package's own precompilation, 1.5 s → 24.5 s, paid once per version.
+at the price of this package's own precompilation, 1.4 s → 20 s, paid once per version.
+
+The workload names every shipped *preset*, not one per type. The Solov'ev presets share two types
+between them, so a field is a cache hit for all but the first of each — but a preset is its own
+function and has to be compiled, and the ones beyond ITER are two thirds of the constructor figure
+above.
 
 An equilibrium you define yourself is traced the first time and cached thereafter, so it costs a
 fraction of a second once per session — or nothing at all, if you precompile it in your own
