@@ -180,6 +180,31 @@ not covered here; see the git history for those.
 
 ### Fixed
 
+- **The generated-code cache is keyed on the shape of the parameters, not only on their number.**
+  `parameter_values` flattens a vector parameter entry by entry, and the generated code reads its
+  parameter argument positionally, so which slot carries which meaning follows from the split. A
+  key carrying only the total let two splits of one type share an entry: lengths `(2, 3)` and
+  `(3, 2)` both flatten to five slots, and the second field was served the first one's code. The
+  failure was silent — the `SVector` fits, so there was no bounds error, and `parameters(field)`
+  read the right struct while every accessor computed from the wrong slots.
+
+  No field this package ships can reach it. Exactly two structs carry a vector parameter,
+  `SolovevEquilibrium` and `SolovevXpointEquilibrium`, and each carries exactly one;
+  `ZeroPerturbation` has no parameters and `EzCosZPerturbation` one scalar. With a single vector
+  per struct the total fixes that vector's length, and with it the split, which is why the old key
+  held for every shipped field. An equilibrium of your own with two vector parameters reaches the
+  collision with no perturbation involved.
+
+  The shape carries `-1` for a scalar and the length for a vector, so a scalar cannot read as a
+  vector of length zero. The number of slots follows from the shape, which makes the shape strictly
+  finer than the number it replaces: no pair of fields the old key told apart is merged by the new
+  one.
+
+  A value that the generated code bakes in as a literal — anything the `A₁`, `φ` or metric methods
+  read that `get_parameters` omits — stays invisible to the key, and no key over parameters can
+  see it. The `get_parameters` docstring now says so: list the value as a parameter, or build the
+  field with `cache = false`.
+
 - **Contour plots of a field that diverges inside the plot window work again on Makie 0.24.15.**
   That release orders every traced contour line through `canonical_line_order`, which takes the
   smallest vertex of a closed line and then keeps the candidate rotations that equal it. A vertex

@@ -477,3 +477,146 @@ const REBUILD_RTOL = 1.0e-12
         @test f(rebuilt, t, ξ) ≈ f(b, t, ξ) rtol=REBUILD_RTOL
     end
 end
+
+# A type with two vector parameters is the case a cache key over the flattened total cannot
+# separate. Lengths `(2, 3)` and `(3, 2)` both flatten to five slots, and the generated code reads
+# those slots positionally, so the second field would be served the first one's code and return
+# numbers computed from the wrong parameters — no bounds error, no `MethodError`, and `parameters`
+# still showing the right struct. Nothing shipped here can reach it: the two structs that carry a
+# vector parameter carry exactly one each, so their total fixes its length and with it the split.
+module TwoVectorField
+
+using ElectromagneticFields: CartesianEquilibrium, CartesianPerturbation, X, Y, Z
+import ElectromagneticFields: A₁, A₂, A₃, φ
+
+struct TwoVectorEquilibrium{T <: Number} <: CartesianEquilibrium
+    name::String
+    a::Vector{T}
+    b::Vector{T}
+
+    function TwoVectorEquilibrium{T}(a::Vector{T}, b::Vector{T}) where {T <: Number}
+        new("TwoVectorEquilibrium", a, b)
+    end
+end
+
+function TwoVectorEquilibrium(a::Vector{T}, b::Vector{T}) where {T <: Number}
+    TwoVectorEquilibrium{T}(a, b)
+end
+
+A₁(x::AbstractVector, ::TwoVectorEquilibrium) = zero(eltype(x))
+A₂(x::AbstractVector, ::TwoVectorEquilibrium) = zero(eltype(x))
+
+# reads both parameters and weights them differently, so reading the slots under the other split
+# changes the answer rather than merely reordering it
+function A₃(x::AbstractVector, equ::TwoVectorEquilibrium)
+    sum(equ.a) * X(x, equ) + 2 * sum(equ.b) * Y(x, equ)
+end
+
+# One vector parameter each, so the pair is what varies the split between the equilibrium's
+# parameters and the perturbation's. `pvalues` concatenates the two, so a key over the total
+# cannot see where the boundary falls.
+struct OneVectorEquilibrium{T <: Number} <: CartesianEquilibrium
+    name::String
+    a::Vector{T}
+
+    function OneVectorEquilibrium{T}(a::Vector{T}) where {T <: Number}
+        new("OneVectorEquilibrium", a)
+    end
+end
+
+OneVectorEquilibrium(a::Vector{T}) where {T <: Number} = OneVectorEquilibrium{T}(a)
+
+A₁(x::AbstractVector, ::OneVectorEquilibrium) = zero(eltype(x))
+A₂(x::AbstractVector, ::OneVectorEquilibrium) = zero(eltype(x))
+A₃(x::AbstractVector, equ::OneVectorEquilibrium) = sum(equ.a) * X(x, equ)
+
+struct OneVectorPerturbation{T <: Number} <: CartesianPerturbation
+    name::String
+    e::Vector{T}
+
+    function OneVectorPerturbation{T}(e::Vector{T}) where {T <: Number}
+        new("OneVectorPerturbation", e)
+    end
+end
+
+OneVectorPerturbation(e::Vector{T}) where {T <: Number} = OneVectorPerturbation{T}(e)
+
+φ(x::AbstractVector, pert::OneVectorPerturbation) = sum(pert.e) * Z(x, pert)
+
+# a parameter field wide enough to hold either a scalar or a vector, which is what tells the
+# encoding of a scalar apart from that of an empty vector. No field is built from it.
+struct LooseEquilibrium <: CartesianEquilibrium
+    name::String
+    p::Any
+end
+
+end
+
+@testset "$(rpad("The cache key carries the parameter shape", 60))" begin
+    equ23 = TwoVectorField.TwoVectorEquilibrium([1.0, 2.0], [3.0, 4.0, 5.0])
+    equ32 = TwoVectorField.TwoVectorEquilibrium([1.0, 2.0, 3.0], [4.0, 5.0])
+
+    @test ElectromagneticFields.parameter_shape(equ23) == (2, 3)
+    @test ElectromagneticFields.parameter_shape(equ32) == (3, 2)
+    @test ElectromagneticFields.parameter_shape(ThetaPinchEquilibrium()) == (-1,)
+    @test ElectromagneticFields.parameter_shape(ZeroPerturbation()) == ()
+
+    # a scalar is not a vector of length zero. Were they one encoding, the shape would be coarser
+    # than the total it replaces, and this pair would share a cache entry that the total separates.
+    scalar = TwoVectorField.LooseEquilibrium("Loose", 1.0)
+    empty = TwoVectorField.LooseEquilibrium("Loose", Float64[])
+    @test ElectromagneticFields.parameter_shape(scalar) !=
+          ElectromagneticFields.parameter_shape(empty)
+    @test length(ElectromagneticFields.parameter_values(scalar)) !=
+          length(ElectromagneticFields.parameter_values(empty))
+
+    # the two shapes flatten to the same number of slots: a total alone cannot separate them
+    @test length(ElectromagneticFields.parameter_values(equ23)) ==
+          length(ElectromagneticFields.parameter_values(equ32))
+
+    entries = length(ElectromagneticFields.FIELD_CACHE)
+    f23 = FieldFunctions(equ23)
+    f32 = FieldFunctions(equ32)
+
+    # one entry each, with different code, rather than one entry serving both
+    @test length(ElectromagneticFields.FIELD_CACHE) == entries + 2
+    @test functions(f23).A♭.f !== functions(f32).A♭.f
+
+    # so each field reads its own parameters. `A₃ = sum(a) x + 2 sum(b) y`, and the numbers are
+    # small integers, so the comparison is exact however the trace associates the sums.
+    ζ = [1.0, 1.0, 0.0]
+    @test A♭(f23, t, ζ)[3] == sum(equ23.a) + 2 * sum(equ23.b)
+    @test A♭(f32, t, ζ)[3] == sum(equ32.a) + 2 * sum(equ32.b)
+
+    # the perturbation's shape is a key element of its own, so the boundary between the two
+    # structs' parameters is visible. `pvalues` concatenates them, so both pairs below flatten to
+    # the same five values and only the boundary moves.
+    eq2 = TwoVectorField.OneVectorEquilibrium([1.0, 2.0])
+    eq3 = TwoVectorField.OneVectorEquilibrium([1.0, 2.0, 3.0])
+    pert3 = TwoVectorField.OneVectorPerturbation([3.0, 4.0, 5.0])
+    pert2 = TwoVectorField.OneVectorPerturbation([4.0, 5.0])
+
+    @test length(ElectromagneticFields.parameter_values(eq2)) +
+          length(ElectromagneticFields.parameter_values(pert3)) ==
+          length(ElectromagneticFields.parameter_values(eq3)) +
+          length(ElectromagneticFields.parameter_values(pert2))
+
+    split = length(ElectromagneticFields.FIELD_CACHE)
+    g23 = FieldFunctions(eq2, pert3)
+    g32 = FieldFunctions(eq3, pert2)
+    @test length(ElectromagneticFields.FIELD_CACHE) == split + 2
+
+    ζ₃ = [1.0, 1.0, 1.0]
+    @test A♭(g23, t, ζ₃)[3] == sum(eq2.a)
+    @test A♭(g32, t, ζ₃)[3] == sum(eq3.a)
+    @test φ(g23, t, ζ₃) == sum(pert3.e)
+    @test φ(g32, t, ζ₃) == sum(pert2.e)
+
+    # the key is no finer than it must be: a second field of one shape is still a lookup
+    filled = length(ElectromagneticFields.FIELD_CACHE)
+    other23 = TwoVectorField.TwoVectorEquilibrium([6.0, 7.0], [8.0, 9.0, 10.0])
+    again = FieldFunctions(other23)
+    @test length(ElectromagneticFields.FIELD_CACHE) == filled
+    @test functions(again).A♭.f === functions(f23).A♭.f
+    @test A♭(again, t, ζ)[3] == sum(other23.a) + 2 * sum(other23.b)
+end
