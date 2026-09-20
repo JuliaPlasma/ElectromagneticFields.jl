@@ -96,7 +96,8 @@ include("plots.jl")
 #
 # Tracing one field of each type here therefore settles it for every parameter value of that type.
 # The specializations land in the package image, and so does `FIELD_CACHE`, so a fresh session
-# finds the generated functions already built: the first field costs 0.001 s rather than 6.4 s.
+# finds the generated functions already built: the first field costs 0.03 s rather than 7.7 s, and
+# every one after it 0.05 ms.
 #
 # The constructors sit inside `@compile_workload` rather than beside it in the setup block.
 # `@setup_workload` code runs during precompilation, but PrecompileTools does not put it into the
@@ -104,10 +105,12 @@ include("plots.jl")
 # placements measure 0.06 s and 0.70 s for the twenty shipped equilibria in a fresh process, at the
 # same precompilation cost.
 #
-# Every shipped preset is named, not one per type. The four Solov'ev presets beyond the two ITER
-# ones share their types, so the generated code is a cache hit for them, but each preset is its own
-# function and needs compiling: naming them costs 0.2 MB of package image and no measurable
-# precompilation, and it is two thirds of the constructor bill above.
+# Every Solov'ev preset is named, not one per type. Four of them repeat the two ITER presets'
+# types, so the generated code is a cache hit for them, but each preset is its own function and
+# needs compiling: naming those four costs 0.2 MB of package image and 0.2 s of precompilation,
+# and it halves the constructor bill above, which is 0.11 s with only the other sixteen named. The
+# three `AxisymmetricTokamak*ITER` presets are left out: they wrap a constructor the workload
+# already builds, and compiling them costs 10 µs.
 #
 # The price is this package's own precompilation, about 20 s against 1.4 s with no workload at all,
 # paid once per version. A downstream package can do the same for a field of its own; see

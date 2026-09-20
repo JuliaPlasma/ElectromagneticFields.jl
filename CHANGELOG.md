@@ -73,8 +73,8 @@ not covered here; see the git history for those.
   constructors, the specializations and the cache all land in the package image.
 
   The result is that the equilibria this package ships cost almost nothing in a fresh session.
-  Measured against the same package with the workload removed: the first field drops from 6.4 s to
-  0.001 s, all twenty equilibria with their fields from 16.5 s to 0.34 s, and their constructors
+  Measured against the same package with the workload removed: the first field drops from 7.7 s to
+  0.03 s, all twenty equilibria with their fields from 16.5 s to 0.34 s, and their constructors
   alone from 1.8 s to 0.06 s, for any parameter values. The price is this package's own
   precompilation, 1.4 s → 20 s, paid once per version. An equilibrium of your own is traced once
   per session and cached after that.

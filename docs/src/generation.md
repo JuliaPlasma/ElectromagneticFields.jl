@@ -183,17 +183,20 @@ workload removed, one cold process per figure:
 
 | | no workload | as shipped |
 |:--|--:|--:|
-| first field built in a session | 6.4 s | 0.001 s |
+| first field built in a session | 7.7 s | 0.03 s |
+| every field after it | 0.09 ms | 0.05 ms |
 | all twenty shipped equilibria, with their fields | 16.5 s | 0.34 s |
 | their constructors alone | 1.8 s | 0.06 s |
 | any parameter value of those types | — | 0.00 s |
 
 at the price of this package's own precompilation, 1.4 s → 20 s, paid once per version.
 
-The workload names every shipped *preset*, not one per type. The Solov'ev presets share two types
-between them, so a field is a cache hit for all but the first of each — but a preset is its own
-function and has to be compiled, and the ones beyond ITER are two thirds of the constructor figure
-above.
+The workload names every shipped Solov'ev *preset*, not one per type. Those seven span three types,
+so a field is a cache hit for all but the first of each — but a preset is its own function and has
+to be compiled: leaving the FRC and NSTX ones out puts the constructor figure above at 0.11 s
+instead of 0.06 s, and naming them costs 0.2 MB of package image and 0.2 s of precompilation. The
+three `AxisymmetricTokamak*ITER` presets are not named; they wrap a constructor the workload
+already builds, and compiling them costs 10 µs.
 
 An equilibrium you define yourself is traced the first time and cached thereafter, so it costs a
 fraction of a second once per session — or nothing at all, if you precompile it in your own
