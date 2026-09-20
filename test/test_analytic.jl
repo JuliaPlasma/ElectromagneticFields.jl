@@ -394,6 +394,41 @@ end
     end
 end
 
+# The Solov'ev constructors solve a dense linear system for the coefficients `c`, and what that
+# system says is that ψ vanishes at the boundary points of the Cerfon-Freidberg cross-section
+# model. So the residuals below are what pins `c`, and nothing else in this file does: every
+# identity tested above holds for any `c` whatever.
+#
+# The three families impose different points, which is why they are listed per case rather than
+# taken from the type — `SolovevDoubleXpointEquilibrium` returns a `SolovevXpointEquilibrium` too,
+# and puts the X-point where the other two put the upper boundary point.
+#
+# `1E-13` is set by the measurement rather than by taste: the residuals run to 5E-16 against a ψ of
+# order 1E-1 at a sample point, and evaluating one of these at a point the system does not
+# constrain gives 5E-3.
+
+@testset "$(rpad("The Solov'ev boundary conditions are satisfied", 60))" begin
+    outer(p) = [1 + p.ϵ, 0.0, 0.0]
+    inner(p) = [1 - p.ϵ, 0.0, 0.0]
+    upper(p) = [1 - p.δ * p.ϵ, p.κ * p.ϵ, 0.0]
+    xpoint(p) = [p.xsep, p.ysep, 0.0]
+
+    for (name, points) in (
+        ("SolovevITER", (outer, inner, upper)),
+        ("SolovevNSTX", (outer, inner, upper)),
+        ("SolovevFRC", (outer, inner, upper)),
+        ("SolovevITERwXpoint", (outer, inner, upper, xpoint)),
+        ("SolovevNSTXwXpoint", (outer, inner, upper, xpoint)),
+        ("SolovevNSTXwDoubleXpoint", (outer, inner, xpoint))
+    )
+        field = FIELDS[name]
+        p = parameters(field)
+        for point in points
+            @test A♭(field, t, point(p))[3] ≈ 0 atol = 1E-13
+        end
+    end
+end
+
 # A perturbation is combined with its equilibrium symbolically, before any code is generated, so
 # the perturbed field is a `FieldFunctions` like any other. `EzCosZPerturbation` contributes only a
 # scalar potential, so `B` is untouched and `E` is not.

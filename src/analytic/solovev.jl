@@ -67,11 +67,13 @@ end
 
 # Evaluate a symbolic expression at a point, as a Float.
 #
-# `substitute` folds arithmetic but not `log`, so the result still carries an unevaluated
-# `NaNMath.log(1.32)` and cannot simply be converted. `symbolic_to_float` evaluates the remaining
-# calls. Substituting every free variable first is what makes that possible.
+# `substitute` folds arithmetic but not `log`, so a substituted expression still carries an
+# unevaluated `NaNMath.log(1.32)` and cannot be converted to a number. Building a function of the
+# variables and calling it evaluates the whole expression, and it is the machinery this package
+# already emits its field code with, applied one step earlier.
 function _solovev_eval(expr, pairs...)
-    Symbolics.symbolic_to_float(Symbolics.substitute(expr, Dict(pairs...)))
+    f = Symbolics.build_function(expr, map(first, pairs)...; expression = Val{false})
+    f(map(last, pairs)...)
 end
 
 # ∂ⁿ/∂vⁿ. `Symbolics.derivative` takes no order argument, so apply it n times.

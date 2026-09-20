@@ -178,6 +178,30 @@ not covered here; see the git history for those.
   The only bytes that change at runtime are the `"Dḡ"` and `"DDḡ"` labels passed to `symprint`,
   which prints them; string literals are not parser-normalised. Nothing reads that output back.
 
+- **The Solov'ev coefficient solve reaches Symbolics through a public API.** Imposing the boundary
+  conditions means evaluating a symbolic expression at a point, and `substitute` folds arithmetic
+  but not `log`, so a fully substituted `ψ₃` still carries an unevaluated `NaNMath.log(1.32)` and
+  cannot be converted to a number. That step used `Symbolics.symbolic_to_float`, which is neither
+  exported nor `Base.ispublic`, so any 7.x release may remove it. The expression is now built into
+  a function with `Symbolics.build_function(…; expression = Val{false})` and called — the same
+  machinery this package emits its field code with, applied one step earlier.
+
+  The coefficients move, by less than the solve determines them. Three of the six shipped Solov'ev
+  equilibria come out bit for bit identical; the largest change is `SolovevXpointEquilibriumITER`,
+  at `6.1E-14` relative. The control for that figure is the same solve with every matrix entry
+  perturbed by half an ULP, which is what two correctly rounded evaluators may disagree by: over
+  20 draws it moves the same vector by a median `7.3E-14` and by up to `2.5E-13`. The SymEngine
+  reference values are unchanged, 8844 of 8844 with no frame differences, and the test suite now
+  asserts the boundary conditions the solve imposes, which nothing did before — every identity it
+  checked holds for any coefficients whatever.
+
+  It costs cold session time. Each distinct expression becomes a `RuntimeGeneratedFunction` that
+  Julia compiles on its first call, and the six shipped Solov'ev equilibria make 702 evaluations
+  over 59 distinct expressions, so building all six in a fresh process goes from 0.38 s to 0.75 s
+  — median of five cold processes, Julia 1.13 on aarch64 macOS. Compilation is the whole of it:
+  building one function per distinct expression rather than one per call recovers none of the
+  difference, and the second pass in one process is 0.018 s either way.
+
 ### Fixed
 
 - **The generated-code cache is keyed on the shape of the parameters, not only on their number.**
