@@ -318,17 +318,21 @@ parameter_values(::ZeroPerturbation) = ()
     parameter_shape(field)
 
 How the parameters of `field` spread over the flattened tuple [`parameter_values`](@ref) returns:
-one entry per name, `0` for a scalar and the length for a vector.
+one entry per name, `-1` for a scalar and the length for a vector.
 
 The generated code reads its parameter argument positionally, so which slot carries which meaning
 follows from this shape and not from the number of slots — two splits totalling the same, such as
-`(2, 3)` and `(3, 2)`, map the slots differently. It is what [`FieldFunctions`](@ref) keys its
-cache on.
+`(2, 3)` and `(3, 2)`, map the slots differently. It is part of the key
+[`FieldFunctions`](@ref) looks its cache up by.
+
+A scalar takes `-1` rather than `0` so that it cannot read as a vector of length zero. The shape
+then determines the number of slots, which makes it strictly finer than that number: two fields
+this tells apart are never served each other's code.
 """
 function parameter_shape(field::AnalyticField)
     map(parameter_names(field)) do name
         value = getfield(field, name)
-        value isa Number ? 0 : length(value)
+        value isa Number ? -1 : length(value)
     end
 end
 

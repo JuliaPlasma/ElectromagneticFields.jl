@@ -195,6 +195,11 @@ not covered here; see the git history for those.
   held for every shipped field. An equilibrium of your own with two vector parameters reaches the
   collision with no perturbation involved.
 
+  The shape carries `-1` for a scalar and the length for a vector, so a scalar cannot read as a
+  vector of length zero. The number of slots follows from the shape, which makes the shape strictly
+  finer than the number it replaces: no pair of fields the old key told apart is merged by the new
+  one.
+
   A value that the generated code bakes in as a literal — anything the `A₁`, `φ` or metric methods
   read that `get_parameters` omits — stays invisible to the key, and no key over parameters can
   see it. The `get_parameters` docstring now says so: list the value as a parameter, or build the
