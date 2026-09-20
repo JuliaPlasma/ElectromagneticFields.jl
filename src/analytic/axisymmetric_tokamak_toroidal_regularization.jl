@@ -128,3 +128,9 @@ function maxx³(ξ::AbstractVector{T},
         equ::AxisymmetricTokamakToroidalRegularizationEquilibrium) where {T}
     T(2π)
 end
+
+# (r, θ, ϕ), as the unregularised toroidal chart. The gauge changes the vector potential, not the
+# coordinates.
+function GeometricBase.periodic(::AxisymmetricTokamakToroidalRegularizationEquilibrium)
+    SVector(false, true, true)
+end

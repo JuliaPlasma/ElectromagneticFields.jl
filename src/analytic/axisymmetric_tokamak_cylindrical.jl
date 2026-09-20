@@ -115,3 +115,8 @@ function maxx³(ξ::AbstractVector{T},
         equ::AxisymmetricTokamakCylindricalEquilibrium) where {T}
     T(2π)
 end
+
+# (R, Z, ϕ): the toroidal angle is periodic, the two poloidal coordinates are not.
+function GeometricBase.periodic(::AxisymmetricTokamakCylindricalEquilibrium)
+    SVector(false, false, true)
+end

@@ -14,7 +14,7 @@ not covered here; see the git history for those.
 - **The symbolic engine is replaced from SymEngine.jl to Symbolics.jl.** Dependencies change:
   SymEngine is removed, Symbolics, StaticArrays, GeometricBase and ConstructionBase are added.
   Julia floor stays 1.10.
-  GeometricBase is there for the generic names `functions`, `parameters` and `periodicity`, which
+  GeometricBase is there for the generic names `functions`, `parameters` and `periodic`, which
   this package now extends rather than defining its own — it previously exported a `periodicity`
   of its own, which collided with GeometricEquations' in any package using both.
 
@@ -123,7 +123,7 @@ not covered here; see the git history for those.
   | `to_cartesian`, `from_cartesian`, `rangemin`, `rangemax` | same | SVector, field first |
 
   Four things become data rather than functions: `parameters(field)` — which replaces the
-  constants the old code spliced into the module — `coordinates(field)`, `periodicity(field)`, and
+  constants the old code spliced into the module — `coordinates(field)`, `periodic(field)`, and
   `orientation(field)`, which was a generated zero-argument function and is now a stored `Int`.
   `equilibrium(field)` and `perturbation(field)` return the objects the field was built from, and
   `functions(field)` returns all generated functions as a NamedTuple. Every one of the ~444 old
@@ -202,6 +202,49 @@ not covered here; see the git history for those.
   between 1.8× and 2.0× across three runs, Julia 1.13 on aarch64 macOS. Compilation is
   the whole of it: building one function per distinct expression rather than one per call
   recovers none of the difference, and the second pass in one process is 0.018 s either way.
+
+- **`periodicity` is replaced by `periodic`, which says which coordinates are periodic, per
+  chart.** `periodicity` returned `(-Inf * ones(4), +Inf * ones(4))` for every equilibrium this
+  package ships: four components for a three-coordinate chart, and no periodicity in any of them —
+  including the two coordinates of the toroidal chart that are angles. That was the only
+  definition of it anywhere in the package, and no equilibrium had ever overridden it, so the
+  answer said nothing about any field. This package no longer answers `periodicity` at all, and no
+  longer exports it.
+
+  `periodic(equ)` and `periodic(field)` return an `SVector{3, Bool}`, one entry per coordinate of
+  the chart: all `false` for the cartesian charts, `false, false, true` for the cylindrical ones,
+  where the toroidal angle wraps, and `false, true, true` for the toroidal ones, where both angles
+  do. It takes the equilibrium alone rather than a point and the equilibrium, because the answer
+  does not depend on where in the chart it is asked.
+
+  The name is `GeometricBase.periodic`, where `periodic(s::StateVariable)` already means one
+  `Bool` per component and `isperiodic` means `any` of them. `GeometricBase.periodicity` is a
+  different thing in this ecosystem: `GeometricEquations` answers it with an `(xmin, xmax)` tuple
+  naming the periodic domain, and derives the per-component answer from those bounds under the
+  name `getperiodicity`. Keeping the `Bool` vector on `periodicity` would have given one shared
+  generic two incompatible shapes, and the mismatch is silent rather than loud —
+  `per_lo, per_hi = periodicity(equ)` destructures a three-element `Bool` vector to
+  `(false, false)` without error. A `GeometricEquations` problem still takes its own `periodicity`
+  in its own form; `periodic(field)` is what says which components belong in it.
+
+  It is a property of the chart, not of the equilibrium, so it is defined per chart family: five
+  methods cover all twenty shipped equilibria. **There is no fallback.** A chart of your own that
+  has not defined `periodic` raises a `MethodError` when a field is built from it. An
+  all-`false` default was rejected because it is indistinguishable, at every call site, from a
+  chart that genuinely has no periodic coordinate — which is exactly the failure being fixed.
+
+  It cannot be read off `rangemin`/`rangemax`, which answer a different question: a bounded range
+  does not imply that a coordinate wraps. The two agree on every chart here, since each bounds
+  exactly its own angles, but a wall at `r = a` or a slab bounded in `z` would have a finite range
+  in a coordinate that does not wrap.
+
+  Two oddities go with the old shape. Four components for three coordinates fitted a `(q, t)` or
+  phase-space convention that nothing here uses. And `FieldFunctions` obtained the value by
+  calling the default with a hard-coded `zeros(3)`, so it came out `Float64` even for a `Float32`
+  equilibrium; the new answer carries no element type from the equilibrium at all.
+
+  This is breaking for any code that calls `periodicity` on anything from this package, whether an
+  equilibrium, a perturbation or a field: the name is no longer answered here at all.
 
 ### Fixed
 

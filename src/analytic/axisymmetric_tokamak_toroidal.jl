@@ -116,3 +116,9 @@ minx²(ξ::AbstractVector{T}, equ::AxisymmetricTokamakToroidalEquilibrium) where
 minx³(ξ::AbstractVector{T}, equ::AxisymmetricTokamakToroidalEquilibrium) where {T} = T(0)
 maxx²(ξ::AbstractVector{T}, equ::AxisymmetricTokamakToroidalEquilibrium) where {T} = T(2π)
 maxx³(ξ::AbstractVector{T}, equ::AxisymmetricTokamakToroidalEquilibrium) where {T} = T(2π)
+
+# (r, θ, ϕ): both angles are periodic. The minor radius is not, and its range is left unbounded —
+# `minx¹` and `maxx¹` are not overridden here.
+function GeometricBase.periodic(::AxisymmetricTokamakToroidalEquilibrium)
+    SVector(false, true, true)
+end

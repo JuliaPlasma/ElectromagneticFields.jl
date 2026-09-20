@@ -10,7 +10,7 @@ using Symbolics
 import ConstructionBase
 import NaNMath
 
-import GeometricBase: functions, parameters, periodicity
+import GeometricBase: functions, parameters, periodic
 
 # This module is the default `cache_module` for the code `FieldFunctions` generates, so the bodies
 # built during the precompile workload below land here and survive into the package image.
@@ -33,7 +33,7 @@ include("analytic/analytic_field.jl")
 include("analytic/cartesian_field.jl")
 
 export FieldFunction, FieldFunctions, @precompilable_fields, clear_field_cache!
-export functions, parameters, periodicity, coordinates, orientation
+export functions, parameters, periodic, coordinates, orientation
 export equilibrium, perturbation
 export to_cartesian, from_cartesian, DF, DF̄, J, rangemin, rangemax
 export g♭, g♯, Dg♭, Dg♯, DDg♭, DDg♯

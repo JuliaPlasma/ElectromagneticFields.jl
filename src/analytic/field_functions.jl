@@ -154,9 +154,9 @@ and the scalar potential `φ`.
 
 Four things are data rather than functions: `parameters(field)` returns the equilibrium's scalar
 parameters, `coordinates(field)` the equilibrium's own coordinate helpers such as `R`, `r`, `θ` and
-`ϕ`, `periodicity(field)` the periodic domain, and `orientation(field)` the sign of the chart's
-handedness — see [`orientation`](@ref). `functions(field)` returns all of the above generated
-functions as a `NamedTuple`.
+`ϕ`, `periodic(field)` an `SVector{3, Bool}` saying which coordinates of the chart are periodic,
+and `orientation(field)` the sign of the chart's handedness — see [`orientation`](@ref).
+`functions(field)` returns all of the above generated functions as a `NamedTuple`.
 
 # Parameters
 
@@ -183,7 +183,7 @@ struct FieldFunctions{ET, PT, PAR <: NamedTuple, CRD <: NamedTuple, PER, FNS <: 
 
     parameters::PAR
     coordinates::CRD
-    periodicity::PER
+    periodic::PER
     orientation::Int
 
     functions::FNS
@@ -302,7 +302,7 @@ function FieldFunctions(equ::AnalyticEquilibrium,
     par = NamedTuple{names}(map(name -> getfield(equ, name), names))
 
     FieldFunctions(equ, pert, par, crd,
-        GeometricBase.periodicity(zeros(3), equ), orientation(equ), fns)
+        GeometricBase.periodic(equ), orientation(equ), fns)
 end
 
 # `FIELD_FUNCTION_DOCS` drives the construction above, the accessors below and their docstrings,
@@ -351,7 +351,7 @@ coordinates(field::FieldFunctions) = field.coordinates
 
 GeometricBase.functions(field::FieldFunctions) = field.functions
 GeometricBase.parameters(field::FieldFunctions) = field.parameters
-GeometricBase.periodicity(field::FieldFunctions) = field.periodicity
+GeometricBase.periodic(field::FieldFunctions) = field.periodic
 orientation(field::FieldFunctions) = field.orientation
 
 equilibrium(field::FieldFunctions) = field.equilibrium
