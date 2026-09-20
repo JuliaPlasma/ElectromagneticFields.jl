@@ -186,7 +186,7 @@ not covered here; see the git history for those.
   a function with `Symbolics.build_function(…; expression = Val{false})` and called — the same
   machinery this package emits its field code with, applied one step earlier.
 
-  The coefficients move, by less than the solve determines them. Three of the six shipped Solov'ev
+  The coefficients move, by less than the solve determines them. Four of the six shipped Solov'ev
   equilibria come out bit for bit identical; the largest change is `SolovevXpointEquilibriumITER`,
   at `6.1E-14` relative. The control for that figure is the same solve with every matrix entry
   perturbed by half an ULP, which is what two correctly rounded evaluators may disagree by: over
