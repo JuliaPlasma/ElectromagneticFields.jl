@@ -5,6 +5,7 @@ authors = ["Michael Kraus <michael.kraus@ipp.mpg.de>"]
 
 [deps]
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
+ConstructionBase = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
 GeometricBase = "9a0b12b7-583b-4f04-aa1f-d8551b6addc9"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 NaNMath = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
@@ -22,6 +23,7 @@ ElectromagneticFieldsMakieExt = "Makie"
 [compat]
 CairoMakie = "0.15"
 Combinatorics = "1"
+ConstructionBase = "1"
 GeometricBase = "0.14"
 Makie = "0.24"
 NaNMath = "1"

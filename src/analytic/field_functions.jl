@@ -281,7 +281,8 @@ function FieldFunctions(equ::AnalyticEquilibrium,
     # What the generated code depends on, and nothing more. The parameter count is in the key
     # because a parameter may itself be a vector — the Solov'ev coefficients — whose length a type
     # does not by itself pin down.
-    key = (Base.typename(typeof(equ)).wrapper, Base.typename(typeof(pert)).wrapper,
+    key = (ConstructionBase.constructorof(typeof(equ)),
+        ConstructionBase.constructorof(typeof(pert)),
         length(pvalues), cse, cache_module)
 
     generated = if cache
