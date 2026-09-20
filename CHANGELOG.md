@@ -7,7 +7,46 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Releases 
 not covered here; see the git history for those.
 
 
-## [Unreleased] — targeting 0.9.0
+## [0.9.0] - 2026-09-20
+
+### Breaking Changes
+
+Everything here that requires a change to calling code, and what to do about it. The sections
+below give the reasoning; this is the checklist.
+
+- **`@code`, its seven per-preset variants, `code` and `load_equilibrium` are gone.** Generated
+  code is no longer injected into a module. Build a field by calling `FieldFunctions(equ)`, which
+  returns a value: it can be constructed inside a function, stored, and passed to a vector field
+  through a problem's `parameters`, none of which the old module injection allowed.
+
+- **The ~450 scalar functions are ~41 generics returning tensors, each taking the field first.**
+  `B¹(t, q)` becomes `B♯(field, t, q)[1]` and `dAᵢdxⱼ(t, q)` becomes `DA♭(field, t, q)[i, j]`. The
+  names use the musical isomorphisms — `♭` covariant, `♯` contravariant, `♮` physical, the bare
+  letter the magnitude — and *Changed* below has the full old-to-new table. Every one of the ~444
+  old scalar values is an entry of one of the new tensors.
+
+- **The per-field submodules are flattened into the package.** `Solovev.ITER()` is
+  `SolovevEquilibriumITER()`, `ThetaPinch.init()` is `ThetaPinchEquilibrium()`, and so on for every
+  field; `Solovev.ITER(xpoint = true)` and its siblings are gone in favour of the named X-point
+  constructors. The coordinate helpers `X`, `Y`, `Z`, `R`, `r`, `θ`, `ϕ` and `r²` are package-level
+  generics and deliberately **not** exported — reach them as `ElectromagneticFields.R` or through
+  `coordinates(field)`.
+
+- **`periodicity` is no longer answered or exported by this package.**
+  `GeometricBase.periodic(equ)` gives one `Bool` per coordinate instead, and a chart with no method
+  for it raises a `MethodError` when a field is built from it, deliberately. Code that assembled a
+  `(xmin, xmax)` tuple from `rangemin`/`rangemax` behind a single flag must now build it from
+  `periodic` and the bounds. **`periodicity = periodic(field)` is silently wrong**, not an error:
+  a three-element `Bool` vector destructures to `(false, false)`.
+
+- **`parameters(field)` for a Solov'ev equilibrium now includes the coefficient vector `c`.** `A₃`
+  reads it, so it travels with the other parameters instead of being frozen into the code.
+
+- **A field rebuilt after `clear_field_cache!()` is equal to a few ULP, not bit for bit.** Compare
+  two builds of one field with a tolerance rather than `==`.
+
+- **SymEngine is no longer a dependency**; Symbolics, StaticArrays, GeometricBase and
+  ConstructionBase are. The Julia floor stays 1.10.
 
 ### Added
 
@@ -268,36 +307,39 @@ not covered here; see the git history for those.
   This is breaking for any code that calls `periodicity` on anything from this package, whether an
   equilibrium, a perturbation or a field: the name is no longer answered here at all.
 
+- **The generated-code cache is keyed on the shape of the parameters, not on their count.**
+  `parameter_values` flattens a vector parameter entry by entry, and the generated code reads its
+  parameter argument positionally, so which slot carries which meaning follows from where the
+  boundary between the equilibrium's parameters and the perturbation's falls. A key over the
+  flattened total cannot see that boundary: lengths `(2, 3)` and `(3, 2)` both flatten to five
+  slots. The key therefore carries the per-parameter shape of each — `-1` for a scalar, the length
+  for a vector — so a scalar cannot read as a vector of length zero, and the number of slots
+  follows from the shape. No pair of fields a key over the total told apart is merged by it.
+
+  What a caller needs from this: a value the generated code bakes in as a literal — anything the
+  `A₁`, `φ` or metric methods read that `get_parameters` omits — is invisible to the key, and no
+  key over parameters can see it. Such a type must list the value as a parameter, or build its
+  fields with `cache = false`. The `get_parameters` docstring says so.
+
+- **A field rebuilt after `clear_field_cache!()` agrees with the one it replaces to a few ULP, not
+  bit for bit.** Two symbolic traces of one equilibrium need not produce the same expression: the
+  simplifier may choose any equivalent form, and a SymbolicUtils release that changes its choice
+  changes the body of about half of the 41 generated functions. Whether that reaches the result
+  depends on what the platform contracts — the same change moved the last bit of 11 values on
+  aarch64 macOS under Julia 1 and none on Windows under the Julia floor.
+
+  Nothing about a field's accuracy changes; both forms evaluate the same quantity. What this fixes
+  is the guarantee stated to a caller, and the test suite that asserted the stronger one: comparing
+  two builds of one field bit for bit is a lottery over the platform. The suite now compares the
+  parameters exactly and the values at `rtol = 1e-12`, four orders tighter than `≈` alone and far
+  tighter than any real error in a formula. **Code that compares two builds should use a
+  tolerance.**
+
 ### Fixed
 
 - **`LinearAlgebra` carries a `[compat]` bound.** It was the one entry in `[deps]` without one, so
   a resolve was free to pick a version this package had never been built against.
   `Aqua.test_deps_compat` reports exactly this, and fails without the entry.
-
-- **The generated-code cache is keyed on the shape of the parameters, not only on their number.**
-  `parameter_values` flattens a vector parameter entry by entry, and the generated code reads its
-  parameter argument positionally, so which slot carries which meaning follows from the split. A
-  key carrying only the total let two splits of one type share an entry: lengths `(2, 3)` and
-  `(3, 2)` both flatten to five slots, and the second field was served the first one's code. The
-  failure was silent — the `SVector` fits, so there was no bounds error, and `parameters(field)`
-  read the right struct while every accessor computed from the wrong slots.
-
-  No field this package ships can reach it. Exactly two structs carry a vector parameter,
-  `SolovevEquilibrium` and `SolovevXpointEquilibrium`, and each carries exactly one;
-  `ZeroPerturbation` has no parameters and `EzCosZPerturbation` one scalar. With a single vector
-  per struct the total fixes that vector's length, and with it the split, which is why the old key
-  held for every shipped field. An equilibrium of your own with two vector parameters reaches the
-  collision with no perturbation involved.
-
-  The shape carries `-1` for a scalar and the length for a vector, so a scalar cannot read as a
-  vector of length zero. The number of slots follows from the shape, which makes the shape strictly
-  finer than the number it replaces: no pair of fields the old key told apart is merged by the new
-  one.
-
-  A value that the generated code bakes in as a literal — anything the `A₁`, `φ` or metric methods
-  read that `get_parameters` omits — stays invisible to the key, and no key over parameters can
-  see it. The `get_parameters` docstring now says so: list the value as a parameter, or build the
-  field with `cache = false`.
 
 - **Contour plots of a field that diverges inside the plot window work again on Makie 0.24.15.**
   That release orders every traced contour line through `canonical_line_order`, which takes the
@@ -318,19 +360,6 @@ not covered here; see the git history for those.
   and the package no longer depends on Makie tolerating a `NaN` vertex. `[compat] Makie = "0.24"`
   is left as it is, because 0.24.14 and earlier were never affected.
 
-- **A field rebuilt after `clear_field_cache!()` agrees with the one it replaces to a few ULP, not
-  bit for bit.** Two symbolic traces of one equilibrium need not produce the same expression: the
-  simplifier may choose any equivalent form, and SymbolicUtils 4.46.8 chooses a different one for
-  about half of the 41 generated functions. The generated bodies then differ, and whether that
-  reaches the result depends on what the platform contracts — on aarch64 macOS under Julia 1 it
-  moves the last bit of 11 of them, on Windows under the Julia floor it moves none.
-
-  Nothing about a field's accuracy changes; both forms evaluate the same quantity. What changes is
-  the guarantee the test suite states. It compared the values of a rebuilt field bit for bit, which
-  made it a lottery over the platform: red on aarch64 macOS, green elsewhere for no better reason
-  than rounding. It now compares the parameters exactly, and the values at `rtol = 1e-12`, four
-  orders tighter than `≈` alone and far tighter than any real error in a formula.
-
 - **Both Penning trap docstrings disagreed with their code, and had done since the fields were
   added.** `PenningTrapBottleEquilibrium` had its two `Bₚ` terms swapped between the vector
   potential and the magnetic field, so both formulas were wrong; at `(0.3, 0.4, 0.5)` with the
@@ -347,8 +376,12 @@ not covered here; see the git history for those.
 
 - The `@code` macros — `@code` and the per-preset variants `@code_iter`, `@code_nstx`,
   `@code_frc`, `@code_xpoint`, `@code_iter_xpoint`, `@code_nstx_xpoint` and
-  `@code_nstx_double_xpoint`. Code generation is now done by calling `FieldFunctions`, which
-  returns a struct holding the functions.
+  `@code_nstx_double_xpoint` — together with the `code` and `load_equilibrium` functions they
+  called, all three of which 0.8.0 exported. Code generation is now done by calling
+  `FieldFunctions`, which returns a struct holding the functions.
+
+- `periodicity`, which 0.8.0 exported alongside those two. `GeometricBase.periodic` replaces it;
+  see *Breaking Changes* above.
 
 - Internal helpers dropped in the SymEngine → Symbolics transition: the hand-rolled common-
   subexpression elimination pass (made redundant by `Symbolics.build_function(...; cse = true)`),

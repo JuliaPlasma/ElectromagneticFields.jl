@@ -1,6 +1,6 @@
 name = "ElectromagneticFields"
 uuid = "d6c1ba6f-ee03-53af-b876-68cefeb88ec8"
-version = "0.8.0"
+version = "0.9.0"
 authors = ["Michael Kraus <michael.kraus@ipp.mpg.de>"]
 
 [deps]
