@@ -394,6 +394,46 @@ end
     end
 end
 
+# The Solov'ev constructors solve a dense linear system for the coefficients `c`, and part of what
+# that system says is that ψ vanishes at the boundary points of the Cerfon-Freidberg cross-section
+# model. Those are the rows checked below, and nothing else in this file constrains `c` at all:
+# every identity tested above holds for any `c` whatever.
+#
+# The cover is partial, and cannot be otherwise. The system is square and solved exactly, so `c`
+# satisfies whichever rows it is given; a fault in one of the rows that constrain a first or second
+# derivative moves `c` without moving these residuals. That is three of seven rows here for the
+# symmetric and double-X families, and four of twelve for the X-point family.
+#
+# The three families impose different points, which is why they are listed per case rather than
+# taken from the type — `SolovevDoubleXpointEquilibrium` returns a `SolovevXpointEquilibrium` too,
+# and puts the X-point where the other two put the upper boundary point.
+#
+# `1E-13` is set by the measurement rather than by taste: the residuals run to 5E-16, against a ψ
+# that measures 2E-3 at a sample point for the two ITER cases and 2E-1 to 4E-1 for the other four,
+# and evaluating one of these at a point the system does not constrain gives 5E-3.
+
+@testset "$(rpad("The Solov'ev boundary conditions are satisfied", 60))" begin
+    outer(p) = [1 + p.ϵ, 0.0, 0.0]
+    inner(p) = [1 - p.ϵ, 0.0, 0.0]
+    upper(p) = [1 - p.δ * p.ϵ, p.κ * p.ϵ, 0.0]
+    xpoint(p) = [p.xsep, p.ysep, 0.0]
+
+    for (name, points) in (
+        ("SolovevITER", (outer, inner, upper)),
+        ("SolovevNSTX", (outer, inner, upper)),
+        ("SolovevFRC", (outer, inner, upper)),
+        ("SolovevITERwXpoint", (outer, inner, upper, xpoint)),
+        ("SolovevNSTXwXpoint", (outer, inner, upper, xpoint)),
+        ("SolovevNSTXwDoubleXpoint", (outer, inner, xpoint))
+    )
+        field = FIELDS[name]
+        p = parameters(field)
+        for point in points
+            @test A♭(field, t, point(p))[3] ≈ 0 atol = 1E-13
+        end
+    end
+end
+
 # A perturbation is combined with its equilibrium symbolically, before any code is generated, so
 # the perturbed field is a `FieldFunctions` like any other. `EzCosZPerturbation` contributes only a
 # scalar potential, so `B` is untouched and `E` is not.
