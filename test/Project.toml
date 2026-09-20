@@ -1,0 +1,22 @@
+[deps]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+ElectromagneticFields = "d6c1ba6f-ee03-53af-b876-68cefeb88ec8"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+# Every dependency of the suite is bounded here, which is what `Aqua.test_deps_compat` asks of the
+# package itself. `CairoMakie` drives the plotting tests through the Makie extension, so its bound
+# tracks the `Makie` weak dependency's.
+[compat]
+Aqua = "0.8"
+CairoMakie = "0.15"
+LinearAlgebra = "1"
+SafeTestsets = "0.1"
+StaticArrays = "1"
+Test = "1"
+
+[sources]
+ElectromagneticFields = {path = ".."}
