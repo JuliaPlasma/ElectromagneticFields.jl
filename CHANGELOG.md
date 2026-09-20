@@ -9,6 +9,28 @@ not covered here; see the git history for those.
 
 ## [Unreleased] — targeting 0.9.0
 
+### Added
+
+- **Aqua.jl runs as part of the test suite**, in `test/aqua_tests.jl`, which calls
+  `Aqua.test_all`. This package carried no package-level quality check of any kind before, so all
+  eight — method ambiguities, unbound type parameters, undefined exports, project extras, stale and
+  duplicated dependencies, `[compat]` coverage, type piracy and persistent tasks — start from a
+  clean pass rather than from a list of known failures.
+
+  Three of them cover something this package does structurally. `test_piracies` covers the eight
+  methods added to GeometricBase's `periodic`, `functions` and `parameters`, each of which
+  dispatches on a type defined here; a new chart family brings a `periodic` method with it, so the
+  property outlasts any list of the sites. `test_undefined_exports` covers an export list dominated
+  by the musical-isomorphism accessors, which are defined across `src/analytic/` rather than beside
+  the export. `test_stale_deps` resolves `ConstructionBase`, which `src/` reaches only through
+  qualified access and which a text search reads as unused.
+
+- **The test suite has a `test/Project.toml` of its own**, carrying Aqua, CairoMakie,
+  LinearAlgebra, SafeTestsets, StaticArrays and Test, each with a `[compat]` bound. The `[extras]`
+  and `[targets]` sections of the package's `Project.toml` are gone with it, together with the
+  `CairoMakie` bound that belonged to them. Test dependencies that only `[extras]` declared carried
+  no bounds at all, which is what `Aqua.test_deps_compat` reports.
+
 ### Changed
 
 - **The symbolic engine is replaced from SymEngine.jl to Symbolics.jl.** Dependencies change:
@@ -247,6 +269,10 @@ not covered here; see the git history for those.
   equilibrium, a perturbation or a field: the name is no longer answered here at all.
 
 ### Fixed
+
+- **`LinearAlgebra` carries a `[compat]` bound.** It was the one entry in `[deps]` without one, so
+  a resolve was free to pick a version this package had never been built against.
+  `Aqua.test_deps_compat` reports exactly this, and fails without the entry.
 
 - **The generated-code cache is keyed on the shape of the parameters, not only on their number.**
   `parameter_values` flattens a vector parameter entry by entry, and the generated code reads its
