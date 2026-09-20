@@ -96,31 +96,50 @@ include("plots.jl")
 #
 # Tracing one field of each type here therefore settles it for every parameter value of that type.
 # The specializations land in the package image, and so does `FIELD_CACHE`, so a fresh session
-# finds the generated functions already built: all twenty shipped equilibria together cost 0.01 s
-# to construct.
+# finds the generated functions already built: the first field costs 0.03 s rather than 7.7 s, and
+# every one after it 0.05 ms.
 #
-# The price is this package's own precompilation, about 25 s, paid once per version. A downstream
-# package can do the same for a field of its own; see `@precompilable_fields`.
+# The constructors sit inside `@compile_workload` rather than beside it in the setup block.
+# `@setup_workload` code runs during precompilation, but PrecompileTools does not put it into the
+# package image, so an equilibrium constructed there is compiled afresh in every session. The two
+# placements measure 0.06 s and 0.70 s for the twenty shipped equilibria in a fresh process, at the
+# same precompilation cost.
+#
+# Every Solov'ev preset is named, not one per type. Four of them repeat the two ITER presets'
+# types, so the generated code is a cache hit for them, but each preset is its own function and
+# needs compiling: naming those four costs 0.2 MB of package image and 0.2 s of precompilation,
+# and it halves the constructor bill above, which is 0.11 s with only the other sixteen named. The
+# three `AxisymmetricTokamak*ITER` presets are left out: they wrap a constructor the workload
+# already builds, and compiling them costs 10 µs.
+#
+# The price is this package's own precompilation, about 20 s against 1.4 s with no workload at all,
+# paid once per version. A downstream package can do the same for a field of its own; see
+# `@precompilable_fields`.
 @setup_workload begin
-    equilibria = (ABCEquilibrium(),
-        AxisymmetricTokamakCartesianEquilibrium(),
-        AxisymmetricTokamakCylindricalEquilibrium(),
-        AxisymmetricTokamakToroidalEquilibrium(),
-        AxisymmetricTokamakToroidalRegularizationEquilibrium(),
-        DipoleField(),
-        PenningTrapUniformEquilibrium(),
-        PenningTrapBottleEquilibrium(),
-        PenningTrapAsymmetricEquilibrium(),
-        QuadraticPotentialsField(),
-        SingularEquilibrium(),
-        SolovevEquilibriumITER(),
-        SolovevXpointEquilibriumITER(),
-        SolovevSymmetricEquilibrium(),
-        SymmetricQuadraticEquilibrium(),
-        ThetaPinchEquilibrium())
     ξ = [0.5, 0.5, 0.5]
 
     @compile_workload begin
+        equilibria = (ABCEquilibrium(),
+            AxisymmetricTokamakCartesianEquilibrium(),
+            AxisymmetricTokamakCylindricalEquilibrium(),
+            AxisymmetricTokamakToroidalEquilibrium(),
+            AxisymmetricTokamakToroidalRegularizationEquilibrium(),
+            DipoleField(),
+            PenningTrapUniformEquilibrium(),
+            PenningTrapBottleEquilibrium(),
+            PenningTrapAsymmetricEquilibrium(),
+            QuadraticPotentialsField(),
+            SingularEquilibrium(),
+            SolovevEquilibriumFRC(),
+            SolovevEquilibriumITER(),
+            SolovevEquilibriumNSTX(),
+            SolovevXpointEquilibriumITER(),
+            SolovevXpointEquilibriumNSTX(),
+            SolovevDoubleXpointEquilibriumNSTX(),
+            SolovevSymmetricEquilibrium(),
+            SymmetricQuadraticEquilibrium(),
+            ThetaPinchEquilibrium())
+
         for equ in equilibria
             field = FieldFunctions(equ)
             for name in FIELD_FUNCTION_NAMES

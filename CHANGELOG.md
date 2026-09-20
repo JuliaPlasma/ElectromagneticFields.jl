@@ -69,14 +69,15 @@ not covered here; see the git history for those.
   Being per shape, it is recoverable, and two things now recover it. The generated functions of a
   type already built are **cached** — keyed on the equilibrium and perturbation types rather than
   on the parameter values, which the code no longer contains — and a `PrecompileTools` workload
-  **traces one field of every shipped type** during precompilation, so the specializations and
-  the cache both land in the package image.
+  **builds every shipped equilibrium and traces a field of it** during precompilation, so the
+  constructors, the specializations and the cache all land in the package image.
 
-  The result is that constructing any equilibrium this package ships costs nothing: the first
-  field in a session drops from 8.5 s to 0.00 s, and all twenty together from about 19 s to
-  0.01 s, for any parameter values. The price is this package's own precompilation, 1.5 s →
-  24.5 s, paid once per version. An equilibrium of your own is traced once per session and cached
-  after that.
+  The result is that the equilibria this package ships cost almost nothing in a fresh session.
+  Measured against the same package with the workload removed: the first field drops from 7.7 s to
+  0.03 s, all twenty equilibria with their fields from 16.5 s to 0.34 s, and their constructors
+  alone from 1.8 s to 0.06 s, for any parameter values. The price is this package's own
+  precompilation, 1.4 s → 20 s, paid once per version. An equilibrium of your own is traced once
+  per session and cached after that.
 
   The cache is keyed on types, not on the content of the methods behind them, so redefining an
   `A₁` or a metric coefficient in a running session leaves it stale. `clear_field_cache!()`
