@@ -287,9 +287,10 @@ function FieldFunctions(equ::AnalyticEquilibrium,
     # different splits of the same number of slots share an entry. See `parameter_shape`. The
     # names are in the key because `get_parameters` is called on the instance, so one type can
     # name a different set for each instance, which the shapes cannot see.
+    names = parameter_names(equ)
     key = (ConstructionBase.constructorof(typeof(equ)),
         ConstructionBase.constructorof(typeof(pert)),
-        parameter_names(equ), parameter_names(pert),
+        names, parameter_names(pert),
         parameter_shape(equ), parameter_shape(pert), cse, cache_module)
 
     generated = if cache
@@ -304,7 +305,6 @@ function FieldFunctions(equ::AnalyticEquilibrium,
     fns = map(f -> FieldFunction(f, pvalues), generated.functions)
     crd = map(f -> FieldFunction(f, pvalues), generated.coordinates)
 
-    names = parameter_names(equ)
     par = NamedTuple{names}(map(name -> getfield(equ, name), names))
 
     FieldFunctions(equ, pert, par, crd,

@@ -28,8 +28,8 @@ not covered here; see the git history for those.
 
 - **Two equilibria of one type that name different parameters no longer share generated code.**
   `get_parameters` is called on the instance, so a method can return a different set of names for
-  each instance of a type. The field cache keyed on the type and the parameter shapes only, and
-  `(:a, :b)` and `(:b, :c)` have the same shape, `(-1, -1)`. So the second field got the code
+  each instance of a type. The key of the field cache held the parameter shapes but not the names,
+  and `(:a, :b)` and `(:b, :c)` have the same shape, `(-1, -1)`. So the second field got the code
   traced for the first one and read its parameters in the wrong slots, with no error. The key now
   carries `parameter_names` of the equilibrium and of the perturbation as well. No shipped
   equilibrium defines `get_parameters`, so none of them was affected, and each still costs one

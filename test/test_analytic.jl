@@ -775,9 +775,9 @@ end
 
 # `get_parameters` is called on the instance, so one type can name a different set of parameters
 # for each instance. The shape cannot see that: `(:a, :b)` and `(:b, :c)` are both `(-1, -1)`. The
-# test type chooses its parameters per instance and leaves the third field frozen as a literal,
+# test type chooses two of `a`, `b` and `c` per instance and leaves the third frozen as a literal,
 # which is what such a type does, and it needs its own `symbolic_copy`, because the default one
-# passes the parameters to the constructor in order.
+# passes the parameters alone to the constructor.
 
 module ChosenParameterField
 
