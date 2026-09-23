@@ -772,3 +772,77 @@ end
     @test functions(again).A♭.f === functions(f23).A♭.f
     @test A♭(again, t, ζ)[3] == sum(other23.a) + 2 * sum(other23.b)
 end
+
+# `get_parameters` is called on the instance, so one type can name a different set of parameters
+# for each instance. The shape cannot see that: `(:a, :b)` and `(:b, :c)` are both `(-1, -1)`. The
+# test type chooses its parameters per instance and leaves the third field frozen as a literal,
+# which is what such a type does, and it needs its own `symbolic_copy`, because the default one
+# passes the parameters to the constructor in order.
+
+module ChosenParameterField
+
+using ElectromagneticFields: CartesianEquilibrium, Symbolics, X, Y, Z
+import ElectromagneticFields: A₁, A₂, A₃, get_parameters, symbolic_copy
+
+struct ChosenEquilibrium{T <: Number} <: CartesianEquilibrium
+    name::String
+    chosen::NTuple{2, Symbol}
+    a::T
+    b::T
+    c::T
+end
+
+get_parameters(equ::ChosenEquilibrium) = equ.chosen
+
+function symbolic_copy(equ::ChosenEquilibrium, prefix::Symbol)
+    symbols = map(name -> Symbolics.variable(Symbol(prefix, :_, name)), equ.chosen)
+    member(name) = name in equ.chosen ? symbols[findfirst(==(name), equ.chosen)] :
+                   Symbolics.Num(getfield(equ, name))
+    copy = ChosenEquilibrium{Symbolics.Num}(
+        equ.name, equ.chosen, member(:a), member(:b), member(:c))
+    copy, collect(symbols)
+end
+
+A₁(x::AbstractVector, ::ChosenEquilibrium) = zero(eltype(x))
+A₂(x::AbstractVector, ::ChosenEquilibrium) = zero(eltype(x))
+
+# the three weights differ, so reading one parameter's slot as another's changes the answer
+function A₃(x::AbstractVector, equ::ChosenEquilibrium)
+    equ.a * X(x, equ) + 2 * equ.b * Y(x, equ) + 4 * equ.c * Z(x, equ)
+end
+
+end
+
+@testset "$(rpad("The cache key carries the parameter names", 60))" begin
+    ab = ChosenParameterField.ChosenEquilibrium("Chosen", (:a, :b), 1.0, 2.0, 3.0)
+    bc = ChosenParameterField.ChosenEquilibrium("Chosen", (:b, :c), 1.0, 2.0, 3.0)
+
+    # the same type and the same shape, so only the names tell the two apart
+    @test typeof(ab) == typeof(bc)
+    @test ElectromagneticFields.parameter_shape(ab) ==
+          ElectromagneticFields.parameter_shape(bc)
+    @test ElectromagneticFields.parameter_names(ab) !=
+          ElectromagneticFields.parameter_names(bc)
+
+    entries = length(ElectromagneticFields.FIELD_CACHE)
+    fab = FieldFunctions(ab)
+    fbc = FieldFunctions(bc)
+
+    # one entry each, rather than `bc` served the code traced for `ab`
+    @test length(ElectromagneticFields.FIELD_CACHE) == entries + 2
+    @test functions(fab).A♭.f !== functions(fbc).A♭.f
+
+    # `A₃ = a x + 2 b y + 4 c z`, with small integers, so the comparison is exact. Served `ab`'s
+    # code, `bc` would read `b` as `a` and `c` as `b`, and give 2 + 6 + 12 = 20 here.
+    ζ = [1.0, 1.0, 1.0]
+    @test A♭(fab, t, ζ)[3] == 1 + 4 + 12
+    @test A♭(fbc, t, ζ)[3] == 1 + 4 + 12
+
+    # the key is no finer than it must be: the same names are still a lookup, whatever the values
+    filled = length(ElectromagneticFields.FIELD_CACHE)
+    other = ChosenParameterField.ChosenEquilibrium("Chosen", (:a, :b), 5.0, 6.0, 3.0)
+    again = FieldFunctions(other)
+    @test length(ElectromagneticFields.FIELD_CACHE) == filled
+    @test functions(again).A♭.f === functions(fab).A♭.f
+    @test A♭(again, t, ζ)[3] == 5 + 12 + 12
+end
