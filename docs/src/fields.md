@@ -145,10 +145,24 @@ generated alongside it. `b` is the unit vector along ``B``,
 b = \frac{B}{|B|} ,
 ```
 
-and `a` and `c` complete it to an orthonormal triad. `a` is the cross product of the first
-coordinate basis vector not parallel to `b` with `b` itself, `c` is `b × a`, and both are then
-normalised in the metric. Like every vector here they come in all three representations, as
-`a♭`, `a♯` and `a♮`.
+and `a` and `c` complete it to an orthonormal triad. `a` is the cross product of a coordinate
+basis vector with `b`, `c` is `b × a`, and both are then normalised in the metric. Like every
+vector here they come in all three representations, as `a♭`, `a♯` and `a♮`.
+
+The basis vector is chosen once, when the field is generated: it is ``∂_1``, unless the trace
+shows ``∂_1 × b`` to be zero, then ``∂_2``, then ``∂_3``. The choice is not made again at each
+point. So the frame is undefined wherever `b` is parallel to the chosen basis vector. Off that
+set it is as smooth as `b`, and on a path through the set `a` and `c` reverse direction. Where
+the cross product rounds to exactly zero, `a` and `c` are `NaN`.
+
+No other choice of basis vector removes this in a cartesian chart when `b` takes every direction,
+as it does in the dipole field: `b` is then parallel to each basis vector somewhere. For
+`DipoleField` the set is the two lines ``y = 0``, ``x = ±\sqrt{2} z``, where `b` is parallel to
+``∂_x``. `ABCEquilibrium` has such curves too. `AxisymmetricTokamakCartesianEquilibrium`,
+`PenningTrapBottleEquilibrium` and `PenningTrapAsymmetricEquilibrium` have such points, the first
+on its magnetic axis. `SolovevEquilibriumFRC` has no toroidal field, so there the set is a
+surface, and `a` and `c` jump across it. A calculation that uses `a` and `c` near such a set must
+allow for the reversal.
 
 Orthonormality is only visible as such in the physical components, where the Gram matrix of the
 triad is the identity:

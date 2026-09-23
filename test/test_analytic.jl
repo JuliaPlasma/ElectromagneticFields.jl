@@ -434,6 +434,32 @@ end
     end
 end
 
+# The frame is built from the basis vector ∂₁ unless the trace shows ∂₁ × b to be zero, and the
+# choice is not revisited at each point. So it reverses on a path through the points where b ∥ ∂₁,
+# and no choice of basis vector avoids that for a field whose b takes every direction. The dipole
+# is one: b = ∓∂ₓ on the two lines y = 0, x = ±√2 z. In the cartesian chart
+# a = ∂ₓ × b / |∂ₓ × b|, which at y = 0 is (0, -sign(B_z), 0). On x = +√2 z, where b ≈ -∂ₓ,
+# c = b × a is then (0, 0, sign(B_z)) up to the small b_z. The expected sign comes from the closed
+# form of B_z in the `DipoleField` docstring rather than from the generated code.
+
+@testset "$(rpad("The dipole frame turns across b ∥ ∂₁", 60))" begin
+    field = FIELDS["Dipole"]
+    B₀ = parameters(field).B₀
+    Bz(q) = -B₀ * (2q[3]^2 - q[1]^2 - q[2]^2) / norm(q)^5
+
+    below = [sqrt(2) - 1E-8, 0.0, 1.0]
+    above = [sqrt(2) + 1E-8, 0.0, 1.0]
+
+    for q in (below, above)
+        s = sign(Bz(q))
+        @test a♯(field, t, q) ≈ [0, -s, 0]
+        @test c♯(field, t, q) ≈ [0, 0, s] atol = 1E-6
+    end
+
+    @test a♯(field, t, below) ≈ -a♯(field, t, above)
+    @test c♯(field, t, below) ≈ -c♯(field, t, above) atol = 1E-6
+end
+
 # `periodic` is answered per chart family rather than per equilibrium, because it is a property of
 # the chart, and it has no fallback. So there are three things to check: that each family gives the
 # right answer, that the families between them account for every shipped equilibrium, and that a

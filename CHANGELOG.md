@@ -7,6 +7,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Releases 
 not covered here; see the git history for those.
 
 
+## [Unreleased]
+
+### Fixed
+
+- **The documentation of the perpendicular frame `a`, `c` now says where it is discontinuous.** It
+  said `a` is built from "the first coordinate basis vector not parallel to `b`". The basis vector
+  is chosen once, when the field is generated, and only a cross product that the trace shows to be
+  zero moves the choice on. Off the set where `b` is parallel to the chosen vector, the frame is
+  as smooth as `b`, and on a path through the set `a` and `c` reverse direction. They are `NaN`
+  where the cross product rounds to exactly zero. For `DipoleField` the set is the two lines
+  `y = 0`, `x = ±√2 z`, and `ABCEquilibrium` has such curves too. There are such points in the
+  cartesian tokamak `AxisymmetricTokamakCartesianEquilibrium`, on its magnetic axis, and in
+  `PenningTrapBottleEquilibrium` and `PenningTrapAsymmetricEquilibrium`. `SolovevEquilibriumFRC`
+  has no toroidal field, so there the set is a surface, and `a` and `c` jump across it. The
+  generated code is unchanged. When `b` takes every direction, it is parallel to each basis vector
+  of a cartesian chart somewhere, so no choice of basis vector removes the jump. A new test pins
+  the reversal in the dipole field on the line `y = 0`, `x = √2 z`. `docs/src/generation.md` and
+  `docs/src/interface.md` now use the same wording.
+
+
 ## [0.9.0] - 2026-09-20
 
 ### Breaking Changes
