@@ -63,7 +63,9 @@ with [Symbolics.jl](https://symbolics.juliasymbolics.org/):
    field is its Hodge dual. The Hodge star is orientation-dependent and is given the *signed*
    determinant ``\det DF = \mathrm{orientation} \cdot J``, not the volume element.
 4. The magnitude, the unit vector and the perpendicular frame follow, the frame being built from
-   the first coordinate basis vector whose cross product with ``b`` does not vanish identically.
+   the first coordinate basis vector whose cross product with ``b`` the trace does not show to be
+   zero. The choice is made once, so the frame reverses where ``b`` is parallel to that vector;
+   [The Frame along the Magnetic Field](@ref) says where.
 5. The electric field is minus the gradient of the potential.
 6. Everything is differentiated as far as the tables in [Interface](interface.md) say.
 

@@ -75,8 +75,8 @@ B♭(field, t, ξ)[3]
 | `b♭`, `b♯`, `b♮` | `SVector{3}` | unit vector along ``B`` |
 | `Db♭`, `Db♮` | `SMatrix{3,3}` | ``\partial_j b_i`` and its physical counterpart |
 | `DDb♭` | `SArray{3,3,3}` | ``\partial_k \partial_j b_i`` |
-| `a♭`, `a♯`, `a♮` | `SVector{3}` | first vector perpendicular to ``b`` |
-| `c♭`, `c♯`, `c♮` | `SVector{3}` | second vector perpendicular to ``b`` |
+| `a♭`, `a♯`, `a♮` | `SVector{3}` | ``a``, the first of the two vectors perpendicular to ``b`` |
+| `c♭`, `c♯`, `c♮` | `SVector{3}` | ``c = b × a``, the second of the two |
 | `E♭`, `E♯` | `SVector{3}` | electric field |
 | `DE♭` | `SMatrix{3,3}` | ``\partial_j E_i`` |
 
