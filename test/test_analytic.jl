@@ -781,8 +781,8 @@ end
 
 module ChosenParameterField
 
-using ElectromagneticFields: CartesianEquilibrium, Symbolics, X, Y, Z
-import ElectromagneticFields: A₁, A₂, A₃, get_parameters, symbolic_copy
+using ElectromagneticFields: CartesianEquilibrium, CartesianPerturbation, Symbolics, X, Y, Z
+import ElectromagneticFields: A₁, A₂, A₃, φ, get_parameters, symbolic_copy
 
 struct ChosenEquilibrium{T <: Number} <: CartesianEquilibrium
     name::String
@@ -809,6 +809,28 @@ A₂(x::AbstractVector, ::ChosenEquilibrium) = zero(eltype(x))
 # the three weights differ, so reading one parameter's slot as another's changes the answer
 function A₃(x::AbstractVector, equ::ChosenEquilibrium)
     equ.a * X(x, equ) + 2 * equ.b * Y(x, equ) + 4 * equ.c * Z(x, equ)
+end
+
+# the same for a perturbation, which chooses one of `d` and `e` and leaves the other frozen
+struct ChosenPerturbation{T <: Number} <: CartesianPerturbation
+    name::String
+    chosen::NTuple{1, Symbol}
+    d::T
+    e::T
+end
+
+get_parameters(pert::ChosenPerturbation) = pert.chosen
+
+function symbolic_copy(pert::ChosenPerturbation, prefix::Symbol)
+    symbols = map(name -> Symbolics.variable(Symbol(prefix, :_, name)), pert.chosen)
+    member(name) = name in pert.chosen ? symbols[findfirst(==(name), pert.chosen)] :
+                   Symbolics.Num(getfield(pert, name))
+    copy = ChosenPerturbation{Symbolics.Num}(pert.name, pert.chosen, member(:d), member(:e))
+    copy, collect(symbols)
+end
+
+function φ(x::AbstractVector, pert::ChosenPerturbation)
+    pert.d * X(x, pert) + 2 * pert.e * Y(x, pert)
 end
 
 end
@@ -838,11 +860,36 @@ end
     @test A♭(fab, t, ζ)[3] == 1 + 4 + 12
     @test A♭(fbc, t, ζ)[3] == 1 + 4 + 12
 
-    # the key is no finer than it must be: the same names are still a lookup, whatever the values
+    # the key is no finer than it must be: the same names are still a lookup, whatever their
+    # values. `c` keeps its value, because a frozen member is a literal the key does not see.
     filled = length(ElectromagneticFields.FIELD_CACHE)
     other = ChosenParameterField.ChosenEquilibrium("Chosen", (:a, :b), 5.0, 6.0, 3.0)
     again = FieldFunctions(other)
     @test length(ElectromagneticFields.FIELD_CACHE) == filled
     @test functions(again).A♭.f === functions(fab).A♭.f
     @test A♭(again, t, ζ)[3] == 5 + 12 + 12
+end
+
+@testset "$(rpad("The cache key carries the perturbation's parameter names", 60))" begin
+    equ = ChosenParameterField.ChosenEquilibrium("Chosen", (:a, :b), 1.0, 2.0, 3.0)
+    pd = ChosenParameterField.ChosenPerturbation("Chosen", (:d,), 1.0, 2.0)
+    pe = ChosenParameterField.ChosenPerturbation("Chosen", (:e,), 1.0, 2.0)
+
+    # the same type and the same shape, so only the names tell the two apart
+    @test typeof(pd) == typeof(pe)
+    @test ElectromagneticFields.parameter_shape(pd) ==
+          ElectromagneticFields.parameter_shape(pe)
+
+    entries = length(ElectromagneticFields.FIELD_CACHE)
+    gd = FieldFunctions(equ, pd)
+    ge = FieldFunctions(equ, pe)
+
+    @test length(ElectromagneticFields.FIELD_CACHE) == entries + 2
+    @test functions(gd).φ.f !== functions(ge).φ.f
+
+    # `φ = d x + 2 e y`. Served `pd`'s code, `pe` would read `e` as `d` with `e` frozen at 2, and
+    # give 2 + 4 = 6 here.
+    ζ = [1.0, 1.0, 1.0]
+    @test φ(gd, t, ζ) == 1 + 4
+    @test φ(ge, t, ζ) == 1 + 4
 end

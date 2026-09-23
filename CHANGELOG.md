@@ -32,9 +32,10 @@ not covered here; see the git history for those.
   and `(:a, :b)` and `(:b, :c)` have the same shape, `(-1, -1)`. So the second field got the code
   traced for the first one and read its parameters in the wrong slots, with no error. The key now
   carries `parameter_names` of the equilibrium and of the perturbation as well. No shipped
-  equilibrium defines `get_parameters`, so none of them was affected, and each still costs one
-  cache entry. A new test builds two such instances and checks that each gets its own entry and
-  its own values, and that a third instance with the first one's names is still a lookup.
+  equilibrium defines `get_parameters`, so none was affected. Two new tests each build two
+  instances of one type with different names, equilibria in one and perturbations in the other,
+  and check that each gets its own entry and its own values. In the equilibrium test, a third
+  instance with the first one's names is still a lookup.
 
 
 ## [0.9.0] - 2026-09-20
