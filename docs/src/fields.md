@@ -149,15 +149,17 @@ and `a` and `c` complete it to an orthonormal triad. `a` is the cross product of
 basis vector with `b`, `c` is `b × a`, and both are then normalised in the metric. Like every
 vector here they come in all three representations, as `a♭`, `a♯` and `a♮`.
 
-The basis vector is chosen once, when the field is generated: it is ``∂_1``, unless ``∂_1 × b``
-vanishes identically, then ``∂_2``, then ``∂_3``. The choice is not made again at each point. So
-the frame is undefined wherever `b` is parallel to the chosen basis vector, and it turns by 180°
-across that set. Where the cross product rounds to exactly zero, `a` and `c` are `NaN`.
+The basis vector is chosen once, when the field is generated: it is ``∂_1``, unless the trace
+shows ``∂_1 × b`` to be zero, then ``∂_2``, then ``∂_3``. The choice is not made again at each
+point. So the frame is undefined wherever `b` is parallel to the chosen basis vector, and it
+turns by 180° across that set. Where the cross product rounds to exactly zero, `a` and `c` are
+`NaN`.
 
-No other choice removes this. A unit vector perpendicular to `b` cannot be continuous everywhere
-when `b` takes every direction, which the dipole field does. For `DipoleField` the set is the line
-``y = 0``, ``x^2 = 2 z^2``, where ``b = ∓ ∂_x``, and `ABCEquilibrium` has such lines too. A
-calculation that uses `a` and `c` near such a set must allow for the jump.
+No other choice of basis vector removes this in a cartesian chart when `b` takes every direction,
+as it does in the dipole field: `b` is then parallel to each basis vector somewhere. For
+`DipoleField` the set is the two lines ``y = 0``, ``x = ±\sqrt{2} z``, where `b` is parallel to
+``∂_x``, and `ABCEquilibrium` has such lines too. A calculation that uses `a` and `c` near such a
+set must allow for the jump.
 
 Orthonormality is only visible as such in the physical components, where the Gram matrix of the
 triad is the identity:

@@ -434,13 +434,13 @@ end
     end
 end
 
-# The frame is built from the basis vector ∂₁ wherever ∂₁ × b does not vanish identically, and the
-# choice is not revisited at each point. So it turns by 180° across the points where b ∥ ∂₁, and no
-# choice of basis vector avoids that for a field whose b takes every direction. The dipole is one:
-# b = ∓∂ₓ on the line y = 0, x² = 2z². In the cartesian chart a = ∂ₓ × b / |∂ₓ × b|, which at
-# y = 0 is (0, -sign(B_z), 0), and c = b × a is then (0, 0, sign(B_z)) up to the small b_z. The
-# expected sign comes from the closed form of B_z in the `DipoleField` docstring rather than from
-# the generated code.
+# The frame is built from the basis vector ∂₁ unless the trace shows ∂₁ × b to be zero, and the
+# choice is not revisited at each point. So it turns by 180° across the points where b ∥ ∂₁, and
+# no choice of basis vector avoids that for a field whose b takes every direction. The dipole is
+# one: b = ∓∂ₓ on the two lines y = 0, x = ±√2 z. In the cartesian chart a = ∂ₓ × b / |∂ₓ × b|, which at y = 0 is
+# (0, -sign(B_z), 0). On x = +√2 z, where b ≈ -∂ₓ, c = b × a is then (0, 0, sign(B_z)) up to the
+# small b_z. The expected sign comes from the closed form of B_z in the `DipoleField` docstring
+# rather than from the generated code.
 
 @testset "$(rpad("The dipole frame turns across b ∥ ∂₁", 60))" begin
     field = FIELDS["Dipole"]
