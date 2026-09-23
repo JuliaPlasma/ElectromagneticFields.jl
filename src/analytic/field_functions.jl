@@ -94,9 +94,9 @@ const FIELD_FUNCTION_DOCS = (
     # perpendicular frame
     a♭ = (
         "`SVector{3}`",
-        "Covariant components of the first vector perpendicular to ``b``. It turns by 180° " *
-        "across the points where ``b`` is parallel to the coordinate basis vector it is " *
-        "built from, and so does ``c``."),
+        "Covariant components of ``a``, the first of the two vectors perpendicular to ``b``. " *
+        "It reverses on a path through the points where ``b`` is parallel to the coordinate " *
+        "basis vector it is built from, and so does ``c``."),
     a♯ = ("`SVector{3}`", "Contravariant components of ``a``."),
     a♮ = ("`SVector{3}`", "Physical components of ``a``."),
     c♭ = ("`SVector{3}`", "Covariant components of ``c = b × a``, completing the triad."),
