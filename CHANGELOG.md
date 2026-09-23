@@ -7,6 +7,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Releases 
 not covered here; see the git history for those.
 
 
+## [Unreleased]
+
+### Fixed
+
+- **The documentation of the perpendicular frame `a`, `c` now says where it is discontinuous.** It
+  said `a` is built from "the first coordinate basis vector not parallel to `b`". The basis vector
+  is chosen once, when the field is generated, and only a cross product that vanishes identically
+  moves the choice on. So `a` and `c` turn by 180° across the points where `b` is parallel to the
+  chosen vector, and are `NaN` where the cross product rounds to exactly zero. `DipoleField` and
+  `ABCEquilibrium` both have such points. The generated code is unchanged: a field whose `b` takes
+  every direction has no continuous perpendicular frame, so no choice of basis vector removes the
+  jump. A new test pins the jump in the dipole field on the line `y = 0`, `x² = 2z²`.
+
+
 ## [0.9.0] - 2026-09-20
 
 ### Breaking Changes

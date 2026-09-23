@@ -145,10 +145,19 @@ generated alongside it. `b` is the unit vector along ``B``,
 b = \frac{B}{|B|} ,
 ```
 
-and `a` and `c` complete it to an orthonormal triad. `a` is the cross product of the first
-coordinate basis vector not parallel to `b` with `b` itself, `c` is `b × a`, and both are then
-normalised in the metric. Like every vector here they come in all three representations, as
-`a♭`, `a♯` and `a♮`.
+and `a` and `c` complete it to an orthonormal triad. `a` is the cross product of a coordinate
+basis vector with `b`, `c` is `b × a`, and both are then normalised in the metric. Like every
+vector here they come in all three representations, as `a♭`, `a♯` and `a♮`.
+
+The basis vector is chosen once, when the field is generated: it is ``∂_1``, unless ``∂_1 × b``
+vanishes identically, then ``∂_2``, then ``∂_3``. The choice is not made again at each point. So
+the frame is undefined wherever `b` is parallel to the chosen basis vector, and it turns by 180°
+across that set. Where the cross product rounds to exactly zero, `a` and `c` are `NaN`.
+
+No other choice removes this. A unit vector perpendicular to `b` cannot be continuous everywhere
+when `b` takes every direction, which the dipole field does. For `DipoleField` the set is the line
+``y = 0``, ``x^2 = 2 z^2``, where ``b = ∓ ∂_x``, and `ABCEquilibrium` has such lines too. A
+calculation that uses `a` and `c` near such a set must allow for the jump.
 
 Orthonormality is only visible as such in the physical components, where the Gram matrix of the
 triad is the identity:
