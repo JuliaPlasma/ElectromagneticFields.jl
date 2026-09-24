@@ -231,9 +231,9 @@ end
 The generated functions built so far, keyed by what determines them.
 
 Because the parameters are arguments rather than literals, the code depends on the equilibrium's
-type and on the shape of its parameters, not on their values, so every field matching one already
-built is a lookup: no trace, no code generation and no compilation. The entries hold the bare
-generated functions; the parameter values are attached per field when it is constructed.
+type and on the names and shapes of its parameters, not on their values, so every field matching
+one already built is a lookup: no trace, no code generation and no compilation. The entries hold
+the bare generated functions; the parameter values are attached per field when it is constructed.
 
 Populated during this package's precompilation for the equilibria in its workload, and it survives
 into the package image, so those types cost nothing in a fresh session.
@@ -284,9 +284,13 @@ function FieldFunctions(equ::AnalyticEquilibrium,
     # What the generated code depends on, and nothing more. The parameter shapes are in the key
     # because a parameter may itself be a vector — the Solov'ev coefficients — whose length a type
     # does not by itself pin down, and the code reads `p` positionally: the total alone lets two
-    # different splits of the same number of slots share an entry. See `parameter_shape`.
+    # different splits of the same number of slots share an entry. See `parameter_shape`. The
+    # names are in the key because `get_parameters` is called on the instance, so one type can
+    # name a different set for each instance, which the shapes cannot see.
+    names = parameter_names(equ)
     key = (ConstructionBase.constructorof(typeof(equ)),
         ConstructionBase.constructorof(typeof(pert)),
+        names, parameter_names(pert),
         parameter_shape(equ), parameter_shape(pert), cse, cache_module)
 
     generated = if cache
@@ -301,7 +305,6 @@ function FieldFunctions(equ::AnalyticEquilibrium,
     fns = map(f -> FieldFunction(f, pvalues), generated.functions)
     crd = map(f -> FieldFunction(f, pvalues), generated.coordinates)
 
-    names = parameter_names(equ)
     par = NamedTuple{names}(map(name -> getfield(equ, name), names))
 
     FieldFunctions(equ, pert, par, crd,

@@ -32,9 +32,11 @@ the generated code takes exactly these as its argument, so anything the `A₁`, 
 methods read and this does not list is frozen into the code as a literal. See
 [`parameter_names`](@ref), which applies the default.
 
-A value frozen in that way is invisible to the cache, which keys on the types and the parameter
-shapes alone: two equilibria differing only in such a value share one entry, and the second gets
-the first one's code. List the value as a parameter, or build the field with `cache = false`.
+A method may return a different set of names for each instance of a type; the cache keys on the
+names, so each set gets code of its own. A value frozen as a literal is invisible to the cache,
+which keys on the types and the parameter names and shapes alone: two equilibria differing only in
+such a value share one entry, and the second gets the first one's code. List the value as a
+parameter, or build the field with `cache = false`.
 """
 function get_parameters end
 
@@ -336,7 +338,8 @@ one entry per name, `-1` for a scalar and the length for a vector.
 The generated code reads its parameter argument positionally, so which slot carries which meaning
 follows from this shape and not from the number of slots — two splits totalling the same, such as
 `(2, 3)` and `(3, 2)`, map the slots differently. It is part of the key
-[`FieldFunctions`](@ref) looks its cache up by.
+[`FieldFunctions`](@ref) looks its cache up by, next to the names from [`parameter_names`](@ref),
+which the shape does not carry.
 
 A scalar takes `-1` rather than `0` so that it cannot read as a vector of length zero. The shape
 then determines the number of slots, which makes it strictly finer than that number: two fields

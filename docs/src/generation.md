@@ -174,8 +174,8 @@ That is what makes the cost recoverable, and this package recovers all of it for
 it ships. Two things combine:
 
 * the generated functions of a type already built are **cached**, keyed by what actually
-  determines them — the equilibrium and perturbation types, the parameter shapes, `cse` and
-  `cache_module` — but not by the parameter values, which the code does not contain;
+  determines them — the equilibrium and perturbation types, the parameter names and shapes, `cse`
+  and `cache_module` — but not by the parameter values, which the code does not contain;
 * a `PrecompileTools` workload **builds every shipped equilibrium and traces a field of it** during
   precompilation, so the constructors, the compiled specializations and the cache itself all land
   in the package image.
