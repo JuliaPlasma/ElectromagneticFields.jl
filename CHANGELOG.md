@@ -9,6 +9,14 @@ not covered here; see the git history for those.
 
 ## [Unreleased]
 
+### Changed
+
+- **The test suite follows the tree's test convention.** `test/runtests.jl` holds only the
+  `GROUPS` selection and one `@safetestset` per file. The Aqua checks are in
+  `test/quality/aqua.jl` and the plotting tests are in `test/plots.jl`, both in the `core` group.
+  The tests of the analytic equilibria are in `test/analytic/equilibria.jl`, in the `slow` group,
+  because one run takes about 150 s. `Pkg.test()` runs both groups and the same 4102 tests.
+
 ### Fixed
 
 - **The documentation of the perpendicular frame `a`, `c` now says where it is discontinuous.** It
