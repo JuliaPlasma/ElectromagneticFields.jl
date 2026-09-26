@@ -1,11 +1,11 @@
-
-using ElectromagneticFields
 using SafeTestsets
-using Test
 
-@safetestset "Aqua" begin
-    include("aqua_tests.jl")
+const GROUPS = isempty(ARGS) ? ["core", "slow"] : ARGS
+
+if "core" in GROUPS
+    @safetestset "Aqua" include("quality/aqua.jl")
+    @safetestset "Plots" include("plots.jl")
 end
-
-include("test_analytic.jl")
-include("test_plots.jl")
+if "slow" in GROUPS
+    @safetestset "Analytic equilibria" include("analytic/equilibria.jl")
+end

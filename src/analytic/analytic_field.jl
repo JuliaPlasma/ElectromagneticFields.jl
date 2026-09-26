@@ -118,10 +118,10 @@ right-handed; `AxisymmetricTokamakCylindricalEquilibrium`, `AxisymmetricTokamakT
 it depends on neither `t` nor `ξ`, and `orientation(field)` returns it. A loaded field therefore
 recovers `det DF = orientation(field) * J(field, t, ξ)` without the equilibrium object.
 
-`test_analytic.jl` asserts `det(DF) ≈ orientation * J` for each of the charts above, and separately
-that the stored value equals the trait it was generated from. A new chart that declares the wrong
-sign therefore fails immediately rather than silently flipping its own `B`, and so does a generator
-that stops tracking the trait.
+`test/analytic/equilibria.jl` asserts `det(DF) ≈ orientation * J` for each of the charts above,
+and separately that the stored value equals the trait it was generated from. A new chart that
+declares the wrong sign therefore fails immediately rather than silently flipping its own `B`, and
+so does a generator that stops tracking the trait.
 """
 orientation(::AnalyticField) = 1
 
