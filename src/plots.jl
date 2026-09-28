@@ -1,4 +1,5 @@
 
+# fatou-ignore invalid-docstring-code
 @doc raw"""
 Plot an analytic equilibrium, typically as a contour plot of its vector potential.
 
