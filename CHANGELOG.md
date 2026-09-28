@@ -21,6 +21,11 @@ not covered here; see the git history for those.
   `JET.report_opt` on each generated accessor of each equilibrium, at the argument types of
   `test/analytic/equilibria.jl`. It runs directly after Aqua, adds 820 tests and takes about 8 s.
   Where JET does not work, the file records one `@test_skip`.
+- **The test and docs environments no longer bound a dependency of the package.** The `[compat]`
+  entries for `LinearAlgebra` and `StaticArrays` in `test/Project.toml` and for `Symbolics` in
+  `docs/Project.toml` are removed. Each named a dependency of the root `Project.toml`, so it could
+  only repeat or narrow the root's bound. By the tree's test convention, a shared dependency takes
+  its bound from the root alone.
 
 ### Fixed
 
