@@ -8,17 +8,15 @@ SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
-# Every dependency of the suite except JET is bounded here, which is what `Aqua.test_deps_compat`
-# asks of the package itself. JET, which only the test-only `quality/jet.jl` loads, has no bound by
-# the test convention, so each job resolves the JET that works on its Julia. `CairoMakie` drives
-# the plotting tests through the Makie extension, so its bound tracks the `Makie` weak
-# dependency's.
+# Every test-only dependency of the suite except JET is bounded here; a dependency shared with the
+# package takes its bound from the root `Project.toml` alone. JET, which only the test-only
+# `quality/jet.jl` loads, has no bound by the test convention, so each job resolves the JET that
+# works on its Julia. `CairoMakie` drives the plotting tests through the Makie extension, so its
+# bound tracks the `Makie` weak dependency's.
 [compat]
 Aqua = "0.8"
 CairoMakie = "0.15"
-LinearAlgebra = "1"
 SafeTestsets = "0.1"
-StaticArrays = "1"
 Test = "1"
 
 [sources]
