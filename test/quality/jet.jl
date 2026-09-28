@@ -49,5 +49,5 @@ if JET_WORKS
         end
     end
 else
-    @test_skip "JET does not work on this Julia version"
+    @test_skip "JET does not work on this Julia version"  # aviatesk/JET.jl#681
 end
