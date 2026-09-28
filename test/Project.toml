@@ -2,6 +2,7 @@
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 ElectromagneticFields = "d6c1ba6f-ee03-53af-b876-68cefeb88ec8"
+JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
