@@ -10,8 +10,9 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 # Every dependency of the suite except JET is bounded here, which is what `Aqua.test_deps_compat`
 # asks of the package itself. JET, which only the test-only `quality/jet.jl` loads, has no bound by
-# the test convention, so each job resolves the JET that works on its Julia. `CairoMakie` drives the plotting tests through the Makie extension, so its bound
-# tracks the `Makie` weak dependency's.
+# the test convention, so each job resolves the JET that works on its Julia. `CairoMakie` drives
+# the plotting tests through the Makie extension, so its bound tracks the `Makie` weak
+# dependency's.
 [compat]
 Aqua = "0.8"
 CairoMakie = "0.15"
