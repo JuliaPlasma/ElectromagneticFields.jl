@@ -11,6 +11,10 @@ not covered here; see the git history for those.
 
 ### Changed
 
+- **fatou reports no finding in `src/` or `test/`.** The `plot_equilibrium` docstring in
+  `src/plots.jl` shows `size = ...` as a placeholder, which fatou's `invalid-docstring-code` rule
+  reads as invalid Julia. A `# fatou-ignore invalid-docstring-code` line above the docstring
+  accepts it. The docstring text is unchanged.
 - **The test suite follows the tree's test convention.** `test/runtests.jl` holds only the
   `GROUPS` selection and one `@safetestset` per file. The Aqua checks are in
   `test/quality/aqua.jl` and the plotting tests are in `test/plots.jl`, both in the `core` group.
