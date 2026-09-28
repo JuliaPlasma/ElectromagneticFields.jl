@@ -11,7 +11,7 @@ not covered here; see the git history for those.
 
 ### Changed
 
-- **fatou reports no finding in `src/` or `test/`.** The `plot_equilibrium` docstring in
+- **fatou accepts the placeholder in the `plot_equilibrium` docstring.** The `plot_equilibrium` docstring in
   `src/plots.jl` shows `size = ...` as a placeholder, which fatou's `invalid-docstring-code` rule
   reads as invalid Julia. A `# fatou-ignore invalid-docstring-code` line above the docstring
   accepts it. The docstring text is unchanged.

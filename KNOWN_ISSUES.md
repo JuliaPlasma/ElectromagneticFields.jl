@@ -12,3 +12,13 @@
   its base gives 0. The test totals do not change.
 - **kind:** upstream
 - **found:** 2026-09-28
+
+### K2 · The fatou suppression covers the whole `plot_equilibrium` docstring
+
+- **location:** `src/plots.jl:2`
+- **evidence:** `# fatou-ignore invalid-docstring-code` goes above the docstring opener, so it
+  applies to every code fence in that docstring, not only to the `size = ...` placeholder at
+  `src/plots.jl:7`. A new invalid fence in the same docstring gets no report. fatou has no
+  suppression for one line inside a docstring.
+- **kind:** upstream
+- **found:** 2026-09-28
