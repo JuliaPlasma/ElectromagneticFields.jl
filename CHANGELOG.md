@@ -15,7 +15,12 @@ not covered here; see the git history for those.
   `GROUPS` selection and one `@safetestset` per file. The Aqua checks are in
   `test/quality/aqua.jl` and the plotting tests are in `test/plots.jl`, both in the `core` group.
   The tests of the analytic equilibria are in `test/analytic/equilibria.jl`, in the `slow` group,
-  because one run takes about 150 s. `Pkg.test()` runs both groups and the same 4102 tests.
+  because one run takes about 150 s. `Pkg.test()` runs both groups and the same tests as before
+  the split.
+- **JET analyses the field accessors in `core`.** `test/quality/jet.jl` runs
+  `JET.report_opt` on each generated accessor of each equilibrium, at the argument types of
+  `test/analytic/equilibria.jl`. It runs directly after Aqua, adds 820 tests and takes about 8 s.
+  Where JET does not work, the file records one `@test_skip`.
 
 ### Fixed
 
