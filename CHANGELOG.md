@@ -11,6 +11,9 @@ not covered here; see the git history for those.
 
 ### Changed
 
+- **The package requires GeometricBase 0.15.0 and Julia 1.11.** The `[compat]` floors rise from
+  `GeometricBase = "0.14"` and `julia = "1.10"`, because GeometricBase 0.15 declares its stubs
+  public and requires Julia 1.11.
 - **fatou accepts the placeholder in the `plot_equilibrium` docstring.** The `plot_equilibrium` docstring in
   `src/plots.jl` shows `size = ...` as a placeholder, which fatou's `invalid-docstring-code` rule
   reads as invalid Julia. A `# fatou-ignore invalid-docstring-code` line above the docstring
