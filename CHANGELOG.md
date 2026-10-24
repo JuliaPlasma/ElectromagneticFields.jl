@@ -11,6 +11,10 @@ not covered here; see the git history for those.
 
 ### Changed
 
+- **Julia 1.12 is the floor** (`[compat] julia = "1.12"`, from 1.11). A breaking change under
+  this package's pre-1.0 convention: a caller on Julia 1.11 can no longer install this version.
+  The package had no version-conditional code and no test bound taken from a Julia 1.11
+  measurement, so no workaround is deleted and nothing else in the package changes.
 - **CI uploads coverage from the `Julia 1 - ubuntu-latest` job and saves the Julia cache only on
   success.** Coverage came from the `Julia min` job before. A test job now saves the Julia cache
   only when it succeeds.
