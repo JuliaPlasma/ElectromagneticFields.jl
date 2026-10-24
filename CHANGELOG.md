@@ -7,12 +7,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Releases 
 not covered here; see the git history for those.
 
 
-## [Unreleased]
+## [0.9.2] - 2026-10-24
 
 ### Changed
 
-- **Julia 1.12 is the floor** (`[compat] julia = "1.12"`, from 1.11). A breaking change under
-  this package's pre-1.0 convention: a caller on Julia 1.11 can no longer install this version.
+- **Julia 1.12 is the floor** (`[compat] julia = "1.12"`, from 1.11). A patch release, because no
+  API changes: a caller on Julia 1.11 can no longer install this version.
   The package had no version-conditional code and no test bound taken from a Julia 1.11
   measurement, so no workaround is deleted and nothing else in the package changes.
 - **CI uploads coverage from the `Julia 1 - ubuntu-latest` job and saves the Julia cache only on
