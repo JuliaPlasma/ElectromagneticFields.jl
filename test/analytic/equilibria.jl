@@ -99,8 +99,11 @@ function test_representations(field, t, ξ)
     @test b♯(field, t, ξ) ≈ B♯(field, t, ξ) / B(field, t, ξ) atol = 1E-12
     @test b♮(field, t, ξ) ≈ B♮(field, t, ξ) / B(field, t, ξ) atol = 1E-12
 
-    # the two-form is antisymmetric by construction
-    @test B♭♭(field, t, ξ) ≈ -transpose(B♭♭(field, t, ξ)) atol = 1E-14
+    # The two-form is antisymmetric by construction, but the generated code evaluates each entry
+    # and its mirror separately, so they agree to a few ulps of the entries, not to an absolute
+    # 1E-14: for the dipole the entries reach a few hundred, where one ulp alone is about 3E-14.
+    rtol = 8 * eps(eltype(ξ))
+    @test B♭♭(field, t, ξ)≈-transpose(B♭♭(field, t, ξ)) atol=1E-14 rtol=rtol
 end
 
 "The perpendicular frame (a, b, c) is orthonormal in all three representations."
