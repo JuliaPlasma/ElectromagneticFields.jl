@@ -35,6 +35,12 @@ not covered here; see the git history for those.
   entries reach 242, where one ulp is about 2.8E-14, and the `Julia 1 - ubuntu-latest` job failed.
   The test now also accepts `rtol = 8 * eps(eltype(ξ))`, a difference of 8 eps relative to the
   norm of `B♭♭`.
+- **The test that a rebuilt field agrees with the cached one compares entry by entry.** `rangemin`
+  and `rangemax` are infinite in R and Z, so the array `≈` took the norm of `[NaN, NaN, 0]`. At the
+  StaticArrays floor 1.5.17 that norm uses a `@fastmath max`, which drops the `NaN` on x86_64 and
+  gives 0, and the comparison `0 <= rtol * NaN` failed in the `Downgrade` job. On aarch64, and
+  with the StaticArrays 1.9 releases of the other jobs, the norm is `NaN`, and `≈` falls back to
+  the entries.
 
 
 ## [0.9.2] - 2026-10-24

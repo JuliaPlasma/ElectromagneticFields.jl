@@ -624,12 +624,15 @@ const REBUILD_RTOL = 1.0e-12
     # The parameters are compared exactly, because those are the equilibrium's own numbers and a
     # rebuild copies them. The values are compared to a few ULP, because the two bodies may be
     # different orderings of the same arithmetic; a wrong formula is off by O(1) and still fails.
+    # They are compared entry by entry, because `rangemin` and `rangemax` are infinite in R and Z:
+    # the array `≈` takes the norm of their difference, `[NaN, NaN, 0]`, and with StaticArrays
+    # 1.5.17 on x86_64 that norm is a finite 0, which then fails against `rtol * NaN`.
     rebuilt = FieldFunctions(AxisymmetricTokamakCylindricalEquilibrium(6.2, 5.3, 1.7))
     @test !isempty(ElectromagneticFields.FIELD_CACHE)
     for name in ElectromagneticFields.FIELD_FUNCTION_NAMES
         @test functions(rebuilt)[name].p == functions(b)[name].p
         f = getfield(ElectromagneticFields, name)
-        @test f(rebuilt, t, ξ) ≈ f(b, t, ξ) rtol=REBUILD_RTOL
+        @test all(isapprox.(f(rebuilt, t, ξ), f(b, t, ξ); rtol = REBUILD_RTOL))
     end
 end
 
