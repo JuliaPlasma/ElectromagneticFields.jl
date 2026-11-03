@@ -14,7 +14,7 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 # works on its Julia. `CairoMakie` drives the plotting tests through the Makie extension, so its
 # bound tracks the `Makie` weak dependency's.
 [compat]
-Aqua = "0.8"
+Aqua = "0.8.14"
 CairoMakie = "0.15"
 SafeTestsets = "0.1"
 Test = "1"

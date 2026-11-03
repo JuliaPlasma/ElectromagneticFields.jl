@@ -7,6 +7,42 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Releases 
 not covered here; see the git history for those.
 
 
+## [Unreleased]
+
+### Changed
+
+- **The `[compat]` floors are versions that the package resolves and loads at on Julia 1.12.** The
+  CI Downgrade job resolves `Project.toml` and `test/Project.toml` together at their lower bounds
+  on Julia 1.12 and runs the tests there. The floors rise as follows.
+  - `StaticArrays` from 1 to 1.5.17: releases 1.0 to 1.5.16 require Julia 1.10 or older.
+  - `RuntimeGeneratedFunctions` from 0.5 to 0.5.9: Symbolics 7 requires 0.5.9.
+  - `PrecompileTools` from 1 to 1.2.1: SymbolicUtils 4, which Symbolics 7 requires, requires
+    1.2.1.
+  - `NaNMath` from 1 to 1.1.2: SymbolicUtils 4 requires 1.1.2.
+  - `ConstructionBase` from 1 to 1.6: SymbolicUtils 4 requires 1.5.7, and the package does not
+    precompile with 1.5.7 on Julia 1.12. In 1.5.7 and 1.5.8 `constructorof` is a generated
+    function that looks the type up by name in its module, and on Julia 1.12 the precompile
+    workload stops with ``UndefVarError: `ABCEquilibrium` not defined``. Release 1.6.0 returns
+    `Base.typename(T).wrapper`.
+  - `Aqua` in `test/Project.toml` from 0.8 to 0.8.14: before 0.8.14 the piracy check reads the
+    `mt` field of `Core.TypeName`, which Julia 1.12 removed, and errors.
+
+### Fixed
+
+- **The antisymmetry test of the two-form `B♭♭` has a relative tolerance.** The test compared
+  `B♭♭` with `-transpose(B♭♭)` at `atol = 1E-14` only. The generated code evaluates each entry and
+  its mirror separately, so they can differ by rounding. For `DipoleField` at the test point the
+  entries reach 242, where one ulp is about 2.8E-14, and the `Julia 1 - ubuntu-latest` job failed.
+  The test now also accepts `rtol = 8 * eps(eltype(ξ))`, a difference of 8 eps relative to the
+  norm of `B♭♭`.
+- **The test that a rebuilt field agrees with the cached one compares entry by entry.** `rangemin`
+  and `rangemax` are infinite in R and Z, so the array `≈` took the norm of `[NaN, NaN, 0]`. At the
+  StaticArrays floor 1.5.17 that norm uses a `@fastmath max`, which drops the `NaN` on x86_64 and
+  gives 0, and the comparison `0 <= rtol * NaN` failed in the `Downgrade` job. On aarch64, and
+  with the StaticArrays 1.9 releases of the other jobs, the norm is `NaN`, and `≈` falls back to
+  the entries.
+
+
 ## [0.9.2] - 2026-10-24
 
 ### Changed
