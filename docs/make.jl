@@ -36,5 +36,6 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/JuliaPlasma/ElectromagneticFields.jl"
+    repo = "github.com/JuliaPlasma/ElectromagneticFields.jl",
+    devbranch = "main"
 )
