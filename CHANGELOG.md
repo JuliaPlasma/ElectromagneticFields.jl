@@ -26,6 +26,10 @@ not covered here; see the git history for those.
     `Base.typename(T).wrapper`.
   - `Aqua` in `test/Project.toml` from 0.8 to 0.8.14: before 0.8.14 the piracy check reads the
     `mt` field of `Core.TypeName`, which Julia 1.12 removed, and errors.
+- **`deploydocs` names `devbranch = "main"`.** Without it, Documenter reads the default branch
+  with `git remote show origin`. The Documentation workflow checks out without keeping the token,
+  so that call works only while the repository is public; on a failure Documenter falls back to
+  `master` and a push to `main` deploys no development docs, with the job green.
 
 ### Fixed
 
