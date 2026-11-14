@@ -6,7 +6,6 @@ name: K8 diagnostic
 
 on:
     pull_request:
-    workflow_dispatch:
 
 permissions:
     contents: read
@@ -43,19 +42,21 @@ jobs:
               run: |
                   julia --version
                   failed=0
+                  errors=0
                   for n in $(seq 1 "$BUILDS"); do
                       rm -rf ~/.julia/compiled/v1.12/ElectromagneticFields
                       julia --project=. -e 'using Pkg; Pkg.precompile()'
-                      if julia --project=. .github/k8/probe.jl "k8-out/build-$n"; then
-                          echo "build $n: ok"
-                      else
-                          echo "build $n: WRONG"
-                          failed=$((failed + 1))
-                      fi
+                      rc=0
+                      julia --project=. .github/k8/probe.jl "k8-out/build-$n" || rc=$?
+                      case "$rc" in
+                          0) echo "build $n: ok" ;;
+                          2) echo "build $n: WRONG"; failed=$((failed + 1)) ;;
+                          *) echo "build $n: probe error $rc"; errors=$((errors + 1)) ;;
+                      esac
                   done
-                  echo "builds with wrong entries: $failed of $BUILDS"
-                  test "$failed" -eq 0
-            - uses: actions/upload-artifact@v4
+                  echo "builds with wrong entries: $failed of $BUILDS; probe errors: $errors"
+                  test "$failed" -eq 0 && test "$errors" -eq 0
+            - uses: actions/upload-artifact@v7
               if: always()
               with:
                   name: k8-${{ matrix.deps }}

@@ -19,6 +19,13 @@ function findrgf(x, depth = 0)
     nothing
 end
 
+# The code of a generated function, as `get_expression` builds it; RuntimeGeneratedFunctions 0.5.9,
+# the floor, has no `get_expression`.
+function rgfexpr(::RuntimeGeneratedFunctions.RuntimeGeneratedFunction{
+        A, C, X, I}) where {A, C, X, I}
+    Expr(:->, Expr(:tuple, A...), RuntimeGeneratedFunctions._lookup_body(C, I))
+end
+
 const CASES = (
     ("SolovevXpointITER", SolovevXpointEquilibriumITER(),
         ([2.5, 0.0, 0.0], [2.6, 0.1, 0.2])),
@@ -35,7 +42,7 @@ for (label, equ, points) in CASES
     for name in (:Db♭, :DDb♭)
         r = findrgf(getfield(field.functions, name))
         body = r === nothing ? "no RuntimeGeneratedFunction found" :
-               string(RuntimeGeneratedFunctions.get_expression(r))
+               string(rgfexpr(r))
         h = string(hash(body); base = 16)
         write(joinpath(OUT, "$(label)_$(name)_$(h).jl"), body)
         println("[k8] ", label, " ", name, " code hash ", h)
