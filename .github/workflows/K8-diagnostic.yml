@@ -1,0 +1,62 @@
+# Diagnostic for ChargedParticleDynamics K8, not for merging. Each job precompiles this package
+# several times from scratch on ubuntu-latest with Julia 1.12.7, and after each build checks the
+# second derivatives `DDb♭` against finite differences and saves the generated code.
+
+name: K8 diagnostic
+
+on:
+    pull_request:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    probe:
+        name: K8 probe - ${{ matrix.deps }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 120
+        env:
+            JULIA_NUM_THREADS: 2
+            BUILDS: 10
+        strategy:
+            fail-fast: false
+            matrix:
+                deps: [latest, floor]
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  persist-credentials: false
+            - uses: julia-actions/setup-julia@v3
+              with:
+                  version: "1.12.7"
+            - uses: julia-actions/julia-downgrade-compat@v2
+              if: matrix.deps == 'floor'
+              with:
+                  mode: forcedeps
+                  julia_version: "1.12.7"
+                  projects: .
+                  skip: ArgTools,Artifacts,Base64,CRC32c,Dates,DelimitedFiles,Distributed,Downloads,FileWatching,Future,InteractiveUtils,LazyArtifacts,LibCURL,LibGit2,Libdl,LinearAlgebra,Logging,Markdown,Mmap,NetworkOptions,Pkg,Printf,Profile,REPL,Random,SHA,Serialization,SharedArrays,Sockets,SparseArrays,Statistics,TOML,Tar,Test,UUIDs,Unicode
+            - name: Instantiate
+              run: julia --project=. -e 'using Pkg; Pkg.instantiate(); Pkg.status()'
+            - name: Precompile and probe, ${{ env.BUILDS }} times
+              run: |
+                  julia --version
+                  failed=0
+                  for n in $(seq 1 "$BUILDS"); do
+                      rm -rf ~/.julia/compiled/v1.12/ElectromagneticFields
+                      julia --project=. -e 'using Pkg; Pkg.precompile()'
+                      if julia --project=. .github/k8/probe.jl "k8-out/build-$n"; then
+                          echo "build $n: ok"
+                      else
+                          echo "build $n: WRONG"
+                          failed=$((failed + 1))
+                      fi
+                  done
+                  echo "builds with wrong entries: $failed of $BUILDS"
+                  test "$failed" -eq 0
+            - uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: k8-${{ matrix.deps }}
+                  path: k8-out
